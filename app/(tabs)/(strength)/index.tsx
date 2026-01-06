@@ -5,45 +5,48 @@ export default function StrengthScreen() {
     {
       name: "Push",
       exercises: ["Push-ups", "Dips", "Pike Push-ups"],
-      color: "bg-red-600",
+      color: "bg-red-500",
     },
     {
       name: "Pull",
       exercises: ["Pull-ups", "Rows", "Chin-ups"],
-      color: "bg-blue-600",
+      color: "bg-blue-500",
     },
     {
       name: "Legs",
       exercises: ["Squats", "Lunges", "Pistol Squats"],
-      color: "bg-green-600",
+      color: "bg-green-500",
     },
     {
       name: "Core",
       exercises: ["Planks", "L-sits", "Hollow Holds"],
-      color: "bg-yellow-600",
+      color: "bg-yellow-500",
     },
   ];
 
   return (
-    <ScrollView className="flex-1 bg-slate-900">
+    <ScrollView className="flex-1 bg-black">
       <View className="px-6 pt-16">
-        <Text className="text-white text-3xl font-bold mb-2">
+        <Text className="text-orange-500 text-4xl font-bold mb-2">
           Strength Paths
         </Text>
-        <Text className="text-slate-400 mb-8">
+        <Text className="text-zinc-400 mb-8 text-lg">
           Build functional strength across all movement patterns
         </Text>
 
         {strengthPaths.map((path, index) => (
-          <Pressable key={index} className="bg-slate-800 p-6 rounded-lg mb-4">
-            <View className={`${path.color} w-16 h-1 rounded-full mb-3`} />
+          <Pressable
+            key={index}
+            className="bg-zinc-900 p-6 rounded-xl mb-4 border border-zinc-800"
+          >
+            <View className={`${path.color} w-20 h-1.5 rounded-full mb-4`} />
 
-            <Text className="text-white text-2xl font-semibold mb-3">
+            <Text className="text-white text-2xl font-bold mb-3">
               {path.name}
             </Text>
 
             {path.exercises.map((exercise, idx) => (
-              <Text key={idx} className="text-slate-300 mb-1">
+              <Text key={idx} className="text-zinc-300 mb-1.5 text-base">
                 • {exercise}
               </Text>
             ))}

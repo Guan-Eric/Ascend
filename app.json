@@ -1,12 +1,18 @@
 {
   "expo": {
-    "scheme": "acme",
-    "userInterfaceStyle": "automatic",
-    "orientation": "default",
+    "scheme": "ascend",
+    "userInterfaceStyle": "dark",
+    "orientation": "portrait",
     "web": {
       "output": "static"
     },
-    "name": "ascend",
-    "slug": "ascend"
+    "name": "Ascend: Calisthenics",
+    "slug": "ascend",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    }
   }
 }

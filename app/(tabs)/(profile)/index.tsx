@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-import { auth } from "@/config/firebase";
+import { FIREBASE_AUTH } from "../../../config/firebase";
 import { useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
 
@@ -30,8 +30,8 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           try {
-            await signOut(auth);
-            router.replace("/(auth)/welcome");
+            await signOut(FIREBASE_AUTH);
+            router.replace("/(onboarding)/step1");
           } catch (error) {
             console.error("Sign out error:", error);
           }
@@ -45,28 +45,37 @@ export default function ProfileScreen() {
     customerInfo?.entitlements.active["pro"]?.expirationDate;
 
   return (
-    <ScrollView className="flex-1 bg-slate-900">
+    <ScrollView className="flex-1 bg-black">
       <View className="px-6 pt-16">
-        <Text className="text-white text-3xl font-bold mb-8">Profile</Text>
+        <Text className="text-orange-500 text-4xl font-bold mb-8">Profile</Text>
 
         {/* User Info */}
-        <View className="bg-slate-800 p-6 rounded-lg mb-4">
-          <Text className="text-slate-400 mb-2">Email</Text>
-          <Text className="text-white text-lg">{auth.currentUser?.email}</Text>
+        <View className="bg-zinc-900 p-6 rounded-xl mb-4 border border-zinc-800">
+          <Text className="text-zinc-400 mb-2 font-medium">User ID</Text>
+          <Text className="text-white text-sm font-mono">
+            {FIREBASE_AUTH.currentUser?.uid.substring(0, 20)}...
+          </Text>
+          <Text className="text-zinc-500 text-xs mt-2">
+            {FIREBASE_AUTH.currentUser?.isAnonymous
+              ? "Anonymous Account"
+              : "Registered Account"}
+          </Text>
         </View>
 
         {/* Subscription Status */}
-        <View className="bg-slate-800 p-6 rounded-lg mb-4">
-          <Text className="text-slate-400 mb-2">Subscription Status</Text>
+        <View className="bg-zinc-900 p-6 rounded-xl mb-4 border border-zinc-800">
+          <Text className="text-zinc-400 mb-2 font-medium">
+            Subscription Status
+          </Text>
           <Text
-            className={`text-lg font-semibold ${
+            className={`text-xl font-bold ${
               hasProAccess ? "text-green-500" : "text-red-500"
             }`}
           >
-            {hasProAccess ? "Pro Active" : "No Active Subscription"}
+            {hasProAccess ? "Pro Active ✓" : "No Active Subscription"}
           </Text>
           {expirationDate && (
-            <Text className="text-slate-400 mt-2 text-sm">
+            <Text className="text-zinc-400 mt-2 text-sm">
               {customerInfo?.entitlements.active["pro"]?.willRenew
                 ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
                 : `Expires: ${new Date(expirationDate).toLocaleDateString()}`}
@@ -85,22 +94,26 @@ export default function ProfileScreen() {
               Alert.alert("Error", "Failed to restore purchases");
             }
           }}
-          className="bg-blue-600 py-4 rounded-lg mb-4"
+          className="bg-orange-500 py-4 rounded-xl mb-4"
         >
-          <Text className="text-white text-center font-semibold">
+          <Text className="text-black text-center font-bold text-base">
             Restore Purchases
           </Text>
         </Pressable>
 
-        {/* Sign Out */}
+        {/* Reset App */}
         <Pressable
           onPress={handleSignOut}
-          className="border border-red-600 py-4 rounded-lg"
+          className="border-2 border-red-500 py-4 rounded-xl"
         >
-          <Text className="text-red-600 text-center font-semibold">
-            Sign Out
+          <Text className="text-red-500 text-center font-bold text-base">
+            Reset App
           </Text>
         </Pressable>
+
+        <Text className="text-zinc-600 text-xs text-center mt-4">
+          Resetting will sign you out and clear your session
+        </Text>
       </View>
     </ScrollView>
   );
