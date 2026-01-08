@@ -7,9 +7,9 @@ const config = getDefaultConfig(__dirname);
 // Apply uniwind modifications before exporting
 const uniwindConfig = withUniwindConfig(config, {
   // relative path to your global.css file
-  cssEntryFile: "./src/global.css",
+  cssEntryFile: "./global.css",
   // optional: path to typings
-  dtsFile: "./src/uniwind-types.d.ts",
+  dtsFile: "./uniwind-types.d.ts",
 });
 
 module.exports = uniwindConfig;
