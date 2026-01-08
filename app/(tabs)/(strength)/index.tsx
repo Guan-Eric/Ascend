@@ -5,48 +5,48 @@ export default function StrengthScreen() {
     {
       name: "Push",
       exercises: ["Push-ups", "Dips", "Pike Push-ups"],
-      color: "bg-red-500",
+      color: "bg-error",
     },
     {
       name: "Pull",
       exercises: ["Pull-ups", "Rows", "Chin-ups"],
-      color: "bg-blue-500",
+      color: "bg-secondary",
     },
     {
       name: "Legs",
       exercises: ["Squats", "Lunges", "Pistol Squats"],
-      color: "bg-green-500",
+      color: "bg-success",
     },
     {
       name: "Core",
       exercises: ["Planks", "L-sits", "Hollow Holds"],
-      color: "bg-yellow-500",
+      color: "bg-warning",
     },
   ];
 
   return (
-    <ScrollView className="flex-1 bg-black">
+    <ScrollView className="flex-1 bg-background">
       <View className="px-6 pt-16">
-        <Text className="text-orange-500 text-4xl font-bold mb-2">
+        <Text className="text-primary text-4xl font-bold mb-2">
           Strength Paths
         </Text>
-        <Text className="text-zinc-400 mb-8 text-lg">
+        <Text className="text-text-secondary mb-8 text-lg">
           Build functional strength across all movement patterns
         </Text>
 
         {strengthPaths.map((path, index) => (
           <Pressable
             key={index}
-            className="bg-zinc-900 p-6 rounded-xl mb-4 border border-zinc-800"
+            className="bg-surface p-6 rounded-xl mb-4 border border-border"
           >
             <View className={`${path.color} w-20 h-1.5 rounded-full mb-4`} />
 
-            <Text className="text-white text-2xl font-bold mb-3">
+            <Text className="text-text-primary text-2xl font-bold mb-3">
               {path.name}
             </Text>
 
             {path.exercises.map((exercise, idx) => (
-              <Text key={idx} className="text-zinc-300 mb-1.5 text-base">
+              <Text key={idx} className="text-text-secondary mb-1.5 text-base">
                 • {exercise}
               </Text>
             ))}

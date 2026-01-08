@@ -10,35 +10,37 @@ export default function SkillsScreen() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-black">
+    <ScrollView className="flex-1 bg-background">
       <View className="px-6 pt-16">
-        <Text className="text-orange-500 text-4xl font-bold mb-2">
+        <Text className="text-primary text-4xl font-bold mb-2">
           Skill Progressions
         </Text>
-        <Text className="text-zinc-400 mb-8 text-lg">
+        <Text className="text-text-secondary mb-8 text-lg">
           Master advanced calisthenics movements
         </Text>
 
         {skills.map((skill, index) => (
           <Pressable
             key={index}
-            className="bg-zinc-900 p-6 rounded-xl mb-4 border border-zinc-800"
+            className="bg-surface p-6 rounded-xl mb-4 border border-border"
           >
             <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-white text-xl font-bold">{skill.name}</Text>
-              <Text className="text-zinc-400 text-sm font-medium">
+              <Text className="text-text-primary text-xl font-bold">
+                {skill.name}
+              </Text>
+              <Text className="text-text-secondary text-sm font-medium">
                 {skill.level}
               </Text>
             </View>
 
-            <View className="bg-zinc-800 h-3 rounded-full overflow-hidden">
+            <View className="bg-surface-elevated h-3 rounded-full overflow-hidden">
               <View
-                className="bg-orange-500 h-full rounded-full"
+                className="bg-primary h-full rounded-full"
                 style={{ width: `${skill.progress}%` }}
               />
             </View>
 
-            <Text className="text-zinc-400 text-sm mt-2 font-medium">
+            <Text className="text-text-secondary text-sm mt-2 font-medium">
               {skill.progress}% complete
             </Text>
           </Pressable>

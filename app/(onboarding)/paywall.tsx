@@ -18,11 +18,9 @@ export default function PaywallScreen() {
 
   const initializeUser = async () => {
     try {
-      // Sign in anonymously
       const userCredential = await signInAnonymously(FIREBASE_AUTH);
       const user = userCredential.user;
 
-      // Create Firestore user document
       await setDoc(
         doc(FIRESTORE_DB, "users", user.uid),
         {
@@ -32,10 +30,8 @@ export default function PaywallScreen() {
         { merge: true }
       );
 
-      // Identify user in RevenueCat
       await Purchases.logIn(user.uid);
 
-      // Load offerings
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
         setOfferings(offerings.current);
@@ -88,28 +84,26 @@ export default function PaywallScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-black justify-center items-center">
-        <Text className="text-orange-500 text-2xl font-bold">Loading...</Text>
+      <View className="flex-1 bg-background justify-center items-center">
+        <Text className="text-primary text-2xl font-bold">Loading...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-black">
+    <ScrollView className="flex-1 bg-background">
       <View className="px-8 pt-16 pb-8">
-        {/* Header */}
-        <Text className="text-orange-500 text-5xl font-bold mb-2">
+        <Text className="text-primary text-5xl font-bold mb-2">
           Unlock Ascend
         </Text>
-        <Text className="text-white text-2xl font-semibold mb-3">
+        <Text className="text-text-primary text-2xl font-semibold mb-3">
           Start Your Journey
         </Text>
-        <Text className="text-zinc-400 text-lg mb-8 leading-6">
+        <Text className="text-text-secondary text-lg mb-8 leading-6">
           Get unlimited access to all features and transform your body with
           calisthenics
         </Text>
 
-        {/* Features */}
         <View className="mb-8">
           <FeatureItem
             icon="✓"
@@ -133,43 +127,41 @@ export default function PaywallScreen() {
           />
         </View>
 
-        {/* Subscription Options */}
         {offerings?.availablePackages.map((pkg) => (
           <Pressable
             key={pkg.identifier}
             onPress={() => handlePurchase(pkg)}
             disabled={purchasing}
-            className="bg-zinc-900 border-2 border-orange-500 p-6 rounded-xl mb-4"
+            className="bg-surface border-2 border-primary p-6 rounded-xl mb-4"
           >
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-white text-xl font-bold">
+              <Text className="text-text-primary text-xl font-bold">
                 {pkg.product.title}
               </Text>
               {pkg.product.introPrice && (
-                <View className="bg-orange-500 px-3 py-1 rounded-full">
-                  <Text className="text-black text-xs font-bold">
+                <View className="bg-primary px-3 py-1 rounded-full">
+                  <Text className="text-background text-xs font-bold">
                     {pkg.product.introPrice.periodNumberOfUnits} DAYS FREE
                   </Text>
                 </View>
               )}
             </View>
-            <Text className="text-orange-500 text-2xl font-bold mb-1">
+            <Text className="text-primary text-2xl font-bold mb-1">
               {pkg.product.priceString}
             </Text>
-            <Text className="text-zinc-400 text-sm">
+            <Text className="text-text-secondary text-sm">
               {pkg.product.subscriptionPeriod}
             </Text>
           </Pressable>
         ))}
 
-        {/* Restore & Terms */}
         <Pressable onPress={handleRestore} className="mt-4 mb-2">
-          <Text className="text-zinc-400 text-center font-medium">
+          <Text className="text-text-secondary text-center font-medium">
             Restore Purchases
           </Text>
         </Pressable>
 
-        <Text className="text-zinc-600 text-xs text-center leading-5">
+        <Text className="text-text-muted text-xs text-center leading-5">
           Subscription automatically renews unless auto-renew is turned off at
           least 24 hours before the end of the current period.
         </Text>
@@ -178,7 +170,6 @@ export default function PaywallScreen() {
   );
 }
 
-// Feature Item Component
 function FeatureItem({
   icon,
   title,
@@ -190,12 +181,14 @@ function FeatureItem({
 }) {
   return (
     <View className="flex-row items-start mb-4">
-      <View className="w-8 h-8 bg-orange-500 rounded-full items-center justify-center mr-4">
-        <Text className="text-black text-lg font-bold">{icon}</Text>
+      <View className="w-8 h-8 bg-primary rounded-full items-center justify-center mr-4">
+        <Text className="text-background text-lg font-bold">{icon}</Text>
       </View>
       <View className="flex-1">
-        <Text className="text-white text-lg font-semibold mb-1">{title}</Text>
-        <Text className="text-zinc-400 leading-5">{description}</Text>
+        <Text className="text-text-primary text-lg font-semibold mb-1">
+          {title}
+        </Text>
+        <Text className="text-text-secondary leading-5">{description}</Text>
       </View>
     </View>
   );

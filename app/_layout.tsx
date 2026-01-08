@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Purchases from "react-native-purchases";
 import { Platform } from "react-native";
 import "../global.css";
+import Constants from "expo-constants";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -10,7 +11,9 @@ export default function RootLayout() {
     const initializeRevenueCat = async () => {
       try {
         if (Platform.OS === "ios") {
-          await Purchases.configure({ apiKey: "YOUR_IOS_API_KEY" });
+          await Purchases.configure({
+            apiKey: Constants.expoConfig?.extra?.revenuecatApiKey,
+          });
         } else if (Platform.OS === "android") {
           await Purchases.configure({ apiKey: "YOUR_ANDROID_API_KEY" });
         }

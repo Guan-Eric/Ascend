@@ -4,19 +4,25 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "dotenv": "^17.2.3",
     "expo": "^54.0.31",
     "expo-constants": "~18.0.12",
+    "expo-linking": "~8.0.11",
     "expo-router": "~6.0.14",
     "expo-status-bar": "~3.0.8",
     "firebase": "^12.7.0",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-purchases": "^9.6.13",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
     "tailwindcss": "~4.1.16",
     "uniwind": "~1.0.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "baseline-browser-mapping": "^2.9.13",
     "typescript": "~5.9.2"
   },
   "private": true,

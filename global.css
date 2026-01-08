@@ -1,2 +1,69 @@
 @import "tailwindcss";
 @import "uniwind";
+
+@layer theme {
+  :root {
+    @variant dark {
+      /* Single theme (dark, used everywhere) */
+      --color-background: #0b1220;
+      --color-surface: #111a2e;
+      --color-surface-elevated: #16213a;
+      --color-border: #24345a;
+
+      --color-primary: #38e8ff;
+      --color-primary-dark: #2bc2e6;
+      --color-secondary: #2f7cf6;
+
+      --color-text-primary: #ffffff;
+      --color-text-secondary: #b8c2e0;
+      --color-text-muted: #7a86a8;
+      --color-text-disabled: #4c5673;
+
+      --color-success: #22c55e;
+      --color-warning: #facc15;
+      --color-error: #ef4444;
+      --color-info: #38e8ff;
+
+      /* compatibility colors */
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+    @variant light {
+      /* Single theme (dark, used everywhere) */
+      --color-background: #0b1220;
+      --color-surface: #111a2e;
+      --color-surface-elevated: #16213a;
+      --color-border: #24345a;
+
+      --color-primary: #38e8ff;
+      --color-primary-dark: #2bc2e6;
+      --color-secondary: #2f7cf6;
+
+      --color-text-primary: #ffffff;
+      --color-text-secondary: #b8c2e0;
+      --color-text-muted: #7a86a8;
+      --color-text-disabled: #4c5673;
+
+      --color-success: #22c55e;
+      --color-warning: #facc15;
+      --color-error: #ef4444;
+      --color-info: #38e8ff;
+
+      /* compatibility colors */
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+  }
+}
