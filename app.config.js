@@ -4,9 +4,7 @@ export default {
     scheme: "ascend",
     userInterfaceStyle: "dark",
     orientation: "portrait",
-    web: {
-      output: "static",
-    },
+    platforms: ["ios", "android"],
     name: "Ascend: Calisthenics",
     slug: "ascend",
     icon: "./assets/icon.png",

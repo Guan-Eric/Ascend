@@ -3,8 +3,8 @@ import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import Purchases, { PurchasesOffering } from "react-native-purchases";
 import { signInAnonymously } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "../../config/firebase";
+import { FIREBASE_AUTH } from "../../config/firebase";
+import * as backend from "../../backend";
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -21,14 +21,14 @@ export default function PaywallScreen() {
       const userCredential = await signInAnonymously(FIREBASE_AUTH);
       const user = userCredential.user;
 
-      await setDoc(
-        doc(FIRESTORE_DB, "users", user.uid),
-        {
-          createdAt: new Date().toISOString(),
-          isAnonymous: true,
-        },
-        { merge: true }
-      );
+      // Initialize user in Firestore with default values
+      await backend.initializeUser(user.uid, {
+        email: "",
+        goalType: "strength",
+        primaryGoalId: "push_strength",
+        level: "beginner",
+        trainingDaysPerWeek: 3,
+      });
 
       await Purchases.logIn(user.uid);
 
@@ -52,6 +52,12 @@ export default function PaywallScreen() {
       );
 
       if (customerInfo.entitlements.active["pro"]) {
+        // Generate initial workout plan
+        const userId = FIREBASE_AUTH.currentUser?.uid;
+        if (userId) {
+          await backend.generateWorkoutPlan(userId);
+        }
+
         router.replace("/(tabs)/(home)");
       }
     } catch (error: any) {

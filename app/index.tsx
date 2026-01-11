@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_AUTH } from "../config/firebase";
 import Purchases from "react-native-purchases";
+import { seedAll } from "../backend/seeder";
 
 export default function Index() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function Index() {
             router.replace("/(tabs)/(home)");
           } else {
             // No subscription, send to paywall
-            router.replace("/(tabs)/(home)");
+            router.replace("/(tabs)/(home)"); //TODO: change to paywall
           }
         } catch (error) {
           console.error("Error checking entitlement:", error);

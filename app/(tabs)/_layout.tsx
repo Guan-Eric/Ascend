@@ -1,4 +1,6 @@
+// app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
   return (
@@ -17,35 +19,65 @@ export default function TabsLayout() {
         name="(home)"
         options={{
           title: "Home",
-          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="home-variant-outline"
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="(skills)"
         options={{
           title: "Skills",
-          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="human-handsup"
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="(strength)"
         options={{
           title: "Strength",
-          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="arm-flex-outline"
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="(ai)"
         options={{
           title: "AI Coach",
-          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="brain" size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="(profile)"
         options={{
           title: "Profile",
-          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="account-circle-outline"
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>
