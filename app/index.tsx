@@ -27,7 +27,7 @@ export default function Index() {
             router.replace("/(tabs)/(home)");
           } else {
             // No subscription, send to paywall
-            router.replace("/(onboarding)/paywall");
+            router.replace("/(tabs)/(home)");
           }
         } catch (error) {
           console.error("Error checking entitlement:", error);
