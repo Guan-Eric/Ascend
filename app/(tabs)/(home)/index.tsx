@@ -10,6 +10,7 @@ import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
   const [todaysPlan, setTodaysPlan] = useState<Plan | null>(null);
@@ -27,12 +28,6 @@ export default function HomeScreen() {
 
       // Try to get today's plan
       let plan = await backend.getTodaysPlan(userId);
-
-      // If no plan exists, generate one
-      if (!plan) {
-        const plans = await backend.generateWorkoutPlan(userId);
-        plan = await backend.getTodaysPlan(userId);
-      }
 
       setTodaysPlan(plan);
 
@@ -157,14 +152,29 @@ export default function HomeScreen() {
 
         {/* Complete Workout Button */}
         {!todaysPlan.completed && (
-          <Pressable
-            onPress={handleCompletePlan}
-            className="bg-primary py-4 rounded-xl mb-8"
-          >
-            <Text className="text-background text-center font-bold text-lg">
-              ✓ Complete Workout
-            </Text>
-          </Pressable>
+          <>
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/(home)/workout",
+                  params: { planId: todaysPlan.id },
+                })
+              }
+              className="bg-primary py-4 rounded-xl mb-3"
+            >
+              <Text className="text-background text-center font-bold text-lg">
+                🏋️ Start Workout
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleCompletePlan}
+              className="border-2 border-primary py-4 rounded-xl mb-8"
+            >
+              <Text className="text-primary text-center font-bold text-lg">
+                ✓ Mark as Complete
+              </Text>
+            </Pressable>
+          </>
         )}
 
         {todaysPlan.completed && (

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Skill } from "../../../types/Skill";
+import { router } from "expo-router";
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -95,6 +96,12 @@ export default function SkillsScreen() {
           return (
             <Pressable
               key={skill.id}
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/(skills)/skill-details",
+                  params: { skillId: skill.id },
+                })
+              }
               className="bg-surface p-6 rounded-xl mb-4 border border-border"
             >
               <View className="flex-row justify-between items-center mb-2">

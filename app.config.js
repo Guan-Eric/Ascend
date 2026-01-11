@@ -23,6 +23,9 @@ export default {
       appId: process.env.APP_ID,
       measurementId: process.env.MEASUREMENT_ID,
       revenuecatApiKey: process.env.REVENUECAT_API_KEY,
+      openaiApiKey: process.env.OPENAI_API_KEY,
+      openaiOrganizationId: process.env.OPENAI_ORGANIZATION_ID,
+      openaiProjectId: process.env.OPENAI_PROJECT_ID,
     },
     experiments: {
       typedRoutes: true,
