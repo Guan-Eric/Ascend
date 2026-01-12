@@ -11,6 +11,7 @@ import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const [todaysPlan, setTodaysPlan] = useState<Plan | null>(null);
@@ -82,14 +83,38 @@ export default function HomeScreen() {
 
   if (!todaysPlan) {
     return (
-      <View className="flex-1 bg-background justify-center items-center px-6">
-        <Text className="text-7xl mb-4">🎯</Text>
-        <Text className="text-primary text-2xl font-bold mb-2 text-center">
-          No Workout Today
-        </Text>
-        <Text className="text-text-secondary text-center">
-          Complete your onboarding to get a personalized workout plan
-        </Text>
+      <View className="flex-1 bg-background">
+        <ScrollView className="flex-1 px-6 pt-16">
+          <Text className="text-primary text-4xl font-bold mb-2">
+            Today's Training
+          </Text>
+          <Text className="text-text-secondary mb-8 text-lg">
+            Create your custom workout plan
+          </Text>
+
+          <View className="bg-surface p-8 rounded-xl items-center justify-center border border-border mb-4">
+            <Text className="text-7xl mb-4">🎯</Text>
+            <Text className="text-primary text-2xl font-bold mb-2 text-center">
+              No Workout Today
+            </Text>
+            <Text className="text-text-secondary text-center mb-6">
+              Create a custom workout plan to get started
+            </Text>
+            <Pressable
+              onPress={() => router.push("/(tabs)/(home)/create-plan")}
+              className="bg-primary px-8 py-4 rounded-xl flex-row items-center"
+            >
+              <MaterialCommunityIcons
+                name="plus-circle-outline"
+                size={24}
+                color="#000000"
+              />
+              <Text className="text-background font-bold text-lg ml-2">
+                Create Workout Plan
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -97,9 +122,25 @@ export default function HomeScreen() {
   return (
     <ScrollView className="flex-1 bg-background">
       <View className="px-6 pt-16">
-        <Text className="text-primary text-4xl font-bold mb-2">
-          Today's Training
-        </Text>
+        <View className="flex-row justify-between items-center mb-2">
+          <Text className="text-primary text-4xl font-bold">
+            Today's Training
+          </Text>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/(home)/edit-plan",
+                params: { planId: todaysPlan.id },
+              })
+            }
+          >
+            <MaterialCommunityIcons
+              name="pencil-outline"
+              size={28}
+              color="#38e8ff"
+            />
+          </Pressable>
+        </View>
         <Text className="text-text-secondary mb-8 text-lg">
           Day {todaysPlan.dayIndex} of your workout plan
         </Text>

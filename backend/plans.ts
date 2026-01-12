@@ -64,6 +64,24 @@ export async function getPlan(planId: string): Promise<Plan | null> {
 }
 
 /**
+ * Update an existing plan
+ */
+export async function updatePlan(
+  planId: string,
+  updates: Partial<Omit<Plan, "id">>
+): Promise<void> {
+  try {
+    const planRef = doc(FIRESTORE_DB, "plans", planId);
+    await updateDoc(planRef, updates);
+
+    console.log("✅ Plan updated:", planId);
+  } catch (error) {
+    console.error("Error updating plan:", error);
+    throw error;
+  }
+}
+
+/**
  * Get all plans for a user
  */
 export async function getUserPlans(userId: string): Promise<Plan[]> {
