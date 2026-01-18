@@ -1,11 +1,5 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TextInput,
-  Alert,
-} from "react-native";
+import { View, Text, Pressable, TextInput, Alert } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -226,199 +220,221 @@ export default function EditPlanScreen() {
           />
         </View>
 
-        <ScrollView className="flex-1 px-6">
-          <Text className="text-text-secondary font-semibold mb-3 uppercase text-sm">
-            Skills
-          </Text>
-          {filteredSkills.map((skill) => (
-            <Pressable
-              key={skill.id}
-              onPress={() => addSkillProgression(skill)}
-              className="bg-surface p-4 rounded-xl mb-3 border border-border"
-            >
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                {skill.name}
+        <FlashList
+          data={[0]}
+          renderItem={() => (
+            <>
+              <Text className="text-text-secondary font-semibold mb-3 uppercase text-sm">
+                Skills
               </Text>
-              <Text className="text-text-secondary text-sm mb-2">
-                {skill.description}
-              </Text>
-              <Text className="text-primary text-xs">
-                +{skill.progression.length} exercises
-              </Text>
-            </Pressable>
-          ))}
+              {filteredSkills.map((skill) => (
+                <Pressable
+                  key={skill.id}
+                  onPress={() => addSkillProgression(skill)}
+                  className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                >
+                  <Text className="text-text-primary text-lg font-bold mb-1">
+                    {skill.name}
+                  </Text>
+                  <Text className="text-text-secondary text-sm mb-2">
+                    {skill.description}
+                  </Text>
+                  <Text className="text-primary text-xs">
+                    +{skill.progression.length} exercises
+                  </Text>
+                </Pressable>
+              ))}
 
-          <Text className="text-text-secondary font-semibold mb-3 mt-6 uppercase text-sm">
-            Individual Exercises
-          </Text>
-          {filteredExercises.map((exercise) => (
-            <Pressable
-              key={exercise.id}
-              onPress={() => addExercise(exercise)}
-              className="bg-surface p-4 rounded-xl mb-3 border border-border"
-            >
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                {exercise.name}
+              <Text className="text-text-secondary font-semibold mb-3 mt-6 uppercase text-sm">
+                Individual Exercises
               </Text>
-              <Text className="text-text-secondary text-sm">
-                {exercise.target.type === "reps"
-                  ? `${exercise.target.value} reps`
-                  : `${exercise.target.value}s hold`}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+              {filteredExercises.map((exercise) => (
+                <Pressable
+                  key={exercise.id}
+                  onPress={() => addExercise(exercise)}
+                  className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                >
+                  <Text className="text-text-primary text-lg font-bold mb-1">
+                    {exercise.name}
+                  </Text>
+                  <Text className="text-text-secondary text-sm">
+                    {exercise.target.type === "reps"
+                      ? `${exercise.target.value} reps`
+                      : `${exercise.target.value}s hold`}
+                  </Text>
+                </Pressable>
+              ))}
+            </>
+          )}
+        />
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1 px-6 pt-16">
-        <View className="flex-row items-center justify-between mb-6">
-          <View className="flex-row items-center flex-1">
-            <Pressable onPress={() => router.back()}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#38e8ff"
-              />
-            </Pressable>
-            <Text className="text-primary text-3xl font-bold ml-4">
-              Edit Plan
-            </Text>
-          </View>
-          <Pressable onPress={deletePlan}>
-            <MaterialCommunityIcons name="delete" size={24} color="#ef4444" />
-          </Pressable>
-        </View>
-
-        {selectedExercises.length === 0 ? (
-          <View className="bg-surface p-8 rounded-xl items-center justify-center border border-border mb-4">
-            <MaterialCommunityIcons
-              name="weight-lifter"
-              size={64}
-              color="#7a86a8"
-            />
-            <Text className="text-text-secondary text-center mt-4 mb-6">
-              No exercises in this plan.{"\n"}Add exercises to get started!
-            </Text>
-            <Pressable
-              onPress={() => setShowExercisePicker(true)}
-              className="bg-primary px-6 py-3 rounded-xl"
-            >
-              <Text className="text-background font-bold">
-                + Add Exercise or Skill
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
+      <FlashList
+        data={[0]}
+        renderItem={() => (
           <>
-            {selectedExercises.map((planExercise, index) => {
-              const exercise = exerciseDetails[index];
-              if (!exercise) return null;
+            <View className="flex-row items-center justify-between mb-6">
+              <View className="flex-row items-center flex-1">
+                <Pressable onPress={() => router.back()}>
+                  <MaterialCommunityIcons
+                    name="arrow-left"
+                    size={24}
+                    color="#38e8ff"
+                  />
+                </Pressable>
+                <Text className="text-primary text-3xl font-bold ml-4">
+                  Edit Plan
+                </Text>
+              </View>
+              <Pressable onPress={deletePlan}>
+                <MaterialCommunityIcons
+                  name="delete"
+                  size={24}
+                  color="#ef4444"
+                />
+              </Pressable>
+            </View>
 
-              return (
-                <View
-                  key={index}
-                  className="bg-surface p-4 rounded-xl mb-3 border border-border"
+            {selectedExercises.length === 0 ? (
+              <View className="bg-surface p-8 rounded-xl items-center justify-center border border-border mb-4">
+                <MaterialCommunityIcons
+                  name="weight-lifter"
+                  size={64}
+                  color="#7a86a8"
+                />
+                <Text className="text-text-secondary text-center mt-4 mb-6">
+                  No exercises in this plan.{"\n"}Add exercises to get started!
+                </Text>
+                <Pressable
+                  onPress={() => setShowExercisePicker(true)}
+                  className="bg-primary px-6 py-3 rounded-xl"
                 >
-                  <View className="flex-row justify-between items-start mb-3">
-                    <View className="flex-1">
-                      <Text className="text-text-primary text-lg font-bold">
-                        {exercise.name}
-                      </Text>
-                      <Text className="text-text-secondary text-sm">
-                        {exercise.description}
-                      </Text>
-                    </View>
-                    <Pressable onPress={() => removeExercise(index)}>
-                      <MaterialCommunityIcons
-                        name="close-circle"
-                        size={24}
-                        color="#ef4444"
-                      />
-                    </Pressable>
-                  </View>
+                  <Text className="text-background font-bold">
+                    + Add Exercise or Skill
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <>
+                {selectedExercises.map((planExercise, index) => {
+                  const exercise = exerciseDetails[index];
+                  if (!exercise) return null;
 
-                  {/* Sets Control */}
-                  <View className="flex-row items-center mb-2">
-                    <Text className="text-text-secondary mr-3 w-12">Sets:</Text>
-                    <View className="flex-row items-center bg-surface-elevated rounded-lg">
-                      <Pressable
-                        onPress={() => updateSets(index, planExercise.sets - 1)}
-                        className="px-4 py-2"
-                      >
-                        <Text className="text-primary text-xl font-bold">
-                          -
-                        </Text>
-                      </Pressable>
-                      <Text className="text-text-primary font-bold text-lg px-4">
-                        {planExercise.sets}
-                      </Text>
-                      <Pressable
-                        onPress={() => updateSets(index, planExercise.sets + 1)}
-                        className="px-4 py-2"
-                      >
-                        <Text className="text-primary text-xl font-bold">
-                          +
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </View>
+                  return (
+                    <View
+                      key={index}
+                      className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                    >
+                      <View className="flex-row justify-between items-start mb-3">
+                        <View className="flex-1">
+                          <Text className="text-text-primary text-lg font-bold">
+                            {exercise.name}
+                          </Text>
+                          <Text className="text-text-secondary text-sm">
+                            {exercise.description}
+                          </Text>
+                        </View>
+                        <Pressable onPress={() => removeExercise(index)}>
+                          <MaterialCommunityIcons
+                            name="close-circle"
+                            size={24}
+                            color="#ef4444"
+                          />
+                        </Pressable>
+                      </View>
 
-                  {/* Target Control */}
-                  <View className="flex-row items-center">
-                    <Text className="text-text-secondary mr-3 w-12">
-                      {planExercise.target.type === "reps" ? "Reps:" : "Time:"}
-                    </Text>
-                    <View className="flex-row items-center bg-surface-elevated rounded-lg">
-                      <Pressable
-                        onPress={() =>
-                          updateTarget(index, planExercise.target.value - 1)
-                        }
-                        className="px-4 py-2"
-                      >
-                        <Text className="text-primary text-xl font-bold">
-                          -
+                      {/* Sets Control */}
+                      <View className="flex-row items-center mb-2">
+                        <Text className="text-text-secondary mr-3 w-12">
+                          Sets:
                         </Text>
-                      </Pressable>
-                      <Text className="text-text-primary font-bold text-lg px-4">
-                        {planExercise.target.value}
-                        {planExercise.target.type === "time" ? "s" : ""}
-                      </Text>
-                      <Pressable
-                        onPress={() =>
-                          updateTarget(index, planExercise.target.value + 1)
-                        }
-                        className="px-4 py-2"
-                      >
-                        <Text className="text-primary text-xl font-bold">
-                          +
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
+                        <View className="flex-row items-center bg-surface-elevated rounded-lg">
+                          <Pressable
+                            onPress={() =>
+                              updateSets(index, planExercise.sets - 1)
+                            }
+                            className="px-4 py-2"
+                          >
+                            <Text className="text-primary text-xl font-bold">
+                              -
+                            </Text>
+                          </Pressable>
+                          <Text className="text-text-primary font-bold text-lg px-4">
+                            {planExercise.sets}
+                          </Text>
+                          <Pressable
+                            onPress={() =>
+                              updateSets(index, planExercise.sets + 1)
+                            }
+                            className="px-4 py-2"
+                          >
+                            <Text className="text-primary text-xl font-bold">
+                              +
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
 
-            <Pressable
-              onPress={() => setShowExercisePicker(true)}
-              className="bg-surface border-2 border-dashed border-primary p-4 rounded-xl mb-4 items-center"
-            >
-              <MaterialCommunityIcons
-                name="plus-circle-outline"
-                size={32}
-                color="#38e8ff"
-              />
-              <Text className="text-primary font-bold mt-2">
-                Add More Exercises
-              </Text>
-            </Pressable>
+                      {/* Target Control */}
+                      <View className="flex-row items-center">
+                        <Text className="text-text-secondary mr-3 w-12">
+                          {planExercise.target.type === "reps"
+                            ? "Reps:"
+                            : "Time:"}
+                        </Text>
+                        <View className="flex-row items-center bg-surface-elevated rounded-lg">
+                          <Pressable
+                            onPress={() =>
+                              updateTarget(index, planExercise.target.value - 1)
+                            }
+                            className="px-4 py-2"
+                          >
+                            <Text className="text-primary text-xl font-bold">
+                              -
+                            </Text>
+                          </Pressable>
+                          <Text className="text-text-primary font-bold text-lg px-4">
+                            {planExercise.target.value}
+                            {planExercise.target.type === "time" ? "s" : ""}
+                          </Text>
+                          <Pressable
+                            onPress={() =>
+                              updateTarget(index, planExercise.target.value + 1)
+                            }
+                            className="px-4 py-2"
+                          >
+                            <Text className="text-primary text-xl font-bold">
+                              +
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+
+                <Pressable
+                  onPress={() => setShowExercisePicker(true)}
+                  className="bg-surface border-2 border-dashed border-primary p-4 rounded-xl mb-4 items-center"
+                >
+                  <MaterialCommunityIcons
+                    name="plus-circle-outline"
+                    size={32}
+                    color="#38e8ff"
+                  />
+                  <Text className="text-primary font-bold mt-2">
+                    Add More Exercises
+                  </Text>
+                </Pressable>
+              </>
+            )}
           </>
         )}
-      </ScrollView>
+      />
 
       {selectedExercises.length > 0 && (
         <View className="px-6 pb-8 bg-background">

@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -117,7 +118,7 @@ export default function ExerciseDetailsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
+      <FlashList className="flex-1" data={[0]} renderItem={() => (<>
         {/* Header */}
         <View className="px-6 pt-16 pb-6">
           <Pressable onPress={() => router.back()} className="mb-4">
@@ -262,7 +263,7 @@ export default function ExerciseDetailsScreen() {
             </View>
           )}
         </View>
-      </ScrollView>
+      </>)}/>
 
       {/* Action Buttons */}
       <View className="px-6 pb-8 bg-background">

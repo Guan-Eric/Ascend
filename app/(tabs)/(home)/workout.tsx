@@ -1,11 +1,5 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TextInput,
-  Alert,
-} from "react-native";
+import { View, Text, Pressable, TextInput, Alert } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -175,125 +169,137 @@ export default function WorkoutScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-6">
-        {/* Current Exercise Card */}
-        <View className="bg-surface p-6 rounded-xl mb-4 border-2 border-primary">
-          <Text className="text-primary text-sm font-semibold mb-2 uppercase">
-            Current Exercise
-          </Text>
-          <Text className="text-text-primary text-3xl font-bold mb-2">
-            {currentExercise.name}
-          </Text>
-          <Text className="text-text-secondary mb-4">
-            {currentExercise.description}
-          </Text>
-
-          <View className="flex-row items-center mb-4">
-            <View className="bg-surface-elevated px-4 py-2 rounded-lg mr-3">
-              <Text className="text-text-secondary text-xs">Target</Text>
-              <Text className="text-text-primary font-bold text-lg">
-                {currentPlanExercise.target.value}{" "}
-                {currentPlanExercise.target.type === "reps" ? "reps" : "sec"}
+      <FlashList
+        className="flex-1 px-6"
+        data={[0]}
+        renderItem={() => (
+          <>
+            {/* Current Exercise Card */}
+            <View className="bg-surface p-6 rounded-xl mb-4 border-2 border-primary">
+              <Text className="text-primary text-sm font-semibold mb-2 uppercase">
+                Current Exercise
               </Text>
-            </View>
-            <View className="bg-surface-elevated px-4 py-2 rounded-lg">
-              <Text className="text-text-secondary text-xs">Sets</Text>
-              <Text className="text-text-primary font-bold text-lg">
-                {currentProgress.completedSets}/{currentPlanExercise.sets}
+              <Text className="text-text-primary text-3xl font-bold mb-2">
+                {currentExercise.name}
               </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Input Section */}
-        {!allExercisesComplete && (
-          <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-            <Text className="text-text-primary text-lg font-bold mb-3">
-              Log Your Set
-            </Text>
-            <TextInput
-              value={currentSetReps}
-              onChangeText={setCurrentSetReps}
-              placeholder={`Enter ${
-                currentPlanExercise.target.type === "reps" ? "reps" : "seconds"
-              }`}
-              placeholderTextColor="#7a86a8"
-              keyboardType="numeric"
-              className="bg-surface-elevated text-text-primary px-4 py-4 rounded-xl text-xl font-bold mb-4 text-center"
-            />
-
-            {isResting ? (
-              <View className="bg-warning/20 p-4 rounded-xl items-center">
-                <Text className="text-warning font-bold text-lg mb-2">
-                  Resting...
-                </Text>
-                <Text className="text-text-secondary">
-                  {restTime}s between sets
-                </Text>
-              </View>
-            ) : (
-              <Pressable
-                onPress={completeSet}
-                className="bg-primary py-4 rounded-xl mb-3"
-              >
-                <Text className="text-background text-center font-bold text-lg">
-                  ✓ Complete Set
-                </Text>
-              </Pressable>
-            )}
-
-            <Pressable
-              onPress={skipExercise}
-              className="border-2 border-text-muted py-3 rounded-xl"
-            >
-              <Text className="text-text-muted text-center font-bold">
-                Skip Exercise
+              <Text className="text-text-secondary mb-4">
+                {currentExercise.description}
               </Text>
-            </Pressable>
-          </View>
-        )}
 
-        {/* All Exercises Overview */}
-        <View className="bg-surface p-6 rounded-xl mb-8 border border-border">
-          <Text className="text-text-primary text-lg font-bold mb-4">
-            Workout Overview
-          </Text>
-          {exercises.map((exercise, index) => {
-            const planEx = plan.exercises[index];
-            const prog = progress[index];
-            const isComplete = prog.completedSets >= planEx.sets;
-
-            return (
-              <View
-                key={exercise.id}
-                className={`flex-row items-center justify-between mb-3 pb-3 ${
-                  index < exercises.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                <View className="flex-1">
-                  <Text
-                    className={`${
-                      isComplete ? "text-success" : "text-text-primary"
-                    } font-semibold`}
-                  >
-                    {exercise.name}
-                  </Text>
-                  <Text className="text-text-secondary text-sm">
-                    {prog.completedSets}/{planEx.sets} sets
+              <View className="flex-row items-center mb-4">
+                <View className="bg-surface-elevated px-4 py-2 rounded-lg mr-3">
+                  <Text className="text-text-secondary text-xs">Target</Text>
+                  <Text className="text-text-primary font-bold text-lg">
+                    {currentPlanExercise.target.value}{" "}
+                    {currentPlanExercise.target.type === "reps"
+                      ? "reps"
+                      : "sec"}
                   </Text>
                 </View>
-                {isComplete && (
-                  <MaterialCommunityIcons
-                    name="check-circle"
-                    size={24}
-                    color="#22c55e"
-                  />
-                )}
+                <View className="bg-surface-elevated px-4 py-2 rounded-lg">
+                  <Text className="text-text-secondary text-xs">Sets</Text>
+                  <Text className="text-text-primary font-bold text-lg">
+                    {currentProgress.completedSets}/{currentPlanExercise.sets}
+                  </Text>
+                </View>
               </View>
-            );
-          })}
-        </View>
-      </ScrollView>
+            </View>
+
+            {/* Input Section */}
+            {!allExercisesComplete && (
+              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+                <Text className="text-text-primary text-lg font-bold mb-3">
+                  Log Your Set
+                </Text>
+                <TextInput
+                  value={currentSetReps}
+                  onChangeText={setCurrentSetReps}
+                  placeholder={`Enter ${
+                    currentPlanExercise.target.type === "reps"
+                      ? "reps"
+                      : "seconds"
+                  }`}
+                  placeholderTextColor="#7a86a8"
+                  keyboardType="numeric"
+                  className="bg-surface-elevated text-text-primary px-4 py-4 rounded-xl text-xl font-bold mb-4 text-center"
+                />
+
+                {isResting ? (
+                  <View className="bg-warning/20 p-4 rounded-xl items-center">
+                    <Text className="text-warning font-bold text-lg mb-2">
+                      Resting...
+                    </Text>
+                    <Text className="text-text-secondary">
+                      {restTime}s between sets
+                    </Text>
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={completeSet}
+                    className="bg-primary py-4 rounded-xl mb-3"
+                  >
+                    <Text className="text-background text-center font-bold text-lg">
+                      ✓ Complete Set
+                    </Text>
+                  </Pressable>
+                )}
+
+                <Pressable
+                  onPress={skipExercise}
+                  className="border-2 border-text-muted py-3 rounded-xl"
+                >
+                  <Text className="text-text-muted text-center font-bold">
+                    Skip Exercise
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+            {/* All Exercises Overview */}
+            <View className="bg-surface p-6 rounded-xl mb-8 border border-border">
+              <Text className="text-text-primary text-lg font-bold mb-4">
+                Workout Overview
+              </Text>
+              {exercises.map((exercise, index) => {
+                const planEx = plan.exercises[index];
+                const prog = progress[index];
+                const isComplete = prog.completedSets >= planEx.sets;
+
+                return (
+                  <View
+                    key={exercise.id}
+                    className={`flex-row items-center justify-between mb-3 pb-3 ${
+                      index < exercises.length - 1
+                        ? "border-b border-border"
+                        : ""
+                    }`}
+                  >
+                    <View className="flex-1">
+                      <Text
+                        className={`${
+                          isComplete ? "text-success" : "text-text-primary"
+                        } font-semibold`}
+                      >
+                        {exercise.name}
+                      </Text>
+                      <Text className="text-text-secondary text-sm">
+                        {prog.completedSets}/{planEx.sets} sets
+                      </Text>
+                    </View>
+                    {isComplete && (
+                      <MaterialCommunityIcons
+                        name="check-circle"
+                        size={24}
+                        color="#22c55e"
+                      />
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
+      />
 
       {allExercisesComplete && (
         <View className="px-6 pb-8 bg-background">

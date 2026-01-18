@@ -1,10 +1,5 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
@@ -72,71 +67,77 @@ export default function SkillsScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-6 pt-16">
-        <Text className="text-primary text-4xl font-bold mb-2">
-          Skill Progressions
-        </Text>
-        <Text className="text-text-secondary mb-8 text-lg">
-          Master advanced calisthenics movements
-        </Text>
-
-        {skills.length === 0 && (
-          <View className="bg-surface p-6 rounded-xl border border-border">
-            <Text className="text-text-primary text-center">
-              No skills available. Please seed your database.
+    <FlashList
+      className="flex-1 bg-background"
+      data={[0]}
+      renderItem={() => (
+        <>
+          <View className="px-6 pt-16">
+            <Text className="text-primary text-4xl font-bold mb-2">
+              Skill Progressions
             </Text>
-          </View>
-        )}
+            <Text className="text-text-secondary mb-8 text-lg">
+              Master advanced calisthenics movements
+            </Text>
 
-        {skills.map((skill) => {
-          const progress = progressMap[skill.id] || 0;
-          const minLevel = skill.unlockCriteria?.minLevel || "beginner";
-
-          return (
-            <Pressable
-              key={skill.id}
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/(skills)/skill-details",
-                  params: { skillId: skill.id },
-                })
-              }
-              className="bg-surface p-6 rounded-xl mb-4 border border-border"
-            >
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-text-primary text-xl font-bold flex-1">
-                  {skill.name}
+            {skills.length === 0 && (
+              <View className="bg-surface p-6 rounded-xl border border-border">
+                <Text className="text-text-primary text-center">
+                  No skills available. Please seed your database.
                 </Text>
-                <View
-                  className={`${getLevelBadgeColor(
-                    skill.id
-                  )} px-3 py-1 rounded-full`}
+              </View>
+            )}
+
+            {skills.map((skill) => {
+              const progress = progressMap[skill.id] || 0;
+              const minLevel = skill.unlockCriteria?.minLevel || "beginner";
+
+              return (
+                <Pressable
+                  key={skill.id}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(tabs)/(skills)/skill-details",
+                      params: { skillId: skill.id },
+                    })
+                  }
+                  className="bg-surface p-6 rounded-xl mb-4 border border-border"
                 >
-                  <Text className="text-background text-xs font-bold uppercase">
-                    {minLevel}
+                  <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-text-primary text-xl font-bold flex-1">
+                      {skill.name}
+                    </Text>
+                    <View
+                      className={`${getLevelBadgeColor(
+                        skill.id
+                      )} px-3 py-1 rounded-full`}
+                    >
+                      <Text className="text-background text-xs font-bold uppercase">
+                        {minLevel}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text className="text-text-secondary text-sm mb-3">
+                    {skill.description}
                   </Text>
-                </View>
-              </View>
 
-              <Text className="text-text-secondary text-sm mb-3">
-                {skill.description}
-              </Text>
+                  <View className="bg-surface-elevated h-3 rounded-full overflow-hidden">
+                    <View
+                      className="bg-primary h-full rounded-full"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </View>
 
-              <View className="bg-surface-elevated h-3 rounded-full overflow-hidden">
-                <View
-                  className="bg-primary h-full rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
-              </View>
-
-              <Text className="text-text-secondary text-sm mt-2 font-medium">
-                {progress}% complete • {skill.progression.length} exercises
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
+                  <Text className="text-text-secondary text-sm mt-2 font-medium">
+                    {progress}% complete • {skill.progression.length} exercises
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </>
+      )}
+    />
   );
 }

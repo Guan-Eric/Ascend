@@ -1,4 +1,5 @@
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import Purchases, { PurchasesOffering } from "react-native-purchases";
@@ -97,82 +98,86 @@ export default function PaywallScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-8 pt-16 pb-8">
-        <Text className="text-primary text-5xl font-bold mb-2">
-          Unlock Ascend
-        </Text>
-        <Text className="text-text-primary text-2xl font-semibold mb-3">
-          Start Your Journey
-        </Text>
-        <Text className="text-text-secondary text-lg mb-8 leading-6">
-          Get unlimited access to all features and transform your body with
-          calisthenics
-        </Text>
+    <FlashList
+      className="flex-1 bg-background"
+      data={[0]}
+      renderItem={() => (
+        <View className="px-8 pt-16 pb-8">
+          <Text className="text-primary text-5xl font-bold mb-2">
+            Unlock Ascend
+          </Text>
+          <Text className="text-text-primary text-2xl font-semibold mb-3">
+            Start Your Journey
+          </Text>
+          <Text className="text-text-secondary text-lg mb-8 leading-6">
+            Get unlimited access to all features and transform your body with
+            calisthenics
+          </Text>
 
-        <View className="mb-8">
-          <FeatureItem
-            icon="✓"
-            title="Unlimited Workouts"
-            description="Access all training programs and routines"
-          />
-          <FeatureItem
-            icon="✓"
-            title="Skill Progressions"
-            description="Master advanced moves with step-by-step guidance"
-          />
-          <FeatureItem
-            icon="✓"
-            title="AI Coach"
-            description="Get personalized feedback and recommendations"
-          />
-          <FeatureItem
-            icon="✓"
-            title="Progress Tracking"
-            description="Monitor your improvements and achievements"
-          />
-        </View>
+          <View className="mb-8">
+            <FeatureItem
+              icon="✓"
+              title="Unlimited Workouts"
+              description="Access all training programs and routines"
+            />
+            <FeatureItem
+              icon="✓"
+              title="Skill Progressions"
+              description="Master advanced moves with step-by-step guidance"
+            />
+            <FeatureItem
+              icon="✓"
+              title="AI Coach"
+              description="Get personalized feedback and recommendations"
+            />
+            <FeatureItem
+              icon="✓"
+              title="Progress Tracking"
+              description="Monitor your improvements and achievements"
+            />
+          </View>
 
-        {offerings?.availablePackages.map((pkg) => (
-          <Pressable
-            key={pkg.identifier}
-            onPress={() => handlePurchase(pkg)}
-            disabled={purchasing}
-            className="bg-surface border-2 border-primary p-6 rounded-xl mb-4"
-          >
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-text-primary text-xl font-bold">
-                {pkg.product.title}
+          {offerings?.availablePackages.map((pkg) => (
+            <Pressable
+              key={pkg.identifier}
+              onPress={() => handlePurchase(pkg)}
+              disabled={purchasing}
+              className="bg-surface border-2 border-primary p-6 rounded-xl mb-4"
+            >
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-text-primary text-xl font-bold">
+                  {pkg.product.title}
+                </Text>
+                {pkg.product.introPrice && (
+                  <View className="bg-primary px-3 py-1 rounded-full">
+                    <Text className="text-background text-xs font-bold">
+                      {pkg.product.introPrice.periodNumberOfUnits} DAYS FREE
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text className="text-primary text-2xl font-bold mb-1">
+                {pkg.product.priceString}
               </Text>
-              {pkg.product.introPrice && (
-                <View className="bg-primary px-3 py-1 rounded-full">
-                  <Text className="text-background text-xs font-bold">
-                    {pkg.product.introPrice.periodNumberOfUnits} DAYS FREE
-                  </Text>
-                </View>
-              )}
-            </View>
-            <Text className="text-primary text-2xl font-bold mb-1">
-              {pkg.product.priceString}
-            </Text>
-            <Text className="text-text-secondary text-sm">
-              {pkg.product.subscriptionPeriod}
+              <Text className="text-text-secondary text-sm">
+                {pkg.product.subscriptionPeriod}
+              </Text>
+            </Pressable>
+          ))}
+
+          <Pressable onPress={handleRestore} className="mt-4 mb-2">
+            <Text className="text-text-secondary text-center font-medium">
+              Restore Purchases
             </Text>
           </Pressable>
-        ))}
 
-        <Pressable onPress={handleRestore} className="mt-4 mb-2">
-          <Text className="text-text-secondary text-center font-medium">
-            Restore Purchases
+          <Text className="text-text-muted text-xs text-center leading-5">
+            Subscription automatically renews unless auto-renew is turned off at
+            least 24 hours before the end of the current period.
           </Text>
-        </Pressable>
-
-        <Text className="text-text-muted text-xs text-center leading-5">
-          Subscription automatically renews unless auto-renew is turned off at
-          least 24 hours before the end of the current period.
-        </Text>
-      </View>
-    </ScrollView>
+        </View>
+      )}
+    />
   );
 }
 

@@ -1,10 +1,5 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
@@ -74,73 +69,79 @@ export default function StrengthScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-6 pt-16">
-        <Text className="text-primary text-4xl font-bold mb-2">
-          Strength Paths
-        </Text>
-        <Text className="text-text-secondary mb-8 text-lg">
-          Build functional strength across all movement patterns
-        </Text>
-
-        {strengthPaths.length === 0 && (
-          <View className="bg-surface p-6 rounded-xl border border-border">
-            <Text className="text-text-primary text-center">
-              No strength paths available. Please seed your database.
+    <FlashList
+      className="flex-1 bg-background"
+      data={[0]}
+      renderItem={() => (
+        <>
+          <View className="px-6 pt-16">
+            <Text className="text-primary text-4xl font-bold mb-2">
+              Strength Paths
             </Text>
+            <Text className="text-text-secondary mb-8 text-lg">
+              Build functional strength across all movement patterns
+            </Text>
+
+            {strengthPaths.length === 0 && (
+              <View className="bg-surface p-6 rounded-xl border border-border">
+                <Text className="text-text-primary text-center">
+                  No strength paths available. Please seed your database.
+                </Text>
+              </View>
+            )}
+
+            {strengthPaths.map((path) => {
+              const exercises = pathExercises[path.id] || [];
+
+              return (
+                <Pressable
+                  key={path.id}
+                  className="bg-surface p-6 rounded-xl mb-4 border border-border"
+                >
+                  <View
+                    className={`${getPathColor(
+                      path.id
+                    )} w-20 h-1.5 rounded-full mb-4`}
+                  />
+
+                  <Text className="text-text-primary text-2xl font-bold mb-2">
+                    {path.name}
+                  </Text>
+
+                  <Text className="text-text-secondary text-sm mb-4">
+                    {path.description}
+                  </Text>
+
+                  <View className="bg-surface-elevated p-4 rounded-lg">
+                    <Text className="text-text-secondary text-xs font-semibold mb-2 uppercase">
+                      Exercise Preview
+                    </Text>
+                    {exercises.map((exercise, idx) => (
+                      <Text
+                        key={exercise.id}
+                        className="text-text-primary mb-1.5 text-base"
+                      >
+                        • {exercise.name}
+                      </Text>
+                    ))}
+                    {path.progression.length > 3 && (
+                      <Text className="text-text-muted text-sm mt-2">
+                        + {path.progression.length - 3} more exercises
+                      </Text>
+                    )}
+                  </View>
+
+                  <View className="mt-4 flex-row items-center">
+                    <Text className="text-text-muted text-sm">
+                      {path.progression.length} total exercises
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
-        )}
-
-        {strengthPaths.map((path) => {
-          const exercises = pathExercises[path.id] || [];
-
-          return (
-            <Pressable
-              key={path.id}
-              className="bg-surface p-6 rounded-xl mb-4 border border-border"
-            >
-              <View
-                className={`${getPathColor(
-                  path.id
-                )} w-20 h-1.5 rounded-full mb-4`}
-              />
-
-              <Text className="text-text-primary text-2xl font-bold mb-2">
-                {path.name}
-              </Text>
-
-              <Text className="text-text-secondary text-sm mb-4">
-                {path.description}
-              </Text>
-
-              <View className="bg-surface-elevated p-4 rounded-lg">
-                <Text className="text-text-secondary text-xs font-semibold mb-2 uppercase">
-                  Exercise Preview
-                </Text>
-                {exercises.map((exercise, idx) => (
-                  <Text
-                    key={exercise.id}
-                    className="text-text-primary mb-1.5 text-base"
-                  >
-                    • {exercise.name}
-                  </Text>
-                ))}
-                {path.progression.length > 3 && (
-                  <Text className="text-text-muted text-sm mt-2">
-                    + {path.progression.length - 3} more exercises
-                  </Text>
-                )}
-              </View>
-
-              <View className="mt-4 flex-row items-center">
-                <Text className="text-text-muted text-sm">
-                  {path.progression.length} total exercises
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
+        </>
+      )}
+    />
   );
 }

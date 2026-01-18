@@ -1,11 +1,5 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Pressable, Alert, ActivityIndicator } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -112,137 +106,149 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="px-6 pt-16">
-        <Text className="text-primary text-4xl font-bold mb-8">Profile</Text>
-
-        {/* User Stats */}
-        {user && (
-          <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-            <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-              Training Profile
+    <FlashList
+      className="flex-1 bg-background"
+      data={[0]}
+      renderItem={() => (
+        <>
+          <View className="px-6 pt-16">
+            <Text className="text-primary text-4xl font-bold mb-8">
+              Profile
             </Text>
 
-            <View className="flex-row justify-between mb-3">
-              <Text className="text-text-secondary">Current Goal</Text>
-              <Text className="text-text-primary font-semibold capitalize">
-                {user.goalType === "skill"
-                  ? "Skill Training"
-                  : "Strength Building"}
+            {/* User Stats */}
+            {user && (
+              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
+                  Training Profile
+                </Text>
+
+                <View className="flex-row justify-between mb-3">
+                  <Text className="text-text-secondary">Current Goal</Text>
+                  <Text className="text-text-primary font-semibold capitalize">
+                    {user.goalType === "skill"
+                      ? "Skill Training"
+                      : "Strength Building"}
+                  </Text>
+                </View>
+
+                <View className="flex-row justify-between mb-3">
+                  <Text className="text-text-secondary">Experience Level</Text>
+                  <Text className="text-text-primary font-semibold capitalize">
+                    {user.level}
+                  </Text>
+                </View>
+
+                <View className="flex-row justify-between">
+                  <Text className="text-text-secondary">Training Days</Text>
+                  <Text className="text-text-primary font-semibold">
+                    {user.trainingDaysPerWeek} days/week
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Progress Stats */}
+            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
+                Your Progress
+              </Text>
+
+              <View className="flex-row justify-between mb-3">
+                <Text className="text-text-secondary">Exercises Completed</Text>
+                <Text className="text-primary text-2xl font-bold">
+                  {stats.totalCompleted}
+                </Text>
+              </View>
+
+              <View className="flex-row justify-between">
+                <Text className="text-text-secondary">Recent Activity</Text>
+                <Text className="text-text-primary font-semibold">
+                  {stats.recentActivityCount} workouts
+                </Text>
+              </View>
+            </View>
+
+            {/* User ID */}
+            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <Text className="text-text-secondary mb-2 font-medium">
+                User ID
+              </Text>
+              <Text className="text-text-primary text-sm font-mono">
+                {FIREBASE_AUTH.currentUser?.uid.substring(0, 20)}...
+              </Text>
+              <Text className="text-text-muted text-xs mt-2">
+                {FIREBASE_AUTH.currentUser?.isAnonymous
+                  ? "Anonymous Account"
+                  : "Registered Account"}
               </Text>
             </View>
 
-            <View className="flex-row justify-between mb-3">
-              <Text className="text-text-secondary">Experience Level</Text>
-              <Text className="text-text-primary font-semibold capitalize">
-                {user.level}
+            {/* Subscription Status */}
+            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <Text className="text-text-secondary mb-2 font-medium">
+                Subscription Status
               </Text>
+              <Text
+                className={`text-xl font-bold ${
+                  hasProAccess ? "text-success" : "text-error"
+                }`}
+              >
+                {hasProAccess ? "Pro Active ✓" : "No Active Subscription"}
+              </Text>
+              {expirationDate && (
+                <Text className="text-text-secondary mt-2 text-sm">
+                  {customerInfo?.entitlements.active["pro"]?.willRenew
+                    ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
+                    : `Expires: ${new Date(
+                        expirationDate
+                      ).toLocaleDateString()}`}
+                </Text>
+              )}
             </View>
 
-            <View className="flex-row justify-between">
-              <Text className="text-text-secondary">Training Days</Text>
-              <Text className="text-text-primary font-semibold">
-                {user.trainingDaysPerWeek} days/week
+            {/* Actions */}
+            <Pressable
+              onPress={async () => {
+                try {
+                  const info = await Purchases.restorePurchases();
+                  setCustomerInfo(info);
+                  Alert.alert("Success", "Purchases restored successfully");
+                } catch (error) {
+                  Alert.alert("Error", "Failed to restore purchases");
+                }
+              }}
+              className="bg-primary py-4 rounded-xl mb-4"
+            >
+              <Text className="text-background text-center font-bold text-base">
+                Restore Purchases
               </Text>
-            </View>
-          </View>
-        )}
+            </Pressable>
 
-        {/* Progress Stats */}
-        <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-          <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-            Your Progress
-          </Text>
+            <Pressable
+              onPress={handleResetProgress}
+              className="border-2 border-warning py-4 rounded-xl mb-4"
+            >
+              <Text className="text-warning text-center font-bold text-base">
+                Reset Workout Plans
+              </Text>
+            </Pressable>
 
-          <View className="flex-row justify-between mb-3">
-            <Text className="text-text-secondary">Exercises Completed</Text>
-            <Text className="text-primary text-2xl font-bold">
-              {stats.totalCompleted}
+            <Pressable
+              onPress={handleSignOut}
+              className="border-2 border-error py-4 rounded-xl mb-4"
+            >
+              <Text className="text-error text-center font-bold text-base">
+                Sign Out
+              </Text>
+            </Pressable>
+
+            <Text className="text-text-muted text-xs text-center mt-4 mb-8">
+              Signing out will clear your session. Your progress is saved.
             </Text>
           </View>
-
-          <View className="flex-row justify-between">
-            <Text className="text-text-secondary">Recent Activity</Text>
-            <Text className="text-text-primary font-semibold">
-              {stats.recentActivityCount} workouts
-            </Text>
-          </View>
-        </View>
-
-        {/* User ID */}
-        <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-          <Text className="text-text-secondary mb-2 font-medium">User ID</Text>
-          <Text className="text-text-primary text-sm font-mono">
-            {FIREBASE_AUTH.currentUser?.uid.substring(0, 20)}...
-          </Text>
-          <Text className="text-text-muted text-xs mt-2">
-            {FIREBASE_AUTH.currentUser?.isAnonymous
-              ? "Anonymous Account"
-              : "Registered Account"}
-          </Text>
-        </View>
-
-        {/* Subscription Status */}
-        <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-          <Text className="text-text-secondary mb-2 font-medium">
-            Subscription Status
-          </Text>
-          <Text
-            className={`text-xl font-bold ${
-              hasProAccess ? "text-success" : "text-error"
-            }`}
-          >
-            {hasProAccess ? "Pro Active ✓" : "No Active Subscription"}
-          </Text>
-          {expirationDate && (
-            <Text className="text-text-secondary mt-2 text-sm">
-              {customerInfo?.entitlements.active["pro"]?.willRenew
-                ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
-                : `Expires: ${new Date(expirationDate).toLocaleDateString()}`}
-            </Text>
-          )}
-        </View>
-
-        {/* Actions */}
-        <Pressable
-          onPress={async () => {
-            try {
-              const info = await Purchases.restorePurchases();
-              setCustomerInfo(info);
-              Alert.alert("Success", "Purchases restored successfully");
-            } catch (error) {
-              Alert.alert("Error", "Failed to restore purchases");
-            }
-          }}
-          className="bg-primary py-4 rounded-xl mb-4"
-        >
-          <Text className="text-background text-center font-bold text-base">
-            Restore Purchases
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleResetProgress}
-          className="border-2 border-warning py-4 rounded-xl mb-4"
-        >
-          <Text className="text-warning text-center font-bold text-base">
-            Reset Workout Plans
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleSignOut}
-          className="border-2 border-error py-4 rounded-xl mb-4"
-        >
-          <Text className="text-error text-center font-bold text-base">
-            Sign Out
-          </Text>
-        </Pressable>
-
-        <Text className="text-text-muted text-xs text-center mt-4 mb-8">
-          Signing out will clear your session. Your progress is saved.
-        </Text>
-      </View>
-    </ScrollView>
+        </>
+      )}
+    />
   );
 }
