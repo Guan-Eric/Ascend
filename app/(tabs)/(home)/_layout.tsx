@@ -6,7 +6,7 @@ export default function HomeLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="create-plan" />
       <Stack.Screen name="edit-plan" />
-      <Stack.Screen name="workout" />
+      <Stack.Screen name="workout" options={{gestureEnabled:false}} />
     </Stack>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -7,76 +7,100 @@ import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function HomeScreen() {
-  const [todaysPlan, setTodaysPlan] = useState<Plan | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [planExercises, setPlanExercises] = useState<Record<string, Exercise[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadTodaysPlan();
+    loadPlans();
   }, []);
 
-  const loadTodaysPlan = async () => {
+  const loadPlans = async () => {
     try {
       const userId = FIREBASE_AUTH.currentUser?.uid;
       if (!userId) return;
 
-      // Try to get today's plan
-      let plan = await backend.getTodaysPlan(userId);
+      const userPlans = await backend.getUserPlans(userId);
+      setPlans(userPlans);
 
-      setTodaysPlan(plan);
-
-      // Load exercise details
-      if (plan) {
+      const exercisesMap: Record<string, Exercise[]> = {};
+      
+      for (const plan of userPlans) {
         const exercisePromises = plan.exercises.map((ex) =>
           backend.getExercise(ex.exerciseId)
         );
         const loadedExercises = await Promise.all(exercisePromises);
-        setExercises(loadedExercises.filter((ex) => ex !== null) as Exercise[]);
+        exercisesMap[plan.id] = loadedExercises.filter((ex) => ex !== null) as Exercise[];
       }
+
+      setPlanExercises(exercisesMap);
     } catch (error) {
-      console.error("Error loading today's plan:", error);
+      console.error("Error loading plans:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCompletePlan = async () => {
-    if (!todaysPlan) return;
+  const getDayName = (dayIndex: number) => {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return days[dayIndex] || `Day ${dayIndex}`;
+  };
 
+  const getDayEmoji = (dayIndex: number) => {
+    const emojis = ["☀️", "💪", "🔥", "⚡", "🚀", "💯", "🎯"];
+    return emojis[dayIndex] || "💪";
+  };
+
+  const handleQuickComplete = async (planId: string) => {
     try {
-      await backend.markPlanCompleted(todaysPlan.id);
-
-      // Mark all exercises as completed
       const userId = FIREBASE_AUTH.currentUser?.uid;
-      if (userId) {
-        for (const planExercise of todaysPlan.exercises) {
-          await backend.markExerciseCompleted(
-            userId,
-            planExercise.exerciseId,
-            planExercise.target.value
-          );
-        }
+      const plan = plans.find(p => p.id === planId);
+      
+      if (!userId || !plan) return;
+
+      await backend.saveWorkoutHistory({
+        userId,
+        planId: plan.id,
+        dayIndex: plan.dayIndex,
+        exercises: plan.exercises.map(ex => ({
+          exerciseId: ex.exerciseId,
+          sets: ex.sets,
+          completedSets: ex.sets,
+          target: ex.target,
+          actualValues: Array(ex.sets).fill(ex.target.value),
+        })),
+        completedAt: Date.now(),
+      });
+
+      for (const planExercise of plan.exercises) {
+        await backend.markExerciseCompleted(
+          userId,
+          planExercise.exerciseId,
+          planExercise.target.value
+        );
       }
 
-      // Reload plan
-      await loadTodaysPlan();
+      Alert.alert("Workout Complete!", "Great job! Your workout has been logged.");
+      
     } catch (error) {
       console.error("Error completing plan:", error);
+      Alert.alert("Error", "Failed to log workout");
     }
   };
 
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <ActivityIndicator size="large" color="#38e8ff" />
-        <Text className="text-text-secondary mt-4">Loading workout...</Text>
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <Text className="text-text-secondary mt-4">Loading workouts...</Text>
       </View>
     );
   }
 
-  if (!todaysPlan) {
+  if (plans.length === 0) {
     return (
       <View className="flex-1 bg-background">
         <FlashList
@@ -84,24 +108,26 @@ export default function HomeScreen() {
           data={[0]}
           renderItem={() => (
             <>
-              <Text className="text-primary text-4xl font-bold mb-2">
-                Today's Training
+              <Text className="text-primary text-5xl font-bold mb-3 text-gradient">
+                My Workouts
               </Text>
               <Text className="text-text-secondary mb-8 text-lg">
-                Create your custom workout plan
+                Create your personalized training schedule
               </Text>
 
-              <View className="bg-surface p-8 rounded-xl items-center justify-center border border-border mb-4">
-                <Text className="text-7xl mb-4">🎯</Text>
-                <Text className="text-primary text-2xl font-bold mb-2 text-center">
-                  No Workout Today
+              <View className="card-frosted p-8 rounded-3xl items-center justify-center mb-4">
+                <View className="bg-gradient-primary w-24 h-24 rounded-full items-center justify-center mb-6">
+                  <Text className="text-6xl">🎯</Text>
+                </View>
+                <Text className="text-text-primary text-2xl font-bold mb-3 text-center">
+                  Start Your Journey
                 </Text>
-                <Text className="text-text-secondary text-center mb-6">
-                  Create a custom workout plan to get started
+                <Text className="text-text-secondary text-center mb-8 leading-6">
+                  Create your first workout plan and begin your transformation
                 </Text>
                 <Pressable
                   onPress={() => router.push("/(tabs)/(home)/create-plan")}
-                  className="bg-primary px-8 py-4 rounded-xl flex-row items-center"
+                  className="bg-gradient-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg hover-scale glow-primary"
                 >
                   <MaterialCommunityIcons
                     name="plus-circle-outline"
@@ -121,126 +147,132 @@ export default function HomeScreen() {
   }
 
   return (
-    <FlashList
-      className="flex-1 bg-background"
-      data={[0]}
-      renderItem={() => (
-        <>
-          <View className="px-6 pt-16">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-primary text-4xl font-bold">
-                Today's Training
-              </Text>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/(home)/edit-plan",
-                    params: { planId: todaysPlan.id },
-                  })
-                }
-              >
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={28}
-                  color="#38e8ff"
-                />
-              </Pressable>
-            </View>
-            <Text className="text-text-secondary mb-8 text-lg">
-              Day {todaysPlan.dayIndex} of your workout plan
+    <View className="flex-1 bg-background">
+      <View className="px-6 pt-16 pb-4">
+        <View className="flex-row justify-between items-center mb-3">
+          <View className="flex-1">
+            <Text className="text-primary text-4xl font-bold text-gradient">
+              My Workouts
             </Text>
-
-            {/* Warm Up Section */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-primary text-xl font-bold mb-3">
-                Warm Up
-              </Text>
-              <Text className="text-text-primary leading-6">
-                • Wrist rotations - 10 reps{"\n"}• Shoulder circles - 10 reps
-                {"\n"}• Cat-cow stretches - 10 reps{"\n"}• Light cardio - 3
-                minutes
+            <View className="flex-row items-center mt-2">
+              <View className="w-2 h-2 rounded-full bg-success mr-2" />
+              <Text className="text-text-secondary text-sm">
+                {plans.length} active {plans.length === 1 ? 'plan' : 'plans'}
               </Text>
             </View>
+          </View>
+          <Pressable 
+            onPress={() => router.push("/(tabs)/(home)/create-plan")}
+            className="bg-primary/10 p-4 rounded-2xl border border-primary/30 hover-scale"
+          >
+            <MaterialCommunityIcons
+              name="plus"
+              size={28}
+              color="#00d9ff"
+            />
+          </Pressable>
+        </View>
+      </View>
 
-            {/* Main Workout Section */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-primary text-xl font-bold mb-3">
-                Main Workout
-              </Text>
-              {exercises.map((exercise, index) => {
-                const planExercise = todaysPlan.exercises[index];
-                return (
-                  <View key={exercise.id} className="mb-4">
-                    <Text className="text-text-primary text-lg font-semibold mb-1">
-                      {exercise.name}
+      <FlashList
+        className="flex-1 px-6"
+        data={plans}
+        renderItem={({ item: plan }) => {
+          const exercises = planExercises[plan.id] || [];
+          
+          return (
+            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+              {/* Plan Header with Gradient Accent */}
+              <View className="flex-row items-center mb-4">
+                
+                <View className="flex-1">
+                  <Text className="text-text-primary text-2xl font-bold mb-1">
+                    {getDayName(plan.dayIndex)}
+                  </Text>
+                  <View className="flex-row items-center">
+                    
+                    <Text className="text-text-secondary text-sm">
+                      {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
                     </Text>
-                    <Text className="text-text-secondary mb-1">
-                      {exercise.description}
-                    </Text>
-                    <Text className="text-primary font-bold">
-                      {planExercise.sets} sets × {planExercise.target.value}{" "}
-                      {planExercise.target.type === "reps" ? "reps" : "seconds"}
-                    </Text>
-                    {index < exercises.length - 1 && (
-                      <View className="h-px bg-border mt-4" />
-                    )}
                   </View>
-                );
-              })}
-            </View>
+                </View>
+                
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(tabs)/(home)/edit-plan",
+                      params: { planId: plan.id },
+                    })
+                  }
+                  className="bg-surface-elevated p-3 rounded-xl hover-scale"
+                >
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={20}
+                    color="#00d9ff"
+                  />
+                </Pressable>
+              </View>
 
-            {/* Cool Down Section */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-primary text-xl font-bold mb-3">
-                Cool Down
-              </Text>
-              <Text className="text-text-primary leading-6">
-                • Standing quad stretch - 30s each{"\n"}• Shoulder stretch - 30s
-                each{"\n"}• Hamstring stretch - 30s each{"\n"}• Deep breathing -
-                2 minutes
-              </Text>
-            </View>
+              {/* Exercise Preview with Glass Effect */}
+              <View className="glass p-5 rounded-2xl mb-4">
+                {exercises.slice(0, 3).map((exercise, index) => {
+                  const planExercise = plan.exercises[index];
+                  return (
+                    <View 
+                      key={exercise.id} 
+                      className={`flex-row items-center mb-3 ${
+                        index < Math.min(exercises.length, 3) - 1 ? 'pb-3 border-b border-border/30' : ''
+                      }`}
+                    >
+                      <View className="bg-primary/10 w-10 h-10 rounded-xl items-center justify-center mr-3">
+                        <Text className="text-primary font-bold">{index + 1}</Text>
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-text-primary font-semibold mb-1">
+                          {exercise.name}
+                        </Text>
+                        <Text className="text-text-secondary text-xs">
+                          {planExercise?.sets} sets × {planExercise?.target.value}{" "}
+                          {planExercise?.target.type === "reps" ? "reps" : "sec"}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+                {exercises.length > 3 && (
+                  <View className="bg-surface-elevated/50 px-3 py-2 rounded-lg mt-1">
+                    <Text className="text-text-muted text-xs text-center">
+                      +{exercises.length - 3} more exercises
+                    </Text>
+                  </View>
+                )}
+              </View>
 
-            {/* Complete Workout Button */}
-            {!todaysPlan.completed && (
-              <>
+              {/* Action Button */}
+              <View className="">
                 <Pressable
                   onPress={() =>
                     router.push({
                       pathname: "/(tabs)/(home)/workout",
-                      params: { planId: todaysPlan.id },
+                      params: { planId: plan.id },
                     })
                   }
-                  className="bg-primary py-4 rounded-xl mb-3"
+                  className="flex-1 bg-primary py-4 rounded-2xl shadow-elevated hover-scale"
                 >
-                  <Text className="text-background text-center font-bold text-lg">
-                    🏋️ Start Workout
-                  </Text>
+                  <View className="flex-row items-center justify-center">
+                    <MaterialCommunityIcons name="play" size={20} color="#000000" />
+                    <Text className="text-background text-center font-bold text-base ml-2">
+                      Start
+                    </Text>
+                  </View>
                 </Pressable>
-                <Pressable
-                  onPress={handleCompletePlan}
-                  className="border-2 border-primary py-4 rounded-xl mb-8"
-                >
-                  <Text className="text-primary text-center font-bold text-lg">
-                    ✓ Mark as Complete
-                  </Text>
-                </Pressable>
-              </>
-            )}
-
-            {todaysPlan.completed && (
-              <View className="bg-success/20 border-2 border-success p-6 rounded-xl mb-8">
-                <Text className="text-success text-xl font-bold text-center">
-                  ✓ Workout Completed!
-                </Text>
-                <Text className="text-text-secondary text-center mt-2">
-                  Great job! Come back tomorrow for your next workout.
-                </Text>
               </View>
-            )}
-          </View>
-        </>
-      )}
-    />
+            </View>
+          );
+        }}
+        keyExtractor={(item) => item.id}
+      />
+    </View>
   );
 }

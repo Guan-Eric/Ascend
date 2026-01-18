@@ -11,7 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 type ExerciseProgress = {
   exerciseId: string;
   completedSets: number;
-  bestValue: number;
+  actualValues: number[]; // Track actual reps/time for each set
 };
 
 export default function WorkoutScreen() {
@@ -26,6 +26,7 @@ export default function WorkoutScreen() {
   const [currentSetReps, setCurrentSetReps] = useState("");
   const [isResting, setIsResting] = useState(false);
   const [restTime, setRestTime] = useState(60);
+  const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
     loadWorkout();
@@ -49,10 +50,11 @@ export default function WorkoutScreen() {
         (ex) => ({
           exerciseId: ex.exerciseId,
           completedSets: 0,
-          bestValue: 0,
+          actualValues: [],
         })
       );
       setProgress(initialProgress);
+      setStartTime(Date.now());
     } catch (error) {
       console.error("Error loading workout:", error);
     }
@@ -69,10 +71,7 @@ export default function WorkoutScreen() {
 
     const updated = [...progress];
     updated[currentExerciseIndex].completedSets++;
-    updated[currentExerciseIndex].bestValue = Math.max(
-      updated[currentExerciseIndex].bestValue,
-      repsValue
-    );
+    updated[currentExerciseIndex].actualValues.push(repsValue);
     setProgress(updated);
     setCurrentSetReps("");
 
@@ -103,21 +102,37 @@ export default function WorkoutScreen() {
       const userId = FIREBASE_AUTH.currentUser?.uid;
       if (!userId || !plan) return;
 
-      // Mark plan as completed
-      await backend.markPlanCompleted(plan.id);
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+
+      // Save to workout history
+      await backend.saveWorkoutHistory({
+        userId,
+        planId: plan.id,
+        dayIndex: plan.dayIndex,
+        exercises: plan.exercises.map((ex, index) => ({
+          exerciseId: ex.exerciseId,
+          sets: ex.sets,
+          completedSets: progress[index].completedSets,
+          target: ex.target,
+          actualValues: progress[index].actualValues,
+        })),
+        completedAt: Date.now(),
+        duration,
+      });
 
       // Save progress for each exercise
       for (const prog of progress) {
-        if (prog.bestValue > 0) {
+        if (prog.actualValues.length > 0) {
+          const bestValue = Math.max(...prog.actualValues);
           await backend.markExerciseCompleted(
             userId,
             prog.exerciseId,
-            prog.bestValue
+            bestValue
           );
         }
       }
 
-      Alert.alert("Workout Complete!", "Great job! Keep up the good work.", [
+      Alert.alert("Workout Complete!", "Great job! Your workout has been logged to your history.", [
         {
           text: "OK",
           onPress: () => router.back(),
@@ -203,13 +218,29 @@ export default function WorkoutScreen() {
                   </Text>
                 </View>
               </View>
+
+              {/* Show completed sets for current exercise */}
+              {currentProgress.actualValues.length > 0 && (
+                <View className="bg-surface-elevated p-3 rounded-lg">
+                  <Text className="text-text-secondary text-xs mb-2">Completed Sets:</Text>
+                  <View className="flex-row flex-wrap gap-2">
+                    {currentProgress.actualValues.map((value, idx) => (
+                      <View key={idx} className="bg-success/20 px-3 py-1 rounded">
+                        <Text className="text-success font-bold text-sm">
+                          Set {idx + 1}: {value}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Input Section */}
             {!allExercisesComplete && (
               <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
                 <Text className="text-text-primary text-lg font-bold mb-3">
-                  Log Your Set
+                  Log Set {currentProgress.completedSets + 1}
                 </Text>
                 <TextInput
                   value={currentSetReps}
@@ -284,6 +315,9 @@ export default function WorkoutScreen() {
                       </Text>
                       <Text className="text-text-secondary text-sm">
                         {prog.completedSets}/{planEx.sets} sets
+                        {prog.actualValues.length > 0 && 
+                          ` • Best: ${Math.max(...prog.actualValues)}`
+                        }
                       </Text>
                     </View>
                     {isComplete && (

@@ -20,3 +20,5 @@ export * from "./plans";
 
 // Database seeding
 export * from "./seeder";
+
+export * from "./workoutHistory"

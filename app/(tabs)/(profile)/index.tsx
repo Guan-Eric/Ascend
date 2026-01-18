@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
 import * as backend from "../../../backend";
 import { User } from "../../../types/User";
+import { WorkoutHistory } from "../../../types/WorkoutHistory";
+import { Exercise } from "../../../types/Exercise";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -16,7 +19,15 @@ export default function ProfileScreen() {
     totalCompleted: 0,
     recentActivityCount: 0,
   });
+  const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistory[]>([]);
+  const [historyStats, setHistoryStats] = useState({
+    totalWorkouts: 0,
+    totalExercises: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+  });
   const [loading, setLoading] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -41,6 +52,14 @@ export default function ProfileScreen() {
         totalCompleted: progressStats.totalExercisesCompleted,
         recentActivityCount: progressStats.recentActivity.length,
       });
+
+      // Load workout history
+      const history = await backend.getRecentWorkoutHistory(userId, 10);
+      setWorkoutHistory(history);
+
+      // Load workout stats
+      const workoutStats = await backend.getWorkoutHistoryStats(userId);
+      setHistoryStats(workoutStats);
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -69,7 +88,7 @@ export default function ProfileScreen() {
   const handleResetProgress = () => {
     Alert.alert(
       "Reset Progress",
-      "This will delete all your workout plans and start fresh. Your progress history will be kept.",
+      "This will delete all your workout plans and start fresh. Your workout history will be kept.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -93,6 +112,36 @@ export default function ProfileScreen() {
     );
   };
 
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
+      });
+    }
+  };
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return "N/A";
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes} min`;
+  };
+
+  const getDayName = (dayIndex: number) => {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return days[dayIndex] || `Day ${dayIndex}`;
+  };
+
   const hasProAccess = customerInfo?.entitlements.active["pro"] !== undefined;
   const expirationDate =
     customerInfo?.entitlements.active["pro"]?.expirationDate;
@@ -101,6 +150,73 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background justify-center items-center">
         <ActivityIndicator size="large" color="#38e8ff" />
+      </View>
+    );
+  }
+
+  // Workout History Detail View
+  if (showHistory) {
+    return (
+      <View className="flex-1 bg-background">
+        <View className="px-6 pt-16 pb-4">
+          <Pressable onPress={() => setShowHistory(false)} className="mb-4">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
+          </Pressable>
+          <Text className="text-primary text-3xl font-bold mb-2">
+            Workout History
+          </Text>
+          <Text className="text-text-secondary mb-4">
+            {historyStats.totalWorkouts} workouts completed
+          </Text>
+        </View>
+
+        <FlashList
+          className="flex-1 px-6"
+          data={workoutHistory}
+          renderItem={({ item: workout }) => (
+            <View className="bg-surface p-5 rounded-xl mb-3 border border-border">
+              <View className="flex-row justify-between items-start mb-3">
+                <View className="flex-1">
+                  <Text className="text-text-primary text-lg font-bold mb-1">
+                    {getDayName(workout.dayIndex)} Workout
+                  </Text>
+                  <Text className="text-text-secondary text-sm">
+                    {formatDate(workout.completedAt)} • {formatDuration(workout.duration)}
+                  </Text>
+                </View>
+                <View className="bg-success/20 px-3 py-1 rounded-full">
+                  <Text className="text-success text-xs font-bold">COMPLETED</Text>
+                </View>
+              </View>
+
+              <View className="bg-surface-elevated p-3 rounded-lg">
+                <Text className="text-text-secondary text-xs mb-2 uppercase font-semibold">
+                  Exercises ({workout.exercises.length})
+                </Text>
+                {workout.exercises.map((ex, idx) => (
+                  <View key={idx} className="mb-2">
+                    <Text className="text-text-primary font-semibold text-sm">
+                      {ex.completedSets}/{ex.sets} sets completed
+                    </Text>
+                    {ex.actualValues.length > 0 && (
+                      <Text className="text-text-secondary text-xs">
+                        Best: {Math.max(...ex.actualValues)} {ex.target.type === "reps" ? "reps" : "sec"}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <View className="bg-surface p-8 rounded-xl border border-border items-center">
+              <Text className="text-text-secondary text-center">
+                No workout history yet. Complete your first workout to see it here!
+              </Text>
+            </View>
+          }
+        />
       </View>
     );
   }
@@ -115,6 +231,89 @@ export default function ProfileScreen() {
             <Text className="text-primary text-4xl font-bold mb-8">
               Profile
             </Text>
+
+            {/* Workout Stats */}
+            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
+                Workout Stats
+              </Text>
+
+              <View className="flex-row justify-between mb-4">
+                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
+                  <Text className="text-primary text-3xl font-bold mb-1">
+                    {historyStats.totalWorkouts}
+                  </Text>
+                  <Text className="text-text-secondary text-xs text-center">
+                    Total Workouts
+                  </Text>
+                </View>
+                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
+                  <Text className="text-primary text-3xl font-bold mb-1">
+                    {historyStats.currentStreak}
+                  </Text>
+                  <Text className="text-text-secondary text-xs text-center">
+                    Day Streak
+                  </Text>
+                </View>
+              </View>
+
+              <View className="flex-row justify-between">
+                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
+                  <Text className="text-primary text-3xl font-bold mb-1">
+                    {stats.totalCompleted}
+                  </Text>
+                  <Text className="text-text-secondary text-xs text-center">
+                    Exercises Done
+                  </Text>
+                </View>
+                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
+                  <Text className="text-primary text-3xl font-bold mb-1">
+                    {historyStats.longestStreak}
+                  </Text>
+                  <Text className="text-text-secondary text-xs text-center">
+                    Best Streak
+                  </Text>
+                </View>
+              </View>
+
+              <Pressable
+                onPress={() => setShowHistory(true)}
+                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl"
+              >
+                <Text className="text-primary text-center font-bold">
+                  View Full History →
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Recent Workouts Preview */}
+            {workoutHistory.length > 0 && (
+              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+                <Text className="text-text-secondary mb-3 font-medium text-sm uppercase">
+                  Recent Workouts
+                </Text>
+                {workoutHistory.slice(0, 3).map((workout) => (
+                  <View
+                    key={workout.id}
+                    className="flex-row justify-between items-center mb-3 pb-3 border-b border-border/30"
+                  >
+                    <View className="flex-1">
+                      <Text className="text-text-primary font-semibold">
+                        {getDayName(workout.dayIndex)} Workout
+                      </Text>
+                      <Text className="text-text-secondary text-xs">
+                        {formatDate(workout.completedAt)} • {workout.exercises.length} exercises
+                      </Text>
+                    </View>
+                    <MaterialCommunityIcons
+                      name="check-circle"
+                      size={20}
+                      color="#22c55e"
+                    />
+                  </View>
+                ))}
+              </View>
+            )}
 
             {/* User Stats */}
             {user && (
@@ -147,27 +346,6 @@ export default function ProfileScreen() {
                 </View>
               </View>
             )}
-
-            {/* Progress Stats */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-                Your Progress
-              </Text>
-
-              <View className="flex-row justify-between mb-3">
-                <Text className="text-text-secondary">Exercises Completed</Text>
-                <Text className="text-primary text-2xl font-bold">
-                  {stats.totalCompleted}
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between">
-                <Text className="text-text-secondary">Recent Activity</Text>
-                <Text className="text-text-primary font-semibold">
-                  {stats.recentActivityCount} workouts
-                </Text>
-              </View>
-            </View>
 
             {/* User ID */}
             <View className="bg-surface p-6 rounded-xl mb-4 border border-border">

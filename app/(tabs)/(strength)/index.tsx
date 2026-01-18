@@ -5,12 +5,15 @@ import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Skill } from "../../../types/Skill";
 import { Exercise } from "../../../types/Exercise";
+import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function StrengthScreen() {
   const [strengthPaths, setStrengthPaths] = useState<Skill[]>([]);
   const [pathExercises, setPathExercises] = useState<
     Record<string, Exercise[]>
   >({});
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,22 +22,29 @@ export default function StrengthScreen() {
 
   const loadStrengthPaths = async () => {
     try {
+      const userId = FIREBASE_AUTH.currentUser?.uid;
+      
       // Load all strength paths
       const paths = await backend.getAllStrengthPaths();
       setStrengthPaths(paths);
 
-      // Load first 3 exercises for each path (for preview)
+      // Load exercises for each path
       const exercisesMap: Record<string, Exercise[]> = {};
 
       for (const path of paths) {
-        const firstThreeIds = path.progression
-          .slice(0, 3)
-          .map((p) => p.exerciseId);
-        const exercises = await backend.getExercisesByIds(firstThreeIds);
-        exercisesMap[path.id] = exercises;
+        const pathData = await backend.getStrengthPathWithExercises(path.id);
+        if (pathData) {
+          exercisesMap[path.id] = pathData.exercises;
+        }
       }
 
       setPathExercises(exercisesMap);
+
+      // Load user's completed exercises
+      if (userId) {
+        const completed = await backend.getCompletedExerciseIds(userId);
+        setCompletedIds(completed);
+      }
     } catch (error) {
       console.error("Error loading strength paths:", error);
     } finally {
@@ -55,6 +65,17 @@ export default function StrengthScreen() {
       default:
         return "bg-primary";
     }
+  };
+
+  const getPathProgress = (pathId: string) => {
+    const exercises = pathExercises[pathId] || [];
+    if (exercises.length === 0) return 0;
+    
+    const completedCount = exercises.filter(ex => 
+      completedIds.includes(ex.id)
+    ).length;
+    
+    return Math.round((completedCount / exercises.length) * 100);
   };
 
   if (loading) {
@@ -92,9 +113,10 @@ export default function StrengthScreen() {
 
             {strengthPaths.map((path) => {
               const exercises = pathExercises[path.id] || [];
+              const progress = getPathProgress(path.id);
 
               return (
-                <Pressable
+                <View
                   key={path.id}
                   className="bg-surface p-6 rounded-xl mb-4 border border-border"
                 >
@@ -112,31 +134,100 @@ export default function StrengthScreen() {
                     {path.description}
                   </Text>
 
-                  <View className="bg-surface-elevated p-4 rounded-lg">
-                    <Text className="text-text-secondary text-xs font-semibold mb-2 uppercase">
-                      Exercise Preview
+                  {/* Progress Bar */}
+                  <View className="mb-4">
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-text-secondary text-sm">
+                        Your Progress
+                      </Text>
+                      <Text className="text-primary font-bold">
+                        {progress}%
+                      </Text>
+                    </View>
+                    <View className="bg-surface-elevated h-2 rounded-full overflow-hidden">
+                      <View
+                        className="bg-primary h-full rounded-full"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Exercise List */}
+                  <View className="bg-surface-elevated p-4 rounded-lg mb-4">
+                    <Text className="text-text-secondary text-xs font-semibold mb-3 uppercase">
+                      Exercises ({exercises.length})
                     </Text>
-                    {exercises.map((exercise, idx) => (
-                      <Text
-                        key={exercise.id}
-                        className="text-text-primary mb-1.5 text-base"
+                    {exercises.slice(0, 3).map((exercise) => {
+                      const isCompleted = completedIds.includes(exercise.id);
+                      
+                      return (
+                        <Pressable
+                          key={exercise.id}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(tabs)/(strength)/exercise-details",
+                              params: { exerciseId: exercise.id },
+                            })
+                          }
+                          className="flex-row items-center justify-between mb-2 pb-2 border-b border-border/30"
+                        >
+                          <View className="flex-1">
+                            <Text className={`${isCompleted ? 'text-success' : 'text-text-primary'} text-base font-semibold`}>
+                              {exercise.name}
+                            </Text>
+                            <Text className="text-text-secondary text-xs">
+                              {exercise.target.value}{" "}
+                              {exercise.target.type === "reps" ? "reps" : "sec"} • {exercise.level}
+                            </Text>
+                          </View>
+                          {isCompleted ? (
+                            <MaterialCommunityIcons
+                              name="check-circle"
+                              size={20}
+                              color="#22c55e"
+                            />
+                          ) : (
+                            <MaterialCommunityIcons
+                              name="chevron-right"
+                              size={20}
+                              color="#7a86a8"
+                            />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                    {exercises.length > 3 && (
+                      <Pressable
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(tabs)/(strength)/path-details",
+                            params: { pathId: path.id },
+                          })
+                        }
+                        className="mt-2"
                       >
-                        • {exercise.name}
-                      </Text>
-                    ))}
-                    {path.progression.length > 3 && (
-                      <Text className="text-text-muted text-sm mt-2">
-                        + {path.progression.length - 3} more exercises
-                      </Text>
+                        <Text className="text-primary text-sm font-semibold">
+                          View all {exercises.length} exercises →
+                        </Text>
+                      </Pressable>
                     )}
                   </View>
 
-                  <View className="mt-4 flex-row items-center">
-                    <Text className="text-text-muted text-sm">
-                      {path.progression.length} total exercises
+                  {/* View Details Button */}
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(tabs)/(strength)/path-details",
+                        params: { pathId: path.id },
+                      })
+                    }
+                    className="border-2 border-primary py-3 rounded-xl"
+                  >
+                    <Text className="text-primary text-center font-bold">
+                      View Full Progression
                     </Text>
-                  </View>
-                </Pressable>
+                  </Pressable>
+                </View>
               );
             })}
           </View>

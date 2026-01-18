@@ -226,7 +226,7 @@ export default function AIScreen() {
         </View>
 
         {/* Input */}
-        <View className="px-6 pb-8 pt-4 bg-surface border-t border-border">
+        <View className="px-6 pb-4 pt-4 bg-surface border-t border-border">
           <View className="flex-row items-center">
             <TextInput
               value={input}
