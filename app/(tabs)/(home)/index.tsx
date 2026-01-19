@@ -7,7 +7,6 @@ import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function HomeScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -108,7 +107,7 @@ export default function HomeScreen() {
           data={[0]}
           renderItem={() => (
             <>
-              <Text className="text-primary text-5xl font-bold mb-3 text-gradient">
+              <Text className="text-primary text-5xl font-bold mb-3">
                 My Workouts
               </Text>
               <Text className="text-text-secondary mb-8 text-lg">
@@ -116,9 +115,6 @@ export default function HomeScreen() {
               </Text>
 
               <View className="card-frosted p-8 rounded-3xl items-center justify-center mb-4">
-                <View className="bg-gradient-primary w-24 h-24 rounded-full items-center justify-center mb-6">
-                  <Text className="text-6xl">🎯</Text>
-                </View>
                 <Text className="text-text-primary text-2xl font-bold mb-3 text-center">
                   Start Your Journey
                 </Text>
@@ -127,7 +123,7 @@ export default function HomeScreen() {
                 </Text>
                 <Pressable
                   onPress={() => router.push("/(tabs)/(home)/create-plan")}
-                  className="bg-gradient-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg hover-scale glow-primary"
+                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg hover-scale"
                 >
                   <MaterialCommunityIcons
                     name="plus-circle-outline"
@@ -151,7 +147,7 @@ export default function HomeScreen() {
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row justify-between items-center mb-3">
           <View className="flex-1">
-            <Text className="text-primary text-4xl font-bold text-gradient">
+            <Text className="text-primary text-4xl font-bold">
               My Workouts
             </Text>
             <View className="flex-row items-center mt-2">
@@ -182,7 +178,7 @@ export default function HomeScreen() {
           
           return (
             <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              {/* Plan Header with Gradient Accent */}
+              {/* Plan Header */}
               <View className="flex-row items-center mb-4">
                 
                 <View className="flex-1">

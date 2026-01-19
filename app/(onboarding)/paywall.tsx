@@ -6,6 +6,7 @@ import Purchases, { PurchasesOffering } from "react-native-purchases";
 import { signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import * as backend from "../../backend";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -22,7 +23,6 @@ export default function PaywallScreen() {
       const userCredential = await signInAnonymously(FIREBASE_AUTH);
       const user = userCredential.user;
 
-      // Initialize user in Firestore with default values
       await backend.initializeUser(user.uid, {
         email: "",
         goalType: "strength",
@@ -48,17 +48,13 @@ export default function PaywallScreen() {
   const handlePurchase = async (packageToPurchase: any) => {
     setPurchasing(true);
     try {
-      const { customerInfo } = await Purchases.purchasePackage(
-        packageToPurchase
-      );
+      const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
 
       if (customerInfo.entitlements.active["pro"]) {
-        // Generate initial workout plan
         const userId = FIREBASE_AUTH.currentUser?.uid;
         if (userId) {
           await backend.generateWorkoutPlan(userId);
         }
-
         router.replace("/(tabs)/(home)");
       }
     } catch (error: any) {
@@ -78,10 +74,7 @@ export default function PaywallScreen() {
       if (customerInfo.entitlements.active["pro"]) {
         router.replace("/(tabs)/(home)");
       } else {
-        Alert.alert(
-          "No Purchases Found",
-          "You don't have any active subscriptions."
-        );
+        Alert.alert("No Purchases Found", "You don't have any active subscriptions.");
       }
     } catch (error) {
       console.error("Restore error:", error);
@@ -92,6 +85,7 @@ export default function PaywallScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-primary text-2xl font-bold">Loading...</Text>
       </View>
     );
@@ -103,35 +97,38 @@ export default function PaywallScreen() {
       data={[0]}
       renderItem={() => (
         <View className="px-8 pt-16 pb-8">
-          <Text className="text-primary text-5xl font-bold mb-2">
+          <View className="bg-primary w-24 h-24 rounded-full items-center justify-center mb-6 shadow-elevated-lg mx-auto">
+            <Text className="text-6xl">🚀</Text>
+          </View>
+          
+          <Text className="text-primary text-5xl font-bold mb-3 text-center">
             Unlock Ascend
           </Text>
-          <Text className="text-text-primary text-2xl font-semibold mb-3">
+          <Text className="text-text-primary text-2xl font-semibold mb-3 text-center">
             Start Your Journey
           </Text>
-          <Text className="text-text-secondary text-lg mb-8 leading-6">
-            Get unlimited access to all features and transform your body with
-            calisthenics
+          <Text className="text-text-secondary text-center text-lg mb-8 leading-6">
+            Get unlimited access to all features and transform your body with calisthenics
           </Text>
 
           <View className="mb-8">
             <FeatureItem
-              icon="✓"
+              icon="dumbbell"
               title="Unlimited Workouts"
               description="Access all training programs and routines"
             />
             <FeatureItem
-              icon="✓"
+              icon="medal-outline"
               title="Skill Progressions"
               description="Master advanced moves with step-by-step guidance"
             />
             <FeatureItem
-              icon="✓"
+              icon="brain"
               title="AI Coach"
               description="Get personalized feedback and recommendations"
             />
             <FeatureItem
-              icon="✓"
+              icon="chart-line"
               title="Progress Tracking"
               description="Monitor your improvements and achievements"
             />
@@ -142,14 +139,14 @@ export default function PaywallScreen() {
               key={pkg.identifier}
               onPress={() => handlePurchase(pkg)}
               disabled={purchasing}
-              className="bg-surface border-2 border-primary p-6 rounded-xl mb-4"
+              className="card-frosted border-2 border-primary/30 p-6 rounded-3xl mb-4 shadow-elevated hover-scale"
             >
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-text-primary text-xl font-bold">
                   {pkg.product.title}
                 </Text>
                 {pkg.product.introPrice && (
-                  <View className="bg-primary px-3 py-1 rounded-full">
+                  <View className="bg-success px-3 py-1 rounded-full">
                     <Text className="text-background text-xs font-bold">
                       {pkg.product.introPrice.periodNumberOfUnits} DAYS FREE
                     </Text>
@@ -165,13 +162,13 @@ export default function PaywallScreen() {
             </Pressable>
           ))}
 
-          <Pressable onPress={handleRestore} className="mt-4 mb-2">
-            <Text className="text-text-secondary text-center font-medium">
+          <Pressable onPress={handleRestore} className="mt-4 mb-2 hover-scale">
+            <Text className="text-text-secondary text-center font-medium underline-animated">
               Restore Purchases
             </Text>
           </Pressable>
 
-          <Text className="text-text-muted text-xs text-center leading-5">
+          <Text className="text-text-muted text-xs text-center leading-5 mt-4">
             Subscription automatically renews unless auto-renew is turned off at
             least 24 hours before the end of the current period.
           </Text>
@@ -191,9 +188,9 @@ function FeatureItem({
   description: string;
 }) {
   return (
-    <View className="flex-row items-start mb-4">
-      <View className="w-8 h-8 bg-primary rounded-full items-center justify-center mr-4">
-        <Text className="text-background text-lg font-bold">{icon}</Text>
+    <View className="flex-row items-start mb-5">
+      <View className="w-12 h-12 bg-primary rounded-2xl items-center justify-center mr-4">
+        <MaterialCommunityIcons name={icon as any} size={24} color="#000000" />
       </View>
       <View className="flex-1">
         <Text className="text-text-primary text-lg font-semibold mb-1">

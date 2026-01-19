@@ -7,8 +7,7 @@ export default function Step4Screen() {
   return (
     <View className="flex-1 bg-background justify-center items-center px-8">
       <View className="flex-1 justify-center items-center">
-        <Text className="text-8xl mb-8">🚀</Text>
-        <Text className="text-primary text-5xl font-bold mb-4">
+        <Text className="text-primary text-4xl font-bold mb-4">
           AI Coaching
         </Text>
         <Text className="text-text-primary text-2xl text-center mb-4 font-semibold">

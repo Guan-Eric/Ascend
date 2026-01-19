@@ -5,6 +5,7 @@ import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Skill } from "../../../types/Skill";
 import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -57,10 +58,21 @@ export default function SkillsScreen() {
     }
   };
 
+  const getSkillEmoji = (skillId: string) => {
+    const emojis: Record<string, string> = {
+      handstand: "🤸",
+      front_lever: "🦾",
+      muscle_up: "💪",
+      l_sit: "🧘",
+      planche: "🔥",
+    };
+    return emojis[skillId] || "⭐";
+  };
+
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <ActivityIndicator size="large" color="#38e8ff" />
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-text-secondary mt-4">Loading skills...</Text>
       </View>
     );
@@ -81,7 +93,7 @@ export default function SkillsScreen() {
             </Text>
 
             {skills.length === 0 && (
-              <View className="bg-surface p-6 rounded-xl border border-border">
+              <View className="card-frosted p-8 rounded-3xl border border-border">
                 <Text className="text-text-primary text-center">
                   No skills available. Please seed your database.
                 </Text>
@@ -101,37 +113,50 @@ export default function SkillsScreen() {
                       params: { skillId: skill.id },
                     })
                   }
-                  className="bg-surface p-6 rounded-xl mb-4 border border-border"
+                  className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated hover-scale"
                 >
-                  <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-text-primary text-xl font-bold flex-1">
-                      {skill.name}
-                    </Text>
-                    <View
-                      className={`${getLevelBadgeColor(
-                        skill.id
-                      )} px-3 py-1 rounded-full`}
-                    >
-                      <Text className="text-background text-xs font-bold uppercase">
-                        {minLevel}
+                  <View className="flex-row items-center mb-4">
+                    <View className="bg-primary w-16 h-16 rounded-2xl items-center justify-center mr-4 shadow-elevated">
+                      <Text className="text-4xl">{getSkillEmoji(skill.id)}</Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-text-primary text-xl font-bold mb-1">
+                        {skill.name}
                       </Text>
+                      <View
+                        className={`${getLevelBadgeColor(
+                          skill.id
+                        )} px-3 py-1 rounded-full self-start`}
+                      >
+                        <Text className="text-background text-xs font-bold uppercase">
+                          {minLevel}
+                        </Text>
+                      </View>
                     </View>
                   </View>
 
-                  <Text className="text-text-secondary text-sm mb-3">
+                  <Text className="text-text-secondary text-sm mb-4 leading-5">
                     {skill.description}
                   </Text>
 
-                  <View className="bg-surface-elevated h-3 rounded-full overflow-hidden">
+                  <View className="bg-surface-elevated/50 h-3 rounded-full overflow-hidden mb-2">
                     <View
-                      className="bg-primary h-full rounded-full"
+                      className="bg-primary h-full rounded-full shadow-elevated"
                       style={{ width: `${progress}%` }}
                     />
                   </View>
 
-                  <Text className="text-text-secondary text-sm mt-2 font-medium">
-                    {progress}% complete • {skill.progression.length} exercises
-                  </Text>
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-text-secondary text-sm font-medium">
+                      {progress}% complete
+                    </Text>
+                    <View className="flex-row items-center">
+                      <MaterialCommunityIcons name="dumbbell" size={14} color="#94a3b8" />
+                      <Text className="text-text-muted text-xs ml-1">
+                        {skill.progression.length} exercises
+                      </Text>
+                    </View>
+                  </View>
                 </Pressable>
               );
             })}
