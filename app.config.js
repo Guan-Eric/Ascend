@@ -2,7 +2,7 @@ import "dotenv/config";
 export default {
   expo: {
     scheme: "ascend",
-    userInterfaceStyle: "dark",
+    userInterfaceStyle: "automatic",
     orientation: "portrait",
     platforms: ["ios", "android"],
     name: "Ascend: Calisthenics",

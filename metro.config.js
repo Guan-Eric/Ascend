@@ -10,6 +10,8 @@ const uniwindConfig = withUniwindConfig(config, {
   cssEntryFile: "./global.css",
   // optional: path to typings
   dtsFile: "./uniwind-types.d.ts",
+  extraThemes: ['matcha','ube','zen','coffee'],
+  adaptiveThemes: false,
 });
 
 module.exports = uniwindConfig;

@@ -34,7 +34,6 @@ export default function AIScreen() {
   const [loading, setLoading] = useState(false);
   const flashListRef = useRef<FlashList<Message>>(null);
 
-  // Initialize OpenAI client
   const openai = new OpenAI({
     apiKey: Constants.expoConfig?.extra?.openaiApiKey,
   });
@@ -54,7 +53,6 @@ export default function AIScreen() {
     setLoading(true);
 
     try {
-      // Get user context
       const userId = FIREBASE_AUTH.currentUser?.uid;
       let userContext = "";
 
@@ -67,7 +65,6 @@ export default function AIScreen() {
         }
       }
 
-      // Call OpenAI API using the client
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
@@ -116,7 +113,6 @@ export default function AIScreen() {
   };
 
   useEffect(() => {
-    // Scroll to end when messages change
     if (messages.length > 0) {
       setTimeout(() => {
         flashListRef.current?.scrollToEnd({ animated: true });
@@ -124,7 +120,7 @@ export default function AIScreen() {
     }
   }, [messages]);
 
-  const renderMessage = ({ item, index }: { item: Message; index: number }) => (
+  const renderMessage = ({ item }: { item: Message }) => (
     <View
       className={`mb-4 ${item.role === "user" ? "items-end" : "items-start"}`}
     >
@@ -132,7 +128,7 @@ export default function AIScreen() {
         className={`max-w-[80%] p-4 rounded-2xl ${
           item.role === "user"
             ? "bg-primary"
-            : "bg-surface border border-border"
+            : "card-frosted"
         }`}
       >
         {item.role === "assistant" && (
@@ -140,7 +136,7 @@ export default function AIScreen() {
             <MaterialCommunityIcons
               name="robot-outline"
               size={20}
-              color="#38e8ff"
+              color="#00d9ff"
             />
             <Text className="text-primary font-bold ml-2">AI Coach</Text>
           </View>
@@ -180,12 +176,12 @@ export default function AIScreen() {
 
     return (
       <View className="items-start mb-4">
-        <View className="bg-surface border border-border p-4 rounded-2xl">
+        <View className="card-frosted p-4 rounded-2xl">
           <View className="flex-row items-center">
             <MaterialCommunityIcons
               name="robot-outline"
               size={20}
-              color="#38e8ff"
+              color="#00d9ff"
             />
             <Text className="text-text-primary font-bold ml-2">
               AI Coach is typing...
@@ -204,7 +200,7 @@ export default function AIScreen() {
     >
       <View className="flex-1">
         {/* Header */}
-        <View className="px-6 pt-16 pb-4 bg-surface border-b border-border">
+        <View className="px-6 pt-16 pb-4 card-frosted">
           <Text className="text-text-primary text-4xl font-bold mb-1">
             AI Coach
           </Text>
@@ -226,7 +222,7 @@ export default function AIScreen() {
         </View>
 
         {/* Input */}
-        <View className="px-6 pb-4 pt-4 bg-surface border-t border-border">
+        <View className="px-6 pb-4 pt-4 card-frosted">
           <View className="flex-row items-center">
             <TextInput
               value={input}
@@ -240,7 +236,7 @@ export default function AIScreen() {
             <Pressable
               onPress={sendMessage}
               disabled={!input.trim() || loading}
-              className={`w-12 h-12 rounded-full items-center justify-center ${
+              className={`w-12 h-12 rounded-full items-center justify-center hover-scale ${
                 input.trim() && !loading ? "bg-primary" : "bg-surface-elevated"
               }`}
             >

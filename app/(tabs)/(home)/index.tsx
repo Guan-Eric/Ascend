@@ -1,11 +1,11 @@
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function HomeScreen() {
@@ -17,6 +17,12 @@ export default function HomeScreen() {
     loadPlans();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      loadPlans();
+    }, [])
+  );
+
   const loadPlans = async () => {
     try {
       const userId = FIREBASE_AUTH.currentUser?.uid;
@@ -26,7 +32,7 @@ export default function HomeScreen() {
       setPlans(userPlans);
 
       const exercisesMap: Record<string, Exercise[]> = {};
-      
+
       for (const plan of userPlans) {
         const exercisePromises = plan.exercises.map((ex) =>
           backend.getExercise(ex.exerciseId)
@@ -57,7 +63,7 @@ export default function HomeScreen() {
     try {
       const userId = FIREBASE_AUTH.currentUser?.uid;
       const plan = plans.find(p => p.id === planId);
-      
+
       if (!userId || !plan) return;
 
       await backend.saveWorkoutHistory({
@@ -83,7 +89,7 @@ export default function HomeScreen() {
       }
 
       Alert.alert("Workout Complete!", "Great job! Your workout has been logged.");
-      
+
     } catch (error) {
       console.error("Error completing plan:", error);
       Alert.alert("Error", "Failed to log workout");
@@ -157,7 +163,7 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-          <Pressable 
+          <Pressable
             onPress={() => router.push("/(tabs)/(home)/create-plan")}
             className="bg-primary/10 p-4 rounded-2xl border border-primary/30 hover-scale"
           >
@@ -175,24 +181,24 @@ export default function HomeScreen() {
         data={plans}
         renderItem={({ item: plan }) => {
           const exercises = planExercises[plan.id] || [];
-          
+
           return (
             <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
               {/* Plan Header */}
               <View className="flex-row items-center mb-4">
-                
+
                 <View className="flex-1">
                   <Text className="text-text-primary text-2xl font-bold mb-1">
                     {getDayName(plan.dayIndex)}
                   </Text>
                   <View className="flex-row items-center">
-                    
+
                     <Text className="text-text-secondary text-sm">
                       {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
                     </Text>
                   </View>
                 </View>
-                
+
                 <Pressable
                   onPress={() =>
                     router.push({
@@ -215,11 +221,10 @@ export default function HomeScreen() {
                 {exercises.slice(0, 3).map((exercise, index) => {
                   const planExercise = plan.exercises[index];
                   return (
-                    <View 
-                      key={exercise.id} 
-                      className={`flex-row items-center mb-3 ${
-                        index < Math.min(exercises.length, 3) - 1 ? 'pb-3 border-b border-border/30' : ''
-                      }`}
+                    <View
+                      key={exercise.id}
+                      className={`flex-row items-center mb-3 ${index < Math.min(exercises.length, 3) - 1 ? 'pb-3 border-b border-border/30' : ''
+                        }`}
                     >
                       <View className="bg-primary/10 w-10 h-10 rounded-xl items-center justify-center mr-3">
                         <Text className="text-primary font-bold">{index + 1}</Text>

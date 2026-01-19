@@ -11,7 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 type ExerciseProgress = {
   exerciseId: string;
   completedSets: number;
-  actualValues: number[]; // Track actual reps/time for each set
+  actualValues: number[];
 };
 
 export default function WorkoutScreen() {
@@ -24,8 +24,9 @@ export default function WorkoutScreen() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [progress, setProgress] = useState<ExerciseProgress[]>([]);
   const [currentSetReps, setCurrentSetReps] = useState("");
-  const [isResting, setIsResting] = useState(false);
-  const [restTime, setRestTime] = useState(60);
+  const [restEndTime, setRestEndTime] = useState<number | null>(null);
+  const [restRemaining, setRestRemaining] = useState(0);
+  const [restTime] = useState(60);
   const [startTime, setStartTime] = useState(Date.now());
 
   useEffect(() => {
@@ -45,7 +46,6 @@ export default function WorkoutScreen() {
       const loadedExercises = await Promise.all(exercisePromises);
       setExercises(loadedExercises.filter((ex) => ex !== null) as Exercise[]);
 
-      // Initialize progress
       const initialProgress: ExerciseProgress[] = workoutPlan.exercises.map(
         (ex) => ({
           exerciseId: ex.exerciseId,
@@ -59,6 +59,25 @@ export default function WorkoutScreen() {
       console.error("Error loading workout:", error);
     }
   };
+
+  useEffect(() => {
+    if (!restEndTime) return;
+
+    const interval = setInterval(() => {
+      const remaining = Math.max(
+        0,
+        Math.ceil((restEndTime - Date.now()) / 1000)
+      );
+      setRestRemaining(remaining);
+
+      if (remaining === 0) {
+        setRestEndTime(null);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [restEndTime]);
+
 
   const completeSet = () => {
     if (!plan) return;
@@ -75,25 +94,24 @@ export default function WorkoutScreen() {
     setProgress(updated);
     setCurrentSetReps("");
 
-    // Check if all sets completed for current exercise
+    setRestEndTime(Date.now() + restTime * 1000);
+
     if (
       updated[currentExerciseIndex].completedSets >=
       plan.exercises[currentExerciseIndex].sets
     ) {
       if (currentExerciseIndex < exercises.length - 1) {
         setCurrentExerciseIndex(currentExerciseIndex + 1);
+        setRestEndTime(null);
       }
-    } else {
-      // Rest between sets
-      setIsResting(true);
-      setTimeout(() => setIsResting(false), restTime * 1000);
     }
   };
+
 
   const skipExercise = () => {
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(currentExerciseIndex + 1);
-      setIsResting(false);
+      setRestEndTime(null);
     }
   };
 
@@ -104,7 +122,6 @@ export default function WorkoutScreen() {
 
       const duration = Math.floor((Date.now() - startTime) / 1000);
 
-      // Save to workout history
       await backend.saveWorkoutHistory({
         userId,
         planId: plan.id,
@@ -120,7 +137,6 @@ export default function WorkoutScreen() {
         duration,
       });
 
-      // Save progress for each exercise
       for (const prog of progress) {
         if (prog.actualValues.length > 0) {
           const bestValue = Math.max(...prog.actualValues);
@@ -132,7 +148,7 @@ export default function WorkoutScreen() {
         }
       }
 
-      Alert.alert("Workout Complete!", "Great job! Your workout has been logged to your history.", [
+      Alert.alert("Workout Complete!", "Great job! Your workout has been logged.", [
         {
           text: "OK",
           onPress: () => router.back(),
@@ -147,6 +163,7 @@ export default function WorkoutScreen() {
   if (!plan || exercises.length === 0) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-text-secondary">Loading workout...</Text>
       </View>
     );
@@ -163,8 +180,8 @@ export default function WorkoutScreen() {
     <View className="flex-1 bg-background">
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center justify-between mb-4">
-          <Pressable onPress={() => router.back()}>
-            <MaterialCommunityIcons name="close" size={28} color="#38e8ff" />
+          <Pressable onPress={() => router.back()} className="hover-scale">
+            <MaterialCommunityIcons name="close" size={28} color="#00d9ff" />
           </Pressable>
           <Text className="text-text-secondary">
             Exercise {currentExerciseIndex + 1}/{exercises.length}
@@ -176,9 +193,8 @@ export default function WorkoutScreen() {
           <View
             className="bg-primary h-full rounded-full"
             style={{
-              width: `${
-                ((currentExerciseIndex + 1) / exercises.length) * 100
-              }%`,
+              width: `${((currentExerciseIndex + 1) / exercises.length) * 100
+                }%`,
             }}
           />
         </View>
@@ -190,7 +206,7 @@ export default function WorkoutScreen() {
         renderItem={() => (
           <>
             {/* Current Exercise Card */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border-2 border-primary">
+            <View className="card-frosted p-6 rounded-3xl mb-4">
               <Text className="text-primary text-sm font-semibold mb-2 uppercase">
                 Current Exercise
               </Text>
@@ -219,7 +235,7 @@ export default function WorkoutScreen() {
                 </View>
               </View>
 
-              {/* Show completed sets for current exercise */}
+              {/* Completed sets */}
               {currentProgress.actualValues.length > 0 && (
                 <View className="bg-surface-elevated p-3 rounded-lg">
                   <Text className="text-text-secondary text-xs mb-2">Completed Sets:</Text>
@@ -238,46 +254,38 @@ export default function WorkoutScreen() {
 
             {/* Input Section */}
             {!allExercisesComplete && (
-              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <View className="card-frosted p-6 rounded-3xl mb-4">
                 <Text className="text-text-primary text-lg font-bold mb-3">
                   Log Set {currentProgress.completedSets + 1}
                 </Text>
                 <TextInput
                   value={currentSetReps}
                   onChangeText={setCurrentSetReps}
-                  placeholder={`Enter ${
-                    currentPlanExercise.target.type === "reps"
-                      ? "reps"
-                      : "seconds"
-                  }`}
+                  placeholder={`Enter ${currentPlanExercise.target.type === "reps"
+                    ? "reps"
+                    : "seconds"
+                    }`}
                   placeholderTextColor="#7a86a8"
                   keyboardType="numeric"
                   className="bg-surface-elevated text-text-primary px-4 py-4 rounded-xl text-xl font-bold mb-4 text-center"
                 />
-
-                {isResting ? (
-                  <View className="bg-warning/20 p-4 rounded-xl items-center">
-                    <Text className="text-warning font-bold text-lg mb-2">
-                      Resting...
-                    </Text>
-                    <Text className="text-text-secondary">
-                      {restTime}s between sets
-                    </Text>
-                  </View>
-                ) : (
-                  <Pressable
-                    onPress={completeSet}
-                    className="bg-primary py-4 rounded-xl mb-3"
-                  >
-                    <Text className="text-background text-center font-bold text-lg">
-                      ✓ Complete Set
-                    </Text>
-                  </Pressable>
+                {restRemaining > 0 && (
+                  <Text className="text-warning text-sm text-center mb-2">
+                    Suggested rest: {restRemaining}s remaining
+                  </Text>
                 )}
 
                 <Pressable
+                  onPress={completeSet}
+                  className="bg-primary py-4 rounded-2xl mb-3 hover-scale"
+                >
+                  <Text className="text-background text-center font-bold text-lg">
+                    {restRemaining > 0 ? "Log Next Set Early" : "Complete Set"}
+                  </Text>
+                </Pressable>
+                <Pressable
                   onPress={skipExercise}
-                  className="border-2 border-text-muted py-3 rounded-xl"
+                  className="border-2 border-text-muted py-3 rounded-2xl hover-scale"
                 >
                   <Text className="text-text-muted text-center font-bold">
                     Skip Exercise
@@ -287,7 +295,7 @@ export default function WorkoutScreen() {
             )}
 
             {/* All Exercises Overview */}
-            <View className="bg-surface p-6 rounded-xl mb-8 border border-border">
+            <View className="card-frosted p-6 rounded-3xl mb-8">
               <Text className="text-text-primary text-lg font-bold mb-4">
                 Workout Overview
               </Text>
@@ -299,23 +307,21 @@ export default function WorkoutScreen() {
                 return (
                   <View
                     key={exercise.id}
-                    className={`flex-row items-center justify-between mb-3 pb-3 ${
-                      index < exercises.length - 1
-                        ? "border-b border-border"
-                        : ""
-                    }`}
+                    className={`flex-row items-center justify-between mb-3 pb-3 ${index < exercises.length - 1
+                      ? "border-b border-border"
+                      : ""
+                      }`}
                   >
                     <View className="flex-1">
                       <Text
-                        className={`${
-                          isComplete ? "text-success" : "text-text-primary"
-                        } font-semibold`}
+                        className={`${isComplete ? "text-success" : "text-text-primary"
+                          } font-semibold`}
                       >
                         {exercise.name}
                       </Text>
                       <Text className="text-text-secondary text-sm">
                         {prog.completedSets}/{planEx.sets} sets
-                        {prog.actualValues.length > 0 && 
+                        {prog.actualValues.length > 0 &&
                           ` • Best: ${Math.max(...prog.actualValues)}`
                         }
                       </Text>
@@ -339,10 +345,10 @@ export default function WorkoutScreen() {
         <View className="px-6 pb-8 bg-background">
           <Pressable
             onPress={finishWorkout}
-            className="bg-success py-4 rounded-xl"
+            className="bg-success py-4 rounded-2xl hover-scale"
           >
             <Text className="text-background text-center font-bold text-lg">
-              🎉 Finish Workout
+              Finish Workout
             </Text>
           </Pressable>
         </View>

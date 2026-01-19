@@ -14,7 +14,7 @@
       --color-primary: #00d9ff;
       --color-primary-dark: #00b8db;
       --color-primary-glow: rgba(0, 217, 255, 0.3);
-      
+
       /* Purple accent for variety */
       --color-secondary: #7c3aed;
       --color-secondary-glow: rgba(124, 58, 237, 0.3);
@@ -39,11 +39,218 @@
       --glass-background: rgba(15, 23, 41, 0.7);
       --glass-border: rgba(255, 255, 255, 0.1);
 
-      /* Gradient accents */
-      --gradient-primary: linear-gradient(135deg, #00d9ff 0%, #7c3aed 100%);
-      --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      --gradient-surface: linear-gradient(135deg, #0f1729 0%, #151e35 100%);
+      /* compatibility colors */
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+    @variant light {
+      /* Soft light background with depth */
+      --color-background: #f5f7fb;
+      --color-surface: #ffffff;
+      --color-surface-elevated: #eef2fa;
+      --color-border: #dbe2f3;
+
+      /* Keep your brand cyan */
+      --color-primary: #3b82f6;
+      --color-primary-dark: #2563eb;
+      --color-primary-glow: rgba(59, 130, 246, 0.25);
+
+      --color-secondary: #7c3aed;
+      --color-secondary-glow: rgba(124, 58, 237, 0.25);
+
+      /* Text hierarchy (never pure black) */
+      --color-text-primary: #0f172a;
+      --color-text-secondary: #334155;
+      --color-text-muted: #64748b;
+      --color-text-disabled: #94a3b8;
+
+      /* Status colors (slightly muted) */
+      --color-success: #16a34a;
+      --color-success-glow: rgba(22, 163, 74, 0.25);
+      --color-warning: #eab308;
+      --color-warning-glow: rgba(234, 179, 8, 0.25);
+      --color-error: #dc2626;
+      --color-error-glow: rgba(220, 38, 38, 0.25);
+      --color-info: #2563eb;
+
+      /* Glass for light mode */
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(15, 23, 42, 0.08);
+      /* compatibility colors */
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+    @variant matcha {
+      --color-background: #f4f7f2;
+      --color-surface: #ffffff;
+      --color-surface-elevated: #e9f0e5;
+      --color-border: #cfe0c9;
+
+      --color-primary: #6fa76f;
+      --color-primary-dark: #5c9160;
+      --color-primary-glow: rgba(111, 167, 111, 0.3);
+
+      --color-secondary: #a3c9a8;
+      --color-secondary-glow: rgba(163, 201, 168, 0.3);
+
+      --color-text-primary: #1f2d1f;
+      --color-text-secondary: #3a523a;
+      --color-text-muted: #6b8b6b;
+      --color-text-disabled: #9fb59f;
+
+      --color-success: #4ade80;
+      --color-success-glow: rgba(74, 222, 128, 0.25);
+      --color-warning: #facc15;
+      --color-warning-glow: rgba(250, 204, 21, 0.25);
+      --color-error: #ef4444;
+      --color-error-glow: rgba(239, 68, 68, 0.25);
+      --color-info: #6fa76f;
+
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(47, 82, 47, 0.1);
+
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+
+    @variant ube {
+      --color-background: #120c1f;
+      --color-surface: #1a1230;
+      --color-surface-elevated: #22183f;
+      --color-border: #2e2160;
+
+      --color-primary: #a78bfa;
+      --color-primary-dark: #8b5cf6;
+      --color-primary-glow: rgba(167, 139, 250, 0.4);
+
+      --color-secondary: #f472b6;
+      --color-secondary-glow: rgba(244, 114, 182, 0.35);
+
+      --color-text-primary: #f5f3ff;
+      --color-text-secondary: #ddd6fe;
+      --color-text-muted: #bcb3ff;
+      --color-text-disabled: #8b83c5;
+
+      --color-success: #34d399;
+      --color-success-glow: rgba(52, 211, 153, 0.25);
+      --color-warning: #fbbf24;
+      --color-warning-glow: rgba(251, 191, 36, 0.25);
+      --color-error: #fb7185;
+      --color-error-glow: rgba(251, 113, 133, 0.25);
+      --color-info: #a78bfa;
+
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(34, 24, 63, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.12);
+
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+    @variant zen {
+      --color-background: #f6f7f5;
+      --color-surface: #ffffff;
+      --color-surface-elevated: #eceeed;
+      --color-border: #d8dbd8;
+
+      --color-primary: #64748b;
+      --color-primary-dark: #475569;
+      --color-primary-glow: rgba(100, 116, 139, 0.25);
+
+      --color-secondary: #94a3b8;
+      --color-secondary-glow: rgba(148, 163, 184, 0.25);
+
+      --color-text-primary: #0f172a;
+      --color-text-secondary: #334155;
+      --color-text-muted: #64748b;
+      --color-text-disabled: #94a3b8;
+
+      --color-success: #22c55e;
+      --color-success-glow: rgba(34, 197, 94, 0.25);
+      --color-warning: #eab308;
+      --color-warning-glow: rgba(234, 179, 8, 0.25);
+      --color-error: #ef4444;
+      --color-error-glow: rgba(239, 68, 68, 0.25);
+      --color-info: #64748b;
+
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(15, 23, 42, 0.08);
+
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+    @variant coffee {
+      /* Warm dark background */
+      --color-background: #0f0b08;
+      --color-surface: #17110d;
+      --color-surface-elevated: #201813;
+      --color-border: #2a201a;
+
+      /* Espresso caramel accent */
+      --color-primary: #c08457;
+      --color-primary-dark: #a66a3e;
+      --color-primary-glow: rgba(192, 132, 87, 0.35);
+
+      /* Mocha secondary */
+      --color-secondary: #7a4a2e;
+      --color-secondary-glow: rgba(122, 74, 46, 0.3);
+
+      /* Warm text tones */
+      --color-text-primary: #faf6f2;
+      --color-text-secondary: #e7ded6;
+      --color-text-muted: #b9a89b;
+      --color-text-disabled: #6f5f55;
+
+      /* Status colors (harmonized) */
+      --color-success: #22c55e;
+      --color-success-glow: rgba(34, 197, 94, 0.25);
+      --color-warning: #f59e0b;
+      --color-warning-glow: rgba(245, 158, 11, 0.25);
+      --color-error: #ef4444;
+      --color-error-glow: rgba(239, 68, 68, 0.25);
+      --color-info: #c08457;
+
+      /* Warm glass */
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(32, 24, 19, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
 
       /* compatibility colors */
       --color-zinc-400: #a1a1aa;
@@ -55,69 +262,26 @@
 
       --color-orange-500: #f97316;
     }
-    @variant light {
-      /* Keep same dark theme for consistency */
-      --color-background: #0a0e1a;
-      --color-surface: #0f1729;
-      --color-surface-elevated: #151e35;
-      --color-border: #1a2744;
 
-      --color-primary: #00d9ff;
-      --color-primary-dark: #00b8db;
-      --color-primary-glow: rgba(0, 217, 255, 0.3);
-      
-      --color-secondary: #7c3aed;
-      --color-secondary-glow: rgba(124, 58, 237, 0.3);
-
-      --color-text-primary: #f8fafc;
-      --color-text-secondary: #cbd5e1;
-      --color-text-muted: #94a3b8;
-      --color-text-disabled: #475569;
-
-      --color-success: #10b981;
-      --color-success-glow: rgba(16, 185, 129, 0.3);
-      --color-warning: #f59e0b;
-      --color-warning-glow: rgba(245, 158, 11, 0.3);
-      --color-error: #ef4444;
-      --color-error-glow: rgba(239, 68, 68, 0.3);
-      --color-info: #3b82f6;
-
-      --backdrop-blur: blur(12px);
-      --glass-background: rgba(15, 23, 41, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.1);
-
-      --gradient-primary: linear-gradient(135deg, #00d9ff 0%, #7c3aed 100%);
-      --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      --gradient-surface: linear-gradient(135deg, #0f1729 0%, #151e35 100%);
-
-      --color-zinc-400: #a1a1aa;
-      --color-zinc-500: #71717a;
-      --color-zinc-600: #52525b;
-      --color-zinc-700: #3f3f46;
-      --color-zinc-800: #27272a;
-      --color-zinc-900: #18181b;
-
-      --color-orange-500: #f97316;
-    }
   }
 }
 
 /* Enhanced utility classes for aesthetic improvements */
 @layer utilities {
+
   /* Glow effects */
   .glow-primary {
     box-shadow: 0 0 20px var(--color-primary-glow);
   }
-  
+
   .glow-success {
     box-shadow: 0 0 20px var(--color-success-glow);
   }
-  
+
   .glow-warning {
     box-shadow: 0 0 20px var(--color-warning-glow);
   }
-  
+
   .glow-error {
     box-shadow: 0 0 20px var(--color-error-glow);
   }
@@ -133,15 +297,15 @@
   .bg-gradient-primary {
     background: var(--gradient-primary);
   }
-  
+
   .bg-gradient-success {
     background: var(--gradient-success);
   }
-  
+
   .bg-gradient-warning {
     background: var(--gradient-warning);
   }
-  
+
   .bg-gradient-surface {
     background: var(--gradient-surface);
   }
@@ -154,46 +318,58 @@
   }
 
   @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   /* Hover scale effect */
   .hover-scale {
     transition: transform 0.2s ease;
   }
-  
+
   .hover-scale:active {
     transform: scale(0.97);
   }
 
   /* Shimmer effect for loading states */
   .shimmer {
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(255, 255, 255, 0.1) 50%, 
-      transparent 100%
-    );
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
 
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
   }
 
   /* Enhanced shadows with depth */
   .shadow-elevated {
-    box-shadow: 
+    box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.3),
       0 2px 4px -1px rgba(0, 0, 0, 0.2),
       0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
   .shadow-elevated-lg {
-    box-shadow: 
+    box-shadow:
       0 10px 15px -3px rgba(0, 0, 0, 0.3),
       0 4px 6px -2px rgba(0, 0, 0, 0.2),
       0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -218,7 +394,7 @@
     background: rgba(15, 23, 41, 0.6);
     backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
+    box-shadow:
       0 8px 32px 0 rgba(0, 0, 0, 0.37),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   }
@@ -227,7 +403,7 @@
   .underline-animated {
     position: relative;
   }
-  
+
   .underline-animated::after {
     content: '';
     position: absolute;
@@ -238,7 +414,7 @@
     background: var(--color-primary);
     transition: width 0.3s ease;
   }
-  
+
   .underline-animated:hover::after {
     width: 100%;
   }
@@ -249,10 +425,13 @@
   }
 
   @keyframes pulse-glow {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
       box-shadow: 0 0 20px var(--color-primary-glow);
     }
+
     50% {
       opacity: 0.8;
       box-shadow: 0 0 40px var(--color-primary-glow);

@@ -58,17 +58,6 @@ export default function SkillsScreen() {
     }
   };
 
-  const getSkillEmoji = (skillId: string) => {
-    const emojis: Record<string, string> = {
-      handstand: "🤸",
-      front_lever: "🦾",
-      muscle_up: "💪",
-      l_sit: "🧘",
-      planche: "🔥",
-    };
-    return emojis[skillId] || "⭐";
-  };
-
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
@@ -116,9 +105,7 @@ export default function SkillsScreen() {
                   className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated hover-scale"
                 >
                   <View className="flex-row items-center mb-4">
-                    <View className="bg-primary w-16 h-16 rounded-2xl items-center justify-center mr-4 shadow-elevated">
-                      <Text className="text-4xl">{getSkillEmoji(skill.id)}</Text>
-                    </View>
+
                     <View className="flex-1">
                       <Text className="text-text-primary text-xl font-bold mb-1">
                         {skill.name}

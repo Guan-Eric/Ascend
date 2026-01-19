@@ -131,8 +131,8 @@ export default function CreatePlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => router.back()} className="mb-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
+          <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
           </Pressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Choose Training Day
@@ -151,7 +151,7 @@ export default function CreatePlanScreen() {
                 setSelectedDay(day);
                 setViewMode("main");
               }}
-              className="bg-surface p-5 rounded-xl mb-3 border-2 border-border"
+              className="card-frosted p-5 rounded-2xl mb-3 hover-scale"
             >
               <Text className="text-text-primary text-xl font-bold">
                 {getDayName(day)}
@@ -163,19 +163,19 @@ export default function CreatePlanScreen() {
     );
   }
 
-  // SKILL EXERCISE PICKER
-  if (viewMode === "skillPicker" && selectedSkill) {
+  // SKILL/STRENGTH EXERCISE PICKER
+  if ((viewMode === "skillPicker" || viewMode === "strengthPicker") && selectedSkill) {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setViewMode("main")} className="mb-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
+          <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-1">
             {selectedSkill.name}
           </Text>
           <Text className="text-text-secondary mb-4">
-            Select exercises from this skill progression
+            Select exercises from this {viewMode === "skillPicker" ? "skill progression" : "strength path"}
           </Text>
         </View>
 
@@ -185,7 +185,7 @@ export default function CreatePlanScreen() {
           renderItem={({ item: exercise }) => (
             <Pressable
               onPress={() => addExercise(exercise)}
-              className="bg-surface p-4 rounded-xl mb-3 border border-border"
+              className="card-frosted p-4 rounded-2xl mb-3 hover-scale"
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -213,57 +213,7 @@ export default function CreatePlanScreen() {
     );
   }
 
-  // STRENGTH PATH PICKER
-  if (viewMode === "strengthPicker" && selectedSkill) {
-    return (
-      <View className="flex-1 bg-background">
-        <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setViewMode("main")} className="mb-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
-          </Pressable>
-          <Text className="text-primary text-2xl font-bold mb-1">
-            {selectedSkill.name}
-          </Text>
-          <Text className="text-text-secondary mb-4">
-            Select exercises from this strength path
-          </Text>
-        </View>
-
-        <FlashList
-          className="flex-1 px-6"
-          data={skillExercises}
-          renderItem={({ item: exercise }) => (
-            <Pressable
-              onPress={() => addExercise(exercise)}
-              className="bg-surface p-4 rounded-xl mb-3 border border-border"
-            >
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                {exercise.name}
-              </Text>
-              <Text className="text-text-secondary text-sm mb-2">
-                {exercise.description}
-              </Text>
-              <View className="flex-row gap-2">
-                <View className="bg-surface-elevated px-3 py-1 rounded">
-                  <Text className="text-text-secondary text-xs capitalize">
-                    {exercise.level}
-                  </Text>
-                </View>
-                <View className="bg-surface-elevated px-3 py-1 rounded">
-                  <Text className="text-text-secondary text-xs">
-                    {exercise.target.value} {exercise.target.type === "reps" ? "reps" : "sec"}
-                  </Text>
-                </View>
-              </View>
-            </Pressable>
-          )}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
-    );
-  }
-
-  // EXERCISE TYPE PICKER
+  // EXERCISE BROWSER
   if (viewMode === "exercisePicker") {
     const filteredExercises = allExercises.filter((ex) =>
       ex.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -272,8 +222,8 @@ export default function CreatePlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setViewMode("main")} className="mb-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
+          <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-4">
             Browse All Exercises
@@ -294,7 +244,7 @@ export default function CreatePlanScreen() {
           renderItem={({ item: exercise }) => (
             <Pressable
               onPress={() => addExercise(exercise)}
-              className="bg-surface p-4 rounded-xl mb-3 border border-border"
+              className="card-frosted p-4 rounded-2xl mb-3 hover-scale"
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -312,20 +262,20 @@ export default function CreatePlanScreen() {
     );
   }
 
-  // MAIN VIEW - Building the plan
+  // MAIN VIEW
   return (
     <View className="flex-1 bg-background">
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center mb-4">
-          <Pressable onPress={() => router.back()}>
-            <MaterialCommunityIcons name="close" size={24} color="#38e8ff" />
+          <Pressable onPress={() => router.back()} className="hover-scale">
+            <MaterialCommunityIcons name="close" size={24} color="#00d9ff" />
           </Pressable>
           <Text className="text-primary text-2xl font-bold ml-4">
             {getDayName(selectedDay)} Workout
           </Text>
           <Pressable
             onPress={() => setViewMode("dayPicker")}
-            className="ml-auto"
+            className="ml-auto hover-scale"
           >
             <Text className="text-primary text-sm">Change Day</Text>
           </Pressable>
@@ -345,9 +295,9 @@ export default function CreatePlanScreen() {
 
               <Pressable
                 onPress={() => setViewMode("exercisePicker")}
-                className="bg-surface p-4 rounded-xl mb-3 border border-border flex-row items-center"
+                className="card-frosted p-4 rounded-2xl mb-3 flex-row items-center hover-scale"
               >
-                <MaterialCommunityIcons name="dumbbell" size={24} color="#38e8ff" />
+                <MaterialCommunityIcons name="dumbbell" size={24} color="#00d9ff" />
                 <View className="ml-3 flex-1">
                   <Text className="text-text-primary font-bold text-base">
                     Browse All Exercises
@@ -359,7 +309,6 @@ export default function CreatePlanScreen() {
                 <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
               </Pressable>
 
-              {/* Skills Section */}
               <Text className="text-text-secondary text-xs font-semibold mb-2 mt-4 uppercase">
                 Skills
               </Text>
@@ -367,9 +316,9 @@ export default function CreatePlanScreen() {
                 <Pressable
                   key={skill.id}
                   onPress={() => loadSkillExercises(skill.id)}
-                  className="bg-surface p-4 rounded-xl mb-2 border border-border flex-row items-center"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center hover-scale"
                 >
-                  <MaterialCommunityIcons name="medal-outline" size={24} color="#38e8ff" />
+                  <MaterialCommunityIcons name="medal-outline" size={24} color="#00d9ff" />
                   <View className="ml-3 flex-1">
                     <Text className="text-text-primary font-bold">
                       {skill.name}
@@ -382,7 +331,6 @@ export default function CreatePlanScreen() {
                 </Pressable>
               ))}
 
-              {/* Strength Paths */}
               <Text className="text-text-secondary text-xs font-semibold mb-2 mt-4 uppercase">
                 Strength Paths
               </Text>
@@ -390,9 +338,9 @@ export default function CreatePlanScreen() {
                 <Pressable
                   key={path.id}
                   onPress={() => loadStrengthExercises(path.id)}
-                  className="bg-surface p-4 rounded-xl mb-2 border border-border flex-row items-center"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center hover-scale"
                 >
-                  <MaterialCommunityIcons name="arm-flex" size={24} color="#38e8ff" />
+                  <MaterialCommunityIcons name="arm-flex" size={24} color="#00d9ff" />
                   <View className="ml-3 flex-1">
                     <Text className="text-text-primary font-bold">
                       {path.name}
@@ -422,7 +370,7 @@ export default function CreatePlanScreen() {
                   return (
                     <View
                       key={index}
-                      className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                      className="card-frosted p-4 rounded-2xl mb-3"
                     >
                       <View className="flex-row justify-between items-start mb-2">
                         <View className="flex-1">
@@ -435,7 +383,7 @@ export default function CreatePlanScreen() {
                               : `${planExercise.target.value}s`}
                           </Text>
                         </View>
-                        <Pressable onPress={() => removeExercise(index)}>
+                        <Pressable onPress={() => removeExercise(index)} className="hover-scale">
                           <MaterialCommunityIcons
                             name="close-circle"
                             size={24}
@@ -449,7 +397,7 @@ export default function CreatePlanScreen() {
                         <View className="flex-row items-center bg-surface-elevated rounded-lg">
                           <Pressable
                             onPress={() => updateSets(index, planExercise.sets - 1)}
-                            className="px-4 py-2"
+                            className="px-4 py-2 hover-scale"
                           >
                             <Text className="text-primary text-xl font-bold">-</Text>
                           </Pressable>
@@ -458,7 +406,7 @@ export default function CreatePlanScreen() {
                           </Text>
                           <Pressable
                             onPress={() => updateSets(index, planExercise.sets + 1)}
-                            className="px-4 py-2"
+                            className="px-4 py-2 hover-scale"
                           >
                             <Text className="text-primary text-xl font-bold">+</Text>
                           </Pressable>
@@ -475,7 +423,7 @@ export default function CreatePlanScreen() {
 
       {selectedExercises.length > 0 && (
         <View className="px-6 pb-8 bg-background">
-          <Pressable onPress={savePlan} className="bg-primary py-4 rounded-xl">
+          <Pressable onPress={savePlan} className="bg-primary py-4 rounded-2xl hover-scale">
             <Text className="text-background text-center font-bold text-lg">
               Save Workout Plan
             </Text>

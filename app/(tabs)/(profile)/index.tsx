@@ -1,15 +1,16 @@
 import { View, Text, Pressable, Alert, ActivityIndicator } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../../config/firebase";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
 import * as backend from "../../../backend";
 import { User } from "../../../types/User";
 import { WorkoutHistory } from "../../../types/WorkoutHistory";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -32,6 +33,12 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUserData();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+    }, [])
+  );
 
   const loadUserData = async () => {
     try {
@@ -65,24 +72,6 @@ export default function ProfileScreen() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await signOut(FIREBASE_AUTH);
-            router.replace("/(onboarding)/step1");
-          } catch (error) {
-            console.error("Sign out error:", error);
-          }
-        },
-      },
-    ]);
   };
 
   const handleResetProgress = () => {
@@ -228,6 +217,7 @@ export default function ProfileScreen() {
       renderItem={() => (
         <>
           <View className="px-6 pt-16">
+
             <Text className="text-primary text-4xl font-bold mb-8">
               Profile
             </Text>
@@ -314,7 +304,7 @@ export default function ProfileScreen() {
                 ))}
               </View>
             )}
-
+            <ThemeSwitcher />
             {/* User Stats */}
             {user && (
               <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
@@ -368,9 +358,8 @@ export default function ProfileScreen() {
                 Subscription Status
               </Text>
               <Text
-                className={`text-xl font-bold ${
-                  hasProAccess ? "text-success" : "text-error"
-                }`}
+                className={`text-xl font-bold ${hasProAccess ? "text-success" : "text-error"
+                  }`}
               >
                 {hasProAccess ? "Pro Active ✓" : "No Active Subscription"}
               </Text>
@@ -379,8 +368,8 @@ export default function ProfileScreen() {
                   {customerInfo?.entitlements.active["pro"]?.willRenew
                     ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
                     : `Expires: ${new Date(
-                        expirationDate
-                      ).toLocaleDateString()}`}
+                      expirationDate
+                    ).toLocaleDateString()}`}
                 </Text>
               )}
             </View>
@@ -411,19 +400,6 @@ export default function ProfileScreen() {
                 Reset Workout Plans
               </Text>
             </Pressable>
-
-            <Pressable
-              onPress={handleSignOut}
-              className="border-2 border-error py-4 rounded-xl mb-4"
-            >
-              <Text className="text-error text-center font-bold text-base">
-                Sign Out
-              </Text>
-            </Pressable>
-
-            <Text className="text-text-muted text-xs text-center mt-4 mb-8">
-              Signing out will clear your session. Your progress is saved.
-            </Text>
           </View>
         </>
       )}

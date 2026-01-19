@@ -23,7 +23,7 @@ export default function StrengthScreen() {
   const loadStrengthPaths = async () => {
     try {
       const userId = FIREBASE_AUTH.currentUser?.uid;
-      
+
       // Load all strength paths
       const paths = await backend.getAllStrengthPaths();
       setStrengthPaths(paths);
@@ -70,11 +70,11 @@ export default function StrengthScreen() {
   const getPathProgress = (pathId: string) => {
     const exercises = pathExercises[pathId] || [];
     if (exercises.length === 0) return 0;
-    
-    const completedCount = exercises.filter(ex => 
+
+    const completedCount = exercises.filter(ex =>
       completedIds.includes(ex.id)
     ).length;
-    
+
     return Math.round((completedCount / exercises.length) * 100);
   };
 
@@ -153,13 +153,13 @@ export default function StrengthScreen() {
                   </View>
 
                   {/* Exercise List */}
-                  <View className="bg-surface-elevated p-4 rounded-lg mb-4">
+                  <View className="bg-surface-elevated p-4 rounded-lg">
                     <Text className="text-text-secondary text-xs font-semibold mb-3 uppercase">
                       Exercises ({exercises.length})
                     </Text>
                     {exercises.slice(0, 3).map((exercise) => {
                       const isCompleted = completedIds.includes(exercise.id);
-                      
+
                       return (
                         <Pressable
                           key={exercise.id}
@@ -212,21 +212,6 @@ export default function StrengthScreen() {
                       </Pressable>
                     )}
                   </View>
-
-                  {/* View Details Button */}
-                  <Pressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(tabs)/(strength)/path-details",
-                        params: { pathId: path.id },
-                      })
-                    }
-                    className="border-2 border-primary py-3 rounded-xl"
-                  >
-                    <Text className="text-primary text-center font-bold">
-                      View Full Progression
-                    </Text>
-                  </Pressable>
                 </View>
               );
             })}
