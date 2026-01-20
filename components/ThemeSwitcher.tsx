@@ -3,7 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { Uniwind, useUniwind } from "uniwind";
 
 export const ThemeSwitcher = () => {
-    const { theme, hasAdaptiveThemes } = useUniwind();
+    const { theme } = useUniwind();
 
     const themes = [
         { name: "light", label: "Light", icon: "☀️" },
@@ -14,10 +14,10 @@ export const ThemeSwitcher = () => {
         { name: "coffee", label: "Coffee", icon: "☕" },
     ];
 
-    const activeTheme = hasAdaptiveThemes ? "system" : theme;
+    const activeTheme = theme;
 
     return (
-        <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+        <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
             <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
                 Theme
             </Text>
@@ -40,7 +40,7 @@ export const ThemeSwitcher = () => {
                                 | "system"
                             )
                         }
-                        className={`px-5 py-4 rounded-xl mr-3 items-center justify-center
+                        className={`  px-5 py-4 rounded-xl mr-3 items-center justify-center
               ${activeTheme === item.name ? "bg-primary" : "bg-surface border border-border"}`}
                     >
                         <Text

@@ -8,7 +8,6 @@ import Purchases, { CustomerInfo } from "react-native-purchases";
 import * as backend from "../../../backend";
 import { User } from "../../../types/User";
 import { WorkoutHistory } from "../../../types/WorkoutHistory";
-import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
 
@@ -45,26 +44,21 @@ export default function ProfileScreen() {
       const userId = FIREBASE_AUTH.currentUser?.uid;
       if (!userId) return;
 
-      // Load subscription status
       const info = await Purchases.getCustomerInfo();
       setCustomerInfo(info);
 
-      // Load user profile
       const userData = await backend.getUser(userId);
       setUser(userData);
 
-      // Load progress stats
       const progressStats = await backend.getUserProgressStats(userId);
       setStats({
         totalCompleted: progressStats.totalExercisesCompleted,
         recentActivityCount: progressStats.recentActivity.length,
       });
 
-      // Load workout history
       const history = await backend.getRecentWorkoutHistory(userId, 10);
       setWorkoutHistory(history);
 
-      // Load workout stats
       const workoutStats = await backend.getWorkoutHistoryStats(userId);
       setHistoryStats(workoutStats);
     } catch (error) {
@@ -132,13 +126,12 @@ export default function ProfileScreen() {
   };
 
   const hasProAccess = customerInfo?.entitlements.active["pro"] !== undefined;
-  const expirationDate =
-    customerInfo?.entitlements.active["pro"]?.expirationDate;
+  const expirationDate = customerInfo?.entitlements.active["pro"]?.expirationDate;
 
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <ActivityIndicator size="large" color="#38e8ff" />
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
       </View>
     );
   }
@@ -148,8 +141,8 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setShowHistory(false)} className="mb-4">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#38e8ff" />
+          <Pressable onPress={() => setShowHistory(false)} className="mb-4 hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
           </Pressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Workout History
@@ -163,7 +156,7 @@ export default function ProfileScreen() {
           className="flex-1 px-6"
           data={workoutHistory}
           renderItem={({ item: workout }) => (
-            <View className="bg-surface p-5 rounded-xl mb-3 border border-border">
+            <View className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated">
               <View className="flex-row justify-between items-start mb-3">
                 <View className="flex-1">
                   <Text className="text-text-primary text-lg font-bold mb-1">
@@ -199,7 +192,7 @@ export default function ProfileScreen() {
           )}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
-            <View className="bg-surface p-8 rounded-xl border border-border items-center">
+            <View className="card-frosted p-8 rounded-3xl items-center shadow-elevated">
               <Text className="text-text-secondary text-center">
                 No workout history yet. Complete your first workout to see it here!
               </Text>
@@ -217,13 +210,12 @@ export default function ProfileScreen() {
       renderItem={() => (
         <>
           <View className="px-6 pt-16">
-
             <Text className="text-primary text-4xl font-bold mb-8">
               Profile
             </Text>
 
             {/* Workout Stats */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
               <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
                 Workout Stats
               </Text>
@@ -268,7 +260,7 @@ export default function ProfileScreen() {
 
               <Pressable
                 onPress={() => setShowHistory(true)}
-                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl"
+                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl hover-scale"
               >
                 <Text className="text-primary text-center font-bold">
                   View Full History →
@@ -278,7 +270,7 @@ export default function ProfileScreen() {
 
             {/* Recent Workouts Preview */}
             {workoutHistory.length > 0 && (
-              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                 <Text className="text-text-secondary mb-3 font-medium text-sm uppercase">
                   Recent Workouts
                 </Text>
@@ -304,10 +296,9 @@ export default function ProfileScreen() {
                 ))}
               </View>
             )}
-            <ThemeSwitcher />
             {/* User Stats */}
             {user && (
-              <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                 <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
                   Training Profile
                 </Text>
@@ -337,8 +328,11 @@ export default function ProfileScreen() {
               </View>
             )}
 
+            {/* Theme Switcher */}
+            <ThemeSwitcher />
+
             {/* User ID */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
               <Text className="text-text-secondary mb-2 font-medium">
                 User ID
               </Text>
@@ -353,7 +347,7 @@ export default function ProfileScreen() {
             </View>
 
             {/* Subscription Status */}
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
+            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
               <Text className="text-text-secondary mb-2 font-medium">
                 Subscription Status
               </Text>
@@ -361,15 +355,13 @@ export default function ProfileScreen() {
                 className={`text-xl font-bold ${hasProAccess ? "text-success" : "text-error"
                   }`}
               >
-                {hasProAccess ? "Pro Active ✓" : "No Active Subscription"}
+                {hasProAccess ? "Pro Active" : "No Active Subscription"}
               </Text>
               {expirationDate && (
                 <Text className="text-text-secondary mt-2 text-sm">
                   {customerInfo?.entitlements.active["pro"]?.willRenew
                     ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
-                    : `Expires: ${new Date(
-                      expirationDate
-                    ).toLocaleDateString()}`}
+                    : `Expires: ${new Date(expirationDate).toLocaleDateString()}`}
                 </Text>
               )}
             </View>
@@ -385,7 +377,7 @@ export default function ProfileScreen() {
                   Alert.alert("Error", "Failed to restore purchases");
                 }
               }}
-              className="bg-primary py-4 rounded-xl mb-4"
+              className="bg-primary py-4 rounded-2xl mb-4 hover-scale"
             >
               <Text className="text-background text-center font-bold text-base">
                 Restore Purchases
@@ -394,7 +386,7 @@ export default function ProfileScreen() {
 
             <Pressable
               onPress={handleResetProgress}
-              className="border-2 border-warning py-4 rounded-xl mb-4"
+              className="border-2 border-warning py-4 rounded-2xl mb-4 hover-scale"
             >
               <Text className="text-warning text-center font-bold text-base">
                 Reset Workout Plans
