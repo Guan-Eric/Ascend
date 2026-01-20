@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import OpenAI from "openai";
 import Markdown from "react-native-markdown-display";
+import { useUniwind } from "uniwind";
 
 type Message = {
   role: "user" | "assistant";
@@ -33,6 +34,7 @@ export default function AIScreen() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const flashListRef = useRef<FlashList<Message>>(null);
+  const { theme } = useUniwind();
 
   const openai = new OpenAI({
     apiKey: Constants.expoConfig?.extra?.openaiApiKey,
@@ -120,16 +122,24 @@ export default function AIScreen() {
     }
   }, [messages]);
 
+  const markdownColor =
+    theme === "light" || theme === "zen"
+      ? "#0f172a"
+      : theme === "matcha"
+        ? "#1f2d1f"
+        : theme === "coffee"
+          ? "#e7d3b1"
+          : "#e5e7eb";
+
   const renderMessage = ({ item }: { item: Message }) => (
     <View
       className={`mb-4 ${item.role === "user" ? "items-end" : "items-start"}`}
     >
       <View
-        className={`max-w-[80%] p-4 rounded-2xl ${
-          item.role === "user"
-            ? "bg-primary"
-            : "card-frosted"
-        }`}
+        className={`max-w-[80%] p-4 rounded-2xl ${item.role === "user"
+          ? "bg-primary shadow-elevated"
+          : "card-frosted shadow-elevated"
+          }`}
       >
         {item.role === "assistant" && (
           <View className="flex-row items-center mb-2">
@@ -147,8 +157,9 @@ export default function AIScreen() {
         ) : (
           <Markdown
             style={{
-              body: { color: "#ffffff" },
-              heading3: { fontSize: 18, fontWeight: "bold", marginBottom: 4 },
+              body: {
+                color: markdownColor,
+              }, heading3: { fontSize: 18, fontWeight: "bold", marginBottom: 4 },
               strong: { fontWeight: "bold" },
               paragraph: { marginBottom: 8 },
             }}
@@ -158,9 +169,8 @@ export default function AIScreen() {
         )}
 
         <Text
-          className={`text-xs mt-2 ${
-            item.role === "user" ? "text-background/70" : "text-text-muted"
-          }`}
+          className={`text-xs mt-2 ${item.role === "user" ? "text-background/70" : "text-text-muted"
+            }`}
         >
           {new Date(item.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
@@ -236,9 +246,8 @@ export default function AIScreen() {
             <Pressable
               onPress={sendMessage}
               disabled={!input.trim() || loading}
-              className={`w-12 h-12 rounded-full items-center justify-center hover-scale ${
-                input.trim() && !loading ? "bg-primary" : "bg-surface-elevated"
-              }`}
+              className={`w-12 h-12 rounded-full items-center justify-center hover-scale ${input.trim() && !loading ? "bg-primary" : "bg-surface-elevated"
+                }`}
             >
               <MaterialCommunityIcons
                 name="send"
