@@ -30,18 +30,15 @@ export default function ExerciseDetailsScreen() {
       if (!ex) return;
       setExercise(ex);
 
-      // Check if user can access this exercise
       const completedIds = await backend.getCompletedExerciseIds(userId);
       const access = await backend.canAccessExercise(exerciseId, completedIds);
       setCanAccess(access);
 
-      // Get next progression
       if (ex.nextProgressionId) {
         const next = await backend.getExercise(ex.nextProgressionId);
         setNextExercise(next);
       }
 
-      // Get previous exercises (prerequisites)
       if (ex.prerequisites) {
         const prevExercises = await backend.getExercisesByIds(ex.prerequisites);
         setPreviousExercises(prevExercises);
@@ -111,6 +108,7 @@ export default function ExerciseDetailsScreen() {
   if (!exercise) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-text-secondary">Loading...</Text>
       </View>
     );
@@ -118,156 +116,146 @@ export default function ExerciseDetailsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <FlashList className="flex-1" data={[0]} renderItem={() => (<>
-        {/* Header */}
-        <View className="px-6 pt-16 pb-6">
-          <Pressable onPress={() => router.back()} className="mb-4">
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={28}
-              color="#38e8ff"
-            />
-          </Pressable>
+      <FlashList
+        className="flex-1"
+        data={[0]}
+        renderItem={() => (
+          <>
+            <View className="px-6 pt-16 pb-6">
+              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+                <MaterialCommunityIcons name="arrow-left" size={28} color="#00d9ff" />
+              </Pressable>
 
-          <View className="flex-row items-center mb-2">
-            <MaterialCommunityIcons
-              name={getCategoryIcon(exercise.category)}
-              size={40}
-              color="#38e8ff"
-            />
-            <Text
-              className={`${getLevelColor(
-                exercise.level
-              )} text-sm font-bold uppercase ml-auto`}
-            >
-              {exercise.level}
-            </Text>
-          </View>
-
-          <Text className="text-text-primary text-4xl font-bold mb-3">
-            {exercise.name}
-          </Text>
-
-          <View className="flex-row items-center">
-            <View className="bg-surface px-4 py-2 rounded-lg mr-3">
-              <Text className="text-text-secondary text-xs uppercase">
-                Category
-              </Text>
-              <Text className="text-text-primary font-bold capitalize">
-                {exercise.category}
-              </Text>
-            </View>
-            <View className="bg-surface px-4 py-2 rounded-lg mr-3">
-              <Text className="text-text-secondary text-xs uppercase">
-                Equipment
-              </Text>
-              <Text className="text-text-primary font-bold capitalize">
-                {exercise.equipment}
-              </Text>
-            </View>
-            <View className="bg-surface px-4 py-2 rounded-lg">
-              <Text className="text-text-secondary text-xs uppercase">
-                Target
-              </Text>
-              <Text className="text-text-primary font-bold">
-                {exercise.target.value}{" "}
-                {exercise.target.type === "reps" ? "reps" : "sec"}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="px-6">
-          {/* Access Status */}
-          {!canAccess && (
-            <View className="bg-warning/20 border-2 border-warning p-4 rounded-xl mb-4">
-              <Text className="text-warning font-bold mb-1">
-                🔒 Locked Exercise
-              </Text>
-              <Text className="text-text-secondary">
-                Complete the prerequisites below to unlock this exercise
-              </Text>
-            </View>
-          )}
-
-          {/* Description */}
-          <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-            <Text className="text-primary text-lg font-bold mb-3">
-              How to Perform
-            </Text>
-            <Text className="text-text-primary leading-6">
-              {exercise.description}
-            </Text>
-          </View>
-
-          {/* Prerequisites */}
-          {previousExercises.length > 0 && (
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-primary text-lg font-bold mb-3">
-                Prerequisites
-              </Text>
-              {previousExercises.map((prevEx) => (
-                <Pressable
-                  key={prevEx.id}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(tabs)/(skills)/exercise-details",
-                      params: { exerciseId: prevEx.id },
-                    })
-                  }
-                  className="flex-row items-center justify-between p-3 bg-surface-elevated rounded-lg mb-2"
-                >
-                  <Text className="text-text-primary font-semibold flex-1">
-                    {prevEx.name}
-                  </Text>
+              <View className="flex-row items-center mb-3">
+                <View className="bg-primary/10 w-14 h-14 rounded-2xl items-center justify-center">
                   <MaterialCommunityIcons
-                    name="chevron-right"
-                    size={24}
-                    color="#7a86a8"
+                    name={getCategoryIcon(exercise.category)}
+                    size={32}
+                    color="#00d9ff"
                   />
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          {/* Next Progression */}
-          {nextExercise && (
-            <View className="bg-surface p-6 rounded-xl mb-4 border border-border">
-              <Text className="text-primary text-lg font-bold mb-3">
-                Next Progression
-              </Text>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/(skills)/exercise-details",
-                    params: { exerciseId: nextExercise.id },
-                  })
-                }
-                className="flex-row items-center justify-between p-3 bg-surface-elevated rounded-lg"
-              >
-                <View className="flex-1">
-                  <Text className="text-text-primary font-semibold">
-                    {nextExercise.name}
-                  </Text>
-                  <Text className="text-text-secondary text-sm">
-                    {nextExercise.target.value}{" "}
-                    {nextExercise.target.type === "reps" ? "reps" : "sec"}
+                </View>
+                <View
+                  className={`ml-auto px-4 py-2 rounded-full ${
+                    exercise.level === "beginner"
+                      ? "bg-success/20"
+                      : exercise.level === "intermediate"
+                      ? "bg-warning/20"
+                      : "bg-error/20"
+                  }`}
+                >
+                  <Text
+                    className={`${getLevelColor(exercise.level)} text-sm font-bold uppercase`}
+                  >
+                    {exercise.level}
                   </Text>
                 </View>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={24}
-                  color="#7a86a8"
-                />
-              </Pressable>
-            </View>
-          )}
-        </View>
-      </>)}/>
+              </View>
 
-      {/* Action Buttons */}
+              <Text className="text-text-primary text-4xl font-bold mb-4">
+                {exercise.name}
+              </Text>
+
+              <View className="flex-row gap-3">
+                <View className="card-frosted px-4 py-3 rounded-xl flex-1">
+                  <Text className="text-text-secondary text-xs uppercase mb-1">Category</Text>
+                  <Text className="text-text-primary font-bold capitalize">
+                    {exercise.category}
+                  </Text>
+                </View>
+                <View className="card-frosted px-4 py-3 rounded-xl flex-1">
+                  <Text className="text-text-secondary text-xs uppercase mb-1">Equipment</Text>
+                  <Text className="text-text-primary font-bold capitalize">
+                    {exercise.equipment}
+                  </Text>
+                </View>
+                <View className="card-frosted px-4 py-3 rounded-xl flex-1">
+                  <Text className="text-text-secondary text-xs uppercase mb-1">Target</Text>
+                  <Text className="text-text-primary font-bold">
+                    {exercise.target.value}{" "}
+                    {exercise.target.type === "reps" ? "reps" : "sec"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View className="px-6">
+              {!canAccess && (
+                <View className="card-frosted border-2 border-warning p-5 rounded-3xl mb-4 shadow-elevated">
+                  <View className="flex-row items-center mb-2">
+                    <MaterialCommunityIcons name="lock" size={24} color="#f59e0b" />
+                    <Text className="text-warning font-bold ml-2 text-base">
+                      Locked Exercise
+                    </Text>
+                  </View>
+                  <Text className="text-text-secondary leading-5">
+                    Complete the prerequisites below to unlock this exercise
+                  </Text>
+                </View>
+              )}
+
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                <Text className="text-primary text-lg font-bold mb-3">How to Perform</Text>
+                <Text className="text-text-primary leading-6">{exercise.description}</Text>
+              </View>
+
+              {previousExercises.length > 0 && (
+                <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                  <Text className="text-primary text-lg font-bold mb-3">Prerequisites</Text>
+                  {previousExercises.map((prevEx) => (
+                    <Pressable
+                      key={prevEx.id}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(tabs)/(skills)/exercise-details",
+                          params: { exerciseId: prevEx.id },
+                        })
+                      }
+                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 hover-scale"
+                    >
+                      <Text className="text-text-primary font-semibold flex-1">
+                        {prevEx.name}
+                      </Text>
+                      <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+
+              {nextExercise && (
+                <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                  <Text className="text-primary text-lg font-bold mb-3">Next Progression</Text>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(tabs)/(skills)/exercise-details",
+                        params: { exerciseId: nextExercise.id },
+                      })
+                    }
+                    className="glass flex-row items-center justify-between p-4 rounded-2xl hover-scale"
+                  >
+                    <View className="flex-1">
+                      <Text className="text-text-primary font-semibold mb-1">
+                        {nextExercise.name}
+                      </Text>
+                      <Text className="text-text-secondary text-sm">
+                        {nextExercise.target.value}{" "}
+                        {nextExercise.target.type === "reps" ? "reps" : "sec"}
+                      </Text>
+                    </View>
+                    <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+      />
+
       <View className="px-6 pb-8 bg-background">
-        <Pressable onPress={addToPlan} className="bg-primary py-4 rounded-xl">
+        <Pressable
+          onPress={addToPlan}
+          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
+        >
           <Text className="text-background text-center font-bold text-lg">
             + Add to Plan
           </Text>

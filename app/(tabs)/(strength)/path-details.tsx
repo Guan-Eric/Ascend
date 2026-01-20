@@ -36,13 +36,8 @@ export default function PathDetailsScreen() {
       const completed = await backend.getCompletedExerciseIds(userId);
       setCompletedIds(completed);
 
-      // Calculate progress
-      const completedCount = pathData.exercises.filter(ex =>
-        completed.includes(ex.id)
-      ).length;
-      const progressPercent = Math.round(
-        (completedCount / pathData.exercises.length) * 100
-      );
+      const completedCount = pathData.exercises.filter((ex) => completed.includes(ex.id)).length;
+      const progressPercent = Math.round((completedCount / pathData.exercises.length) * 100);
       setProgress(progressPercent);
     } catch (error) {
       console.error("Error loading path details:", error);
@@ -52,6 +47,7 @@ export default function PathDetailsScreen() {
   if (!path || exercises.length === 0) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-text-secondary">Loading...</Text>
       </View>
     );
@@ -64,66 +60,50 @@ export default function PathDetailsScreen() {
         data={[0]}
         renderItem={() => (
           <>
-            {/* Header */}
             <View className="px-6 pt-16 pb-6">
-              <Pressable onPress={() => router.back()} className="mb-4">
-                <MaterialCommunityIcons
-                  name="arrow-left"
-                  size={28}
-                  color="#38e8ff"
-                />
+              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+                <MaterialCommunityIcons name="arrow-left" size={28} color="#00d9ff" />
               </Pressable>
 
-              <Text className="text-text-primary text-4xl font-bold mb-3">
-                {path.name}
-              </Text>
+              <Text className="text-text-primary text-4xl font-bold mb-3">{path.name}</Text>
 
-              <Text className="text-text-secondary text-lg mb-4">
+              <Text className="text-text-secondary text-lg mb-6 leading-6">
                 {path.description}
               </Text>
 
-              {/* Progress */}
-              <View className="bg-surface p-4 rounded-xl">
-                <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-text-secondary">Your Progress</Text>
-                  <Text className="text-primary text-xl font-bold">
-                    {progress}%
-                  </Text>
+              <View className="card-frosted p-5 rounded-3xl shadow-elevated">
+                <View className="flex-row justify-between items-center mb-3">
+                  <Text className="text-text-secondary font-medium">Your Progress</Text>
+                  <Text className="text-primary text-2xl font-bold">{progress}%</Text>
                 </View>
-                <View className="bg-surface-elevated h-3 rounded-full overflow-hidden">
+                <View className="bg-surface-elevated/50 h-3 rounded-full overflow-hidden mb-2">
                   <View
-                    className="bg-primary h-full rounded-full"
+                    className="bg-primary h-full rounded-full shadow-elevated"
                     style={{ width: `${progress}%` }}
                   />
                 </View>
-                <Text className="text-text-muted text-sm mt-2">
-                  {completedIds.filter((id) => exercises.map((e) => e.id).includes(id)).length}
-                  /{exercises.length} exercises completed
+                <Text className="text-text-muted text-sm">
+                  {completedIds.filter((id) => exercises.map((e) => e.id).includes(id)).length}/
+                  {exercises.length} exercises completed
                 </Text>
               </View>
             </View>
 
-            {/* Progression Path */}
             <View className="px-6 pb-8">
-              <Text className="text-primary text-xl font-bold mb-4">
-                Progression Path
-              </Text>
+              <Text className="text-primary text-xl font-bold mb-4">Progression Path</Text>
 
               {exercises.map((exercise, index) => {
                 const isCompleted = completedIds.includes(exercise.id);
                 const isLocked =
                   exercise.prerequisites &&
-                  !exercise.prerequisites.every((prereq) =>
-                    completedIds.includes(prereq)
-                  );
+                  !exercise.prerequisites.every((prereq) => completedIds.includes(prereq));
 
                 return (
                   <View key={exercise.id} className="mb-3">
                     <View className="flex-row">
-                      {/* Progress Line */}
                       <View className="items-center mr-4">
                         <View
-                          className={`w-10 h-10 rounded-full items-center justify-center ${
+                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${
                             isCompleted
                               ? "bg-success"
                               : isLocked
@@ -132,29 +112,20 @@ export default function PathDetailsScreen() {
                           }`}
                         >
                           {isCompleted ? (
-                            <MaterialCommunityIcons
-                              name="check"
-                              size={24}
-                              color="#ffffff"
-                            />
+                            <MaterialCommunityIcons name="check" size={24} color="#ffffff" />
                           ) : isLocked ? (
-                            <MaterialCommunityIcons
-                              name="lock"
-                              size={20}
-                              color="#7a86a8"
-                            />
+                            <MaterialCommunityIcons name="lock" size={20} color="#7a86a8" />
                           ) : (
-                            <Text className="text-background font-bold">
+                            <Text className="text-background font-bold text-base">
                               {index + 1}
                             </Text>
                           )}
                         </View>
                         {index < exercises.length - 1 && (
-                          <View className="w-0.5 h-16 bg-border mt-2" />
+                          <View className="w-0.5 h-16 bg-border/50 mt-2" />
                         )}
                       </View>
 
-                      {/* Exercise Card */}
                       <Pressable
                         onPress={() =>
                           router.push({
@@ -162,35 +133,31 @@ export default function PathDetailsScreen() {
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 bg-surface p-4 rounded-xl border ${
+                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${
                           isCompleted
-                            ? "border-success"
+                            ? "border-2 border-success/30"
                             : isLocked
-                            ? "border-border opacity-60"
-                            : "border-primary"
+                            ? "opacity-60"
+                            : "border-2 border-primary/30"
                         }`}
                       >
                         <View className="flex-row justify-between items-start mb-2">
                           <Text className="text-text-primary font-bold text-lg flex-1">
                             {exercise.name}
                           </Text>
-                          <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={24}
-                            color="#7a86a8"
-                          />
+                          <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
                         </View>
-                        <Text className="text-text-secondary text-sm mb-2">
+                        <Text className="text-text-secondary text-sm mb-3 leading-5">
                           {exercise.description}
                         </Text>
-                        <View className="flex-row items-center">
-                          <View className="bg-surface-elevated px-3 py-1 rounded mr-2">
+                        <View className="flex-row gap-2">
+                          <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
                             <Text className="text-text-secondary text-xs">
                               {exercise.target.value}{" "}
                               {exercise.target.type === "reps" ? "reps" : "sec"}
                             </Text>
                           </View>
-                          <View className="bg-surface-elevated px-3 py-1 rounded">
+                          <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
                             <Text className="text-text-secondary text-xs capitalize">
                               {exercise.level}
                             </Text>

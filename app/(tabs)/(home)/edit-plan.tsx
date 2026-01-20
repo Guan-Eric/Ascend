@@ -24,9 +24,7 @@ export default function EditPlanScreen() {
   const planId = params.planId as string;
 
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [selectedExercises, setSelectedExercises] = useState<PlanExercise[]>(
-    []
-  );
+  const [selectedExercises, setSelectedExercises] = useState<PlanExercise[]>([]);
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
   const [exerciseDetails, setExerciseDetails] = useState<Exercise[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
@@ -40,7 +38,6 @@ export default function EditPlanScreen() {
 
   const loadPlanAndData = async () => {
     try {
-      // Load the plan
       const loadedPlan = await backend.getPlan(planId);
       if (!loadedPlan) {
         Alert.alert("Error", "Plan not found");
@@ -51,20 +48,16 @@ export default function EditPlanScreen() {
       setPlan(loadedPlan);
       setSelectedExercises(loadedPlan.exercises);
 
-      // Load all available exercises and skills
       const exercises = await backend.getAllExercises();
       const skills = await backend.getAllSkills();
       setAllExercises(exercises);
       setAllSkills(skills);
 
-      // Load exercise details for current plan
       const exercisePromises = loadedPlan.exercises.map((ex) =>
         backend.getExercise(ex.exerciseId)
       );
       const loadedDetails = await Promise.all(exercisePromises);
-      setExerciseDetails(
-        loadedDetails.filter((ex) => ex !== null) as Exercise[]
-      );
+      setExerciseDetails(loadedDetails.filter((ex) => ex !== null) as Exercise[]);
     } catch (error) {
       console.error("Error loading plan:", error);
       Alert.alert("Error", "Failed to load plan");
@@ -82,7 +75,6 @@ export default function EditPlanScreen() {
     const updated = [...selectedExercises, newExercise];
     setSelectedExercises(updated);
 
-    // Update exercise details
     const newDetails = await backend.getExercise(exercise.id);
     if (newDetails) {
       setExerciseDetails([...exerciseDetails, newDetails]);
@@ -101,8 +93,6 @@ export default function EditPlanScreen() {
           target: ex.target,
         }));
         setSelectedExercises([...selectedExercises, ...newExercises]);
-
-        // Update exercise details
         setExerciseDetails([...exerciseDetails, ...skillData.exercises]);
       }
       setShowExercisePicker(false);
@@ -140,7 +130,6 @@ export default function EditPlanScreen() {
         return;
       }
 
-      // Update the plan
       await backend.updatePlan(plan.id, {
         exercises: selectedExercises,
       });
@@ -189,6 +178,7 @@ export default function EditPlanScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
+        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
         <Text className="text-text-secondary">Loading plan...</Text>
       </View>
     );
@@ -198,29 +188,27 @@ export default function EditPlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <View className="flex-row items-center mb-4">
-            <Pressable onPress={() => setShowExercisePicker(false)}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color="#38e8ff"
-              />
-            </Pressable>
-            <Text className="text-primary text-2xl font-bold ml-4">
-              Add Exercise or Skill
-            </Text>
-          </View>
+          <Pressable onPress={() => setShowExercisePicker(false)} className="mb-4 hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+          </Pressable>
+          <Text className="text-primary text-2xl font-bold mb-2">
+            Add Exercise or Skill
+          </Text>
+          <Text className="text-text-secondary mb-4">
+            Browse exercises and skill progressions
+          </Text>
 
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search exercises or skills..."
             placeholderTextColor="#7a86a8"
-            className="bg-surface text-text-primary px-4 py-3 rounded-xl mb-4"
+            className="bg-surface-elevated text-text-primary px-4 py-3 rounded-xl mb-4"
           />
         </View>
 
         <FlashList
+          className="flex-1 px-6"
           data={[0]}
           renderItem={() => (
             <>
@@ -231,17 +219,22 @@ export default function EditPlanScreen() {
                 <Pressable
                   key={skill.id}
                   onPress={() => addSkillProgression(skill)}
-                  className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                  className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated hover-scale"
                 >
-                  <Text className="text-text-primary text-lg font-bold mb-1">
-                    {skill.name}
-                  </Text>
+                  <View className="flex-row items-center mb-2">
+                    <MaterialCommunityIcons name="medal-outline" size={24} color="#00d9ff" />
+                    <Text className="text-text-primary text-lg font-bold ml-3 flex-1">
+                      {skill.name}
+                    </Text>
+                  </View>
                   <Text className="text-text-secondary text-sm mb-2">
                     {skill.description}
                   </Text>
-                  <Text className="text-primary text-xs">
-                    +{skill.progression.length} exercises
-                  </Text>
+                  <View className="bg-primary/10 px-3 py-1 rounded-full self-start">
+                    <Text className="text-primary text-xs font-bold">
+                      +{skill.progression.length} exercises
+                    </Text>
+                  </View>
                 </Pressable>
               ))}
 
@@ -252,7 +245,7 @@ export default function EditPlanScreen() {
                 <Pressable
                   key={exercise.id}
                   onPress={() => addExercise(exercise)}
-                  className="bg-surface p-4 rounded-xl mb-3 border border-border"
+                  className="card-frosted p-4 rounded-2xl mb-3 hover-scale"
                 >
                   <Text className="text-text-primary text-lg font-bold mb-1">
                     {exercise.name}
@@ -273,47 +266,38 @@ export default function EditPlanScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <View className="px-6 pt-16 pb-4">
+        <View className="flex-row items-center justify-between mb-4">
+          <View className="flex-row items-center flex-1">
+            <Pressable onPress={() => router.back()} className="hover-scale">
+              <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            </Pressable>
+            <Text className="text-primary text-3xl font-bold ml-4">
+              Edit Plan
+            </Text>
+          </View>
+          <Pressable onPress={deletePlan} className="hover-scale">
+            <MaterialCommunityIcons name="delete" size={24} color="#ef4444" />
+          </Pressable>
+        </View>
+      </View>
+
       <FlashList
+        className="flex-1 px-6"
         data={[0]}
         renderItem={() => (
           <>
-            <View className="flex-row items-center justify-between mb-6">
-              <View className="flex-row items-center flex-1">
-                <Pressable onPress={() => router.back()}>
-                  <MaterialCommunityIcons
-                    name="arrow-left"
-                    size={24}
-                    color="#38e8ff"
-                  />
-                </Pressable>
-                <Text className="text-primary text-3xl font-bold ml-4">
-                  Edit Plan
-                </Text>
-              </View>
-              <Pressable onPress={deletePlan}>
-                <MaterialCommunityIcons
-                  name="delete"
-                  size={24}
-                  color="#ef4444"
-                />
-              </Pressable>
-            </View>
-
             {selectedExercises.length === 0 ? (
-              <View className="bg-surface p-8 rounded-xl items-center justify-center border border-border mb-4">
-                <MaterialCommunityIcons
-                  name="weight-lifter"
-                  size={64}
-                  color="#7a86a8"
-                />
-                <Text className="text-text-secondary text-center mt-4 mb-6">
+              <View className="card-frosted p-8 rounded-3xl items-center justify-center shadow-elevated mb-4">
+                <MaterialCommunityIcons name="weight-lifter" size={64} color="#7a86a8" />
+                <Text className="text-text-secondary text-center mt-4 mb-6 leading-6">
                   No exercises in this plan.{"\n"}Add exercises to get started!
                 </Text>
                 <Pressable
                   onPress={() => setShowExercisePicker(true)}
-                  className="bg-primary px-6 py-3 rounded-xl"
+                  className="bg-primary px-6 py-3 rounded-2xl hover-scale"
                 >
-                  <Text className="text-background font-bold">
+                  <Text className="text-background font-bold text-base">
                     + Add Exercise or Skill
                   </Text>
                 </Pressable>
@@ -325,91 +309,62 @@ export default function EditPlanScreen() {
                   if (!exercise) return null;
 
                   return (
-                    <View
-                      key={index}
-                      className="bg-surface p-4 rounded-xl mb-3 border border-border"
-                    >
+                    <View key={index} className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated">
                       <View className="flex-row justify-between items-start mb-3">
                         <View className="flex-1">
-                          <Text className="text-text-primary text-lg font-bold">
+                          <Text className="text-text-primary text-lg font-bold mb-1">
                             {exercise.name}
                           </Text>
                           <Text className="text-text-secondary text-sm">
                             {exercise.description}
                           </Text>
                         </View>
-                        <Pressable onPress={() => removeExercise(index)}>
-                          <MaterialCommunityIcons
-                            name="close-circle"
-                            size={24}
-                            color="#ef4444"
-                          />
+                        <Pressable onPress={() => removeExercise(index)} className="hover-scale">
+                          <MaterialCommunityIcons name="close-circle" size={24} color="#ef4444" />
                         </Pressable>
                       </View>
 
-                      {/* Sets Control */}
                       <View className="flex-row items-center mb-2">
-                        <Text className="text-text-secondary mr-3 w-12">
-                          Sets:
-                        </Text>
-                        <View className="flex-row items-center bg-surface-elevated rounded-lg">
+                        <Text className="text-text-secondary mr-3 w-12">Sets:</Text>
+                        <View className="flex-row items-center bg-surface-elevated rounded-xl">
                           <Pressable
-                            onPress={() =>
-                              updateSets(index, planExercise.sets - 1)
-                            }
-                            className="px-4 py-2"
+                            onPress={() => updateSets(index, planExercise.sets - 1)}
+                            className="px-4 py-2 hover-scale"
                           >
-                            <Text className="text-primary text-xl font-bold">
-                              -
-                            </Text>
+                            <Text className="text-primary text-xl font-bold">-</Text>
                           </Pressable>
                           <Text className="text-text-primary font-bold text-lg px-4">
                             {planExercise.sets}
                           </Text>
                           <Pressable
-                            onPress={() =>
-                              updateSets(index, planExercise.sets + 1)
-                            }
-                            className="px-4 py-2"
+                            onPress={() => updateSets(index, planExercise.sets + 1)}
+                            className="px-4 py-2 hover-scale"
                           >
-                            <Text className="text-primary text-xl font-bold">
-                              +
-                            </Text>
+                            <Text className="text-primary text-xl font-bold">+</Text>
                           </Pressable>
                         </View>
                       </View>
 
-                      {/* Target Control */}
                       <View className="flex-row items-center">
                         <Text className="text-text-secondary mr-3 w-12">
-                          {planExercise.target.type === "reps"
-                            ? "Reps:"
-                            : "Time:"}
+                          {planExercise.target.type === "reps" ? "Reps:" : "Time:"}
                         </Text>
-                        <View className="flex-row items-center bg-surface-elevated rounded-lg">
+                        <View className="flex-row items-center bg-surface-elevated rounded-xl">
                           <Pressable
-                            onPress={() =>
-                              updateTarget(index, planExercise.target.value - 1)
-                            }
-                            className="px-4 py-2"
+                            onPress={() => updateTarget(index, planExercise.target.value - 1)}
+                            className="px-4 py-2 hover-scale"
                           >
-                            <Text className="text-primary text-xl font-bold">
-                              -
-                            </Text>
+                            <Text className="text-primary text-xl font-bold">-</Text>
                           </Pressable>
                           <Text className="text-text-primary font-bold text-lg px-4">
                             {planExercise.target.value}
                             {planExercise.target.type === "time" ? "s" : ""}
                           </Text>
                           <Pressable
-                            onPress={() =>
-                              updateTarget(index, planExercise.target.value + 1)
-                            }
-                            className="px-4 py-2"
+                            onPress={() => updateTarget(index, planExercise.target.value + 1)}
+                            className="px-4 py-2 hover-scale"
                           >
-                            <Text className="text-primary text-xl font-bold">
-                              +
-                            </Text>
+                            <Text className="text-primary text-xl font-bold">+</Text>
                           </Pressable>
                         </View>
                       </View>
@@ -419,14 +374,10 @@ export default function EditPlanScreen() {
 
                 <Pressable
                   onPress={() => setShowExercisePicker(true)}
-                  className="bg-surface border-2 border-dashed border-primary p-4 rounded-xl mb-4 items-center"
+                  className="card-frosted border-2 border-dashed border-primary/30 p-6 rounded-3xl mb-4 items-center hover-scale"
                 >
-                  <MaterialCommunityIcons
-                    name="plus-circle-outline"
-                    size={32}
-                    color="#38e8ff"
-                  />
-                  <Text className="text-primary font-bold mt-2">
+                  <MaterialCommunityIcons name="plus-circle-outline" size={32} color="#00d9ff" />
+                  <Text className="text-primary font-bold mt-2 text-base">
                     Add More Exercises
                   </Text>
                 </Pressable>
@@ -438,7 +389,7 @@ export default function EditPlanScreen() {
 
       {selectedExercises.length > 0 && (
         <View className="px-6 pb-8 bg-background">
-          <Pressable onPress={savePlan} className="bg-primary py-4 rounded-xl">
+          <Pressable onPress={savePlan} className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated">
             <Text className="text-background text-center font-bold text-lg">
               Save Changes
             </Text>
