@@ -137,8 +137,13 @@ export default function WorkoutScreen() {
         duration,
       });
 
+      // Get user settings
+      const user = await backend.getUser(userId);
+      const autoProgress = user?.autoProgressExercises ?? true;
+
       // Check for progressions and mark exercises complete
       const progressionMessages: string[] = [];
+      const autoProgressedExercises: Array<{ oldName: string; newName: string }> = [];
 
       for (const prog of progress) {
         if (prog.actualValues.length > 0) {
@@ -160,6 +165,23 @@ export default function WorkoutScreen() {
                   progressionMessages.push(
                     `🎉 ${exercise.name} completed! Ready for: ${nextExercise.name}`
                   );
+
+                  // Auto-progress if enabled
+                  if (autoProgress) {
+                    const { autoProgressPlans } = await import("../../../backend/autoProgression");
+                    const { updatedPlans, planNames } = await autoProgressPlans(
+                      userId,
+                      exercise.id,
+                      nextExercise.id
+                    );
+
+                    if (updatedPlans.length > 0) {
+                      autoProgressedExercises.push({
+                        oldName: exercise.name,
+                        newName: nextExercise.name,
+                      });
+                    }
+                  }
                 }
               } else {
                 progressionMessages.push(`🏆 ${exercise.name} mastered!`);
@@ -172,10 +194,19 @@ export default function WorkoutScreen() {
         }
       }
 
-      // Show completion message with progressions
+      // Build completion message
       let message = "Great job! Your workout has been logged.";
+
       if (progressionMessages.length > 0) {
         message += "\n\n" + progressionMessages.join("\n");
+      }
+
+      if (autoProgressedExercises.length > 0) {
+        message += "\n\n🔄 Auto-Progressed:\n";
+        autoProgressedExercises.forEach(({ oldName, newName }) => {
+          message += `• ${oldName} → ${newName}\n`;
+        });
+        message += "\nYour workout plans have been updated!";
       }
 
       Alert.alert("Workout Complete!", message, [

@@ -76,11 +76,10 @@ export default function SkillDetailsScreen() {
       if (!userId || !skill) return;
 
       await backend.updateUserGoal(userId, "skill", skill.id);
-      await backend.generateWorkoutPlan(userId);
 
       Alert.alert(
         "Goal Set!",
-        `${skill.name} is now your primary goal. Your workout plan has been updated.`
+        `${skill.name} is now your primary goal. Add exercises to your workout plan to start training!`
       );
     } catch (error) {
       console.error("Error setting goal:", error);
@@ -147,13 +146,12 @@ export default function SkillDetailsScreen() {
                     <View className="flex-row">
                       <View className="items-center mr-4">
                         <View
-                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${
-                            isCompleted
+                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${isCompleted
                               ? "bg-success"
                               : isLocked
-                              ? "bg-surface-elevated"
-                              : "bg-primary"
-                          }`}
+                                ? "bg-surface-elevated"
+                                : "bg-primary"
+                            }`}
                         >
                           {isCompleted ? (
                             <MaterialCommunityIcons name="check" size={24} color="#ffffff" />
@@ -177,13 +175,12 @@ export default function SkillDetailsScreen() {
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${
-                          isCompleted
+                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${isCompleted
                             ? "border-2 border-success/30"
                             : isLocked
-                            ? "opacity-60"
-                            : "border-2 border-primary/30"
-                        }`}
+                              ? "opacity-60"
+                              : "border-2 border-primary/30"
+                          }`}
                       >
                         <View className="flex-row justify-between items-start mb-2">
                           <Text className="text-text-primary font-bold text-lg flex-1">

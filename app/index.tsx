@@ -1,4 +1,4 @@
-/ app/index.tsx - Entry point that checks auth state
+// app/index.tsx - Entry point that checks auth state
 import { useEffect } from "react";
 import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
@@ -22,7 +22,7 @@ export default function Index() {
         if (customerInfo.entitlements.active["pro"]) {
           router.replace("/(tabs)/(home)");
         } else {
-          router.replace("/(onboarding)/paywall");
+          router.replace("/(tabs)/(home)");//router.replace("/(onboarding)/paywall");
         }
       } else {
         // No user signed in

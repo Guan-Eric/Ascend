@@ -37,6 +37,7 @@ export default function ProfileScreen() {
   const [editDays, setEditDays] = useState(3);
   const [editGoalType, setEditGoalType] = useState<"skill" | "strength">("strength");
   const [editPrimaryGoalId, setEditPrimaryGoalId] = useState("");
+  const [editAutoProgress, setEditAutoProgress] = useState(true);
 
   // Email linking
   const [email, setEmail] = useState("");
@@ -68,6 +69,7 @@ export default function ProfileScreen() {
         setEditDays(userData.trainingDaysPerWeek);
         setEditGoalType(userData.goalType);
         setEditPrimaryGoalId(userData.primaryGoalId);
+        setEditAutoProgress(userData.autoProgressExercises);
       }
 
       const progressStats = await backend.getUserProgressStats(userId);
@@ -98,6 +100,7 @@ export default function ProfileScreen() {
         trainingDaysPerWeek: editDays,
         goalType: editGoalType,
         primaryGoalId: editPrimaryGoalId,
+        autoProgressExercises: editAutoProgress,
       });
 
       Alert.alert("Success", "Settings updated!");
@@ -218,11 +221,12 @@ export default function ProfileScreen() {
   if (showSettings) {
     return (
       <View className="flex-1 bg-background px-6 pt-16">
-        <Pressable onPress={() => setShowSettings(false)} className="mb-4 hover-scale">
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
-        </Pressable>
+        <View className="flex-row items-center mb-4 gap-2">
+          <Pressable onPress={() => setShowSettings(false)} className=" hover-scale">
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+          </Pressable>
 
-        <Text className="text-primary text-3xl font-bold mb-6">Settings</Text>
+          <Text className="text-primary text-3xl font-bold ">Settings</Text></View>
 
         {/* Experience Level */}
         <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
@@ -233,7 +237,7 @@ export default function ProfileScreen() {
             <Pressable
               key={level}
               onPress={() => setEditLevel(level)}
-              className={`flex-1 card-frosted p-4 rounded-2xl hover-scale ${editLevel === level ? "border-2 border-primary" : ""
+              className={`flex-1 card-frosted py-4 rounded-2xl hover-scale border-2 ${editLevel === level ? "border-primary" : ""
                 }`}
             >
               <Text
@@ -300,6 +304,35 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
         </View>
+
+        {/* Auto Progression */}
+        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+          Automatic Progression
+        </Text>
+        <Pressable
+          onPress={() => setEditAutoProgress(!editAutoProgress)}
+          className="card-frosted p-5 rounded-3xl mb-6 shadow-elevated hover-scale"
+        >
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-text-primary text-lg font-bold mb-1">
+                Auto-Progress Exercises
+              </Text>
+              <Text className="text-text-secondary text-sm leading-5">
+                Automatically replace completed exercises with the next progression in your workout plans
+              </Text>
+            </View>
+            <View
+              className={`w-14 h-8 rounded-full p-1 ${editAutoProgress ? "bg-primary" : "bg-surface-elevated"
+                }`}
+            >
+              <View
+                className={`w-6 h-6 rounded-full bg-background shadow-elevated ${editAutoProgress ? "ml-auto" : ""
+                  }`}
+              />
+            </View>
+          </View>
+        </Pressable>
 
         <Pressable
           onPress={handleSaveSettings}

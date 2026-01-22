@@ -1,24 +1,10 @@
-// backend/index.ts
-/**
- * Central export for all backend functions
- */
-
-// User management
+// backend/index.ts - Updated exports
 export * from "./users";
-
-// Exercise management
 export * from "./exercises";
-
-// Skills and strength paths
 export * from "./skills";
-
-// Progress tracking
-export * from "./progress";
-
-// Workout plans
 export * from "./plans";
+export * from "./progress";
+export * from "./workoutHistory";
+export * from "./autoProgression";
 
-// Database seeding
-export * from "./seeder";
-
-export * from "./workoutHistory"
+// Note: planGeneration exports have been removed as auto-generation is deprecated
