@@ -1,4 +1,4 @@
-// Updated Step 1
+// app/(onboarding)/step1.tsx
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -23,10 +23,10 @@ export default function Step1Screen() {
       <View className="w-full mb-12">
         <Pressable
           onPress={() => router.push("/(onboarding)/step2")}
-          className="bg-primary py-5 rounded-xl shadow-lg"
+          className="bg-primary py-5 rounded-xl shadow-lg hover-scale"
         >
           <Text className="text-background text-center font-bold text-lg">
-            Continue
+            Let's Get Started
           </Text>
         </Pressable>
 

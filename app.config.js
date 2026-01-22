@@ -13,8 +13,18 @@ export default {
       resizeMode: "contain",
       backgroundColor: "#000000",
     },
+    ios: {
+      bundleIdentifier: 'com.ascend.calisthenics',
+      supportsTablet: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
+    },
     plugins: [["expo-font"], "expo-router"],
     extra: {
+      eas: {
+        projectId: "fc4507c1-e06b-4acc-8537-55dfa89cc3cd"
+      },
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       authDomain: process.env.AUTH_DOMAIN,
       projectId: process.env.PROJECT_ID,

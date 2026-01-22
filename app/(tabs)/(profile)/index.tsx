@@ -1,7 +1,8 @@
-import { View, Text, Pressable, Alert, ActivityIndicator } from "react-native";
+// app/(tabs)/(profile)/index.tsx - Updated with editable settings
+import { View, Text, Pressable, Alert, TextInput } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect, useRouter } from "expo-router";
-import { signOut } from "firebase/auth";
+import { signOut, linkWithCredential, EmailAuthProvider } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import { useCallback, useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
@@ -23,11 +24,23 @@ export default function ProfileScreen() {
   const [historyStats, setHistoryStats] = useState({
     totalWorkouts: 0,
     totalExercises: 0,
-    currentStreak: 0,
-    longestStreak: 0,
+    weeklyStreak: 0,
+    longestWeeklyStreak: 0,
   });
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showEmailLink, setShowEmailLink] = useState(false);
+
+  // Settings state
+  const [editLevel, setEditLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [editDays, setEditDays] = useState(3);
+  const [editGoalType, setEditGoalType] = useState<"skill" | "strength">("strength");
+  const [editPrimaryGoalId, setEditPrimaryGoalId] = useState("");
+
+  // Email linking
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     loadUserData();
@@ -50,6 +63,13 @@ export default function ProfileScreen() {
       const userData = await backend.getUser(userId);
       setUser(userData);
 
+      if (userData) {
+        setEditLevel(userData.level);
+        setEditDays(userData.trainingDaysPerWeek);
+        setEditGoalType(userData.goalType);
+        setEditPrimaryGoalId(userData.primaryGoalId);
+      }
+
       const progressStats = await backend.getUserProgressStats(userId);
       setStats({
         totalCompleted: progressStats.totalExercisesCompleted,
@@ -68,31 +88,46 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleResetProgress = () => {
-    Alert.alert(
-      "Reset Progress",
-      "This will delete all your workout plans and start fresh. Your workout history will be kept.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const userId = FIREBASE_AUTH.currentUser?.uid;
-              if (userId) {
-                await backend.deleteAllUserPlans(userId);
-                Alert.alert("Success", "Workout plans have been reset");
-                loadUserData();
-              }
-            } catch (error) {
-              console.error("Error resetting progress:", error);
-              Alert.alert("Error", "Failed to reset progress");
-            }
-          },
-        },
-      ]
-    );
+  const handleSaveSettings = async () => {
+    try {
+      const userId = FIREBASE_AUTH.currentUser?.uid;
+      if (!userId) return;
+
+      await backend.updateUser(userId, {
+        level: editLevel,
+        trainingDaysPerWeek: editDays,
+        goalType: editGoalType,
+        primaryGoalId: editPrimaryGoalId,
+      });
+
+      Alert.alert("Success", "Settings updated!");
+      setShowSettings(false);
+      loadUserData();
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      Alert.alert("Error", "Failed to save settings");
+    }
+  };
+
+  const handleLinkEmail = async () => {
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+      if (!currentUser || !currentUser.isAnonymous) {
+        Alert.alert("Error", "Not an anonymous account");
+        return;
+      }
+
+      const credential = EmailAuthProvider.credential(email, password);
+      await linkWithCredential(currentUser, credential);
+
+      Alert.alert("Success", "Email linked to your account!");
+      setShowEmailLink(false);
+      setEmail("");
+      setPassword("");
+    } catch (error: any) {
+      console.error("Error linking email:", error);
+      Alert.alert("Error", error.message || "Failed to link email");
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -114,12 +149,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) return "N/A";
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes} min`;
-  };
-
   const getDayName = (dayIndex: number) => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return days[dayIndex] || `Day ${dayIndex}`;
@@ -132,6 +161,154 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background justify-center items-center">
         <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <Text className="text-text-secondary mt-4">Loading workouts...</Text>
+      </View>
+    );
+  }
+
+  // Email Link View
+  if (showEmailLink && FIREBASE_AUTH.currentUser?.isAnonymous) {
+    return (
+      <View className="flex-1 bg-background px-6 pt-16">
+        <Pressable onPress={() => setShowEmailLink(false)} className="mb-4 hover-scale">
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+        </Pressable>
+
+        <Text className="text-primary text-3xl font-bold mb-2">Link Email</Text>
+        <Text className="text-text-secondary mb-6">
+          Convert your anonymous account to a permanent account
+        </Text>
+
+        <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+          <Text className="text-text-secondary text-sm mb-2">Email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="your@email.com"
+            placeholderTextColor="#7a86a8"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            className="bg-surface-elevated text-text-primary px-4 py-3 rounded-xl mb-4"
+          />
+
+          <Text className="text-text-secondary text-sm mb-2">Password</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Min 6 characters"
+            placeholderTextColor="#7a86a8"
+            secureTextEntry
+            className="bg-surface-elevated text-text-primary px-4 py-3 rounded-xl"
+          />
+        </View>
+
+        <Pressable
+          onPress={handleLinkEmail}
+          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
+        >
+          <Text className="text-background text-center font-bold text-lg">
+            Link Email
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  // Settings Edit View
+  if (showSettings) {
+    return (
+      <View className="flex-1 bg-background px-6 pt-16">
+        <Pressable onPress={() => setShowSettings(false)} className="mb-4 hover-scale">
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+        </Pressable>
+
+        <Text className="text-primary text-3xl font-bold mb-6">Settings</Text>
+
+        {/* Experience Level */}
+        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+          Experience Level
+        </Text>
+        <View className="flex-row mb-6 gap-2">
+          {(["beginner", "intermediate", "advanced"] as const).map((level) => (
+            <Pressable
+              key={level}
+              onPress={() => setEditLevel(level)}
+              className={`flex-1 card-frosted p-4 rounded-2xl hover-scale ${editLevel === level ? "border-2 border-primary" : ""
+                }`}
+            >
+              <Text
+                className={`text-center font-bold capitalize ${editLevel === level ? "text-primary" : "text-text-secondary"
+                  }`}
+              >
+                {level}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Training Days */}
+        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+          Training Days Per Week
+        </Text>
+        <View className="card-frosted p-6 rounded-3xl mb-6 shadow-elevated">
+          <Text className="text-text-primary text-4xl font-bold text-center mb-4">
+            {editDays}
+          </Text>
+          <View className="flex-row items-center justify-center gap-4">
+            <Pressable
+              onPress={() => setEditDays(Math.max(1, editDays - 1))}
+              className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+            >
+              <MaterialCommunityIcons name="minus" size={24} color="#00d9ff" />
+            </Pressable>
+            <Pressable
+              onPress={() => setEditDays(Math.min(7, editDays + 1))}
+              className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+            >
+              <MaterialCommunityIcons name="plus" size={24} color="#00d9ff" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Goal Type */}
+        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+          Goal Type
+        </Text>
+        <View className="flex-row mb-6 bg-surface-elevated p-1 rounded-2xl">
+          <Pressable
+            onPress={() => setEditGoalType("strength")}
+            className={`flex-1 py-3 rounded-xl ${editGoalType === "strength" ? "bg-primary" : ""
+              }`}
+          >
+            <Text
+              className={`text-center font-bold ${editGoalType === "strength" ? "text-background" : "text-text-secondary"
+                }`}
+            >
+              Strength
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setEditGoalType("skill")}
+            className={`flex-1 py-3 rounded-xl ${editGoalType === "skill" ? "bg-primary" : ""
+              }`}
+          >
+            <Text
+              className={`text-center font-bold ${editGoalType === "skill" ? "text-background" : "text-text-secondary"
+                }`}
+            >
+              Skills
+            </Text>
+          </Pressable>
+        </View>
+
+        <Pressable
+          onPress={handleSaveSettings}
+          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
+        >
+          <Text className="text-background text-center font-bold text-lg">
+            Save Changes
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -163,7 +340,7 @@ export default function ProfileScreen() {
                     {getDayName(workout.dayIndex)} Workout
                   </Text>
                   <Text className="text-text-secondary text-sm">
-                    {formatDate(workout.completedAt)} • {formatDuration(workout.duration)}
+                    {formatDate(workout.completedAt)}
                   </Text>
                 </View>
                 <View className="bg-success/20 px-3 py-1 rounded-full">
@@ -203,6 +380,7 @@ export default function ProfileScreen() {
     );
   }
 
+  // Main Profile View
   return (
     <FlashList
       className="flex-1 bg-background"
@@ -210,9 +388,15 @@ export default function ProfileScreen() {
       renderItem={() => (
         <>
           <View className="px-6 pt-16">
-            <Text className="text-primary text-4xl font-bold mb-8">
-              Profile
-            </Text>
+            <View className="flex-row items-center justify-between mb-8">
+              <Text className="text-primary text-4xl font-bold">Profile</Text>
+              <Pressable
+                onPress={() => setShowSettings(true)}
+                className="bg-primary/10 p-3 rounded-2xl hover-scale"
+              >
+                <MaterialCommunityIcons name="cog" size={24} color="#00d9ff" />
+              </Pressable>
+            </View>
 
             {/* Workout Stats */}
             <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
@@ -231,10 +415,10 @@ export default function ProfileScreen() {
                 </View>
                 <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
                   <Text className="text-primary text-3xl font-bold mb-1">
-                    {historyStats.currentStreak}
+                    {historyStats.weeklyStreak}
                   </Text>
                   <Text className="text-text-secondary text-xs text-center">
-                    Day Streak
+                    Week Streak
                   </Text>
                 </View>
               </View>
@@ -250,7 +434,7 @@ export default function ProfileScreen() {
                 </View>
                 <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
                   <Text className="text-primary text-3xl font-bold mb-1">
-                    {historyStats.longestStreak}
+                    {historyStats.longestWeeklyStreak}
                   </Text>
                   <Text className="text-text-secondary text-xs text-center">
                     Best Streak
@@ -268,103 +452,29 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
 
-            {/* Recent Workouts Preview */}
-            {workoutHistory.length > 0 && (
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-text-secondary mb-3 font-medium text-sm uppercase">
-                  Recent Workouts
-                </Text>
-                {workoutHistory.slice(0, 3).map((workout) => (
-                  <View
-                    key={workout.id}
-                    className="flex-row justify-between items-center mb-3 pb-3 border-b border-border/30"
-                  >
-                    <View className="flex-1">
-                      <Text className="text-text-primary font-semibold">
-                        {getDayName(workout.dayIndex)} Workout
-                      </Text>
-                      <Text className="text-text-secondary text-xs">
-                        {formatDate(workout.completedAt)} • {workout.exercises.length} exercises
-                      </Text>
-                    </View>
-                    <MaterialCommunityIcons
-                      name="check-circle"
-                      size={20}
-                      color="#22c55e"
-                    />
+            {/* Link Email (if anonymous) */}
+            {FIREBASE_AUTH.currentUser?.isAnonymous && (
+              <Pressable
+                onPress={() => setShowEmailLink(true)}
+                className="card-frosted p-5 rounded-3xl mb-4 shadow-elevated hover-scale"
+              >
+                <View className="flex-row items-center">
+                  <MaterialCommunityIcons name="email-plus" size={24} color="#00d9ff" />
+                  <View className="ml-3 flex-1">
+                    <Text className="text-text-primary font-bold text-base mb-1">
+                      Link Email Account
+                    </Text>
+                    <Text className="text-text-secondary text-sm">
+                      Secure your account with email login
+                    </Text>
                   </View>
-                ))}
-              </View>
-            )}
-            {/* User Stats */}
-            {user && (
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-                  Training Profile
-                </Text>
-
-                <View className="flex-row justify-between mb-3">
-                  <Text className="text-text-secondary">Current Goal</Text>
-                  <Text className="text-text-primary font-semibold capitalize">
-                    {user.goalType === "skill"
-                      ? "Skill Training"
-                      : "Strength Building"}
-                  </Text>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
                 </View>
-
-                <View className="flex-row justify-between mb-3">
-                  <Text className="text-text-secondary">Experience Level</Text>
-                  <Text className="text-text-primary font-semibold capitalize">
-                    {user.level}
-                  </Text>
-                </View>
-
-                <View className="flex-row justify-between">
-                  <Text className="text-text-secondary">Training Days</Text>
-                  <Text className="text-text-primary font-semibold">
-                    {user.trainingDaysPerWeek} days/week
-                  </Text>
-                </View>
-              </View>
+              </Pressable>
             )}
 
             {/* Theme Switcher */}
             <ThemeSwitcher />
-
-            {/* User ID */}
-            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              <Text className="text-text-secondary mb-2 font-medium">
-                User ID
-              </Text>
-              <Text className="text-text-primary text-sm font-mono">
-                {FIREBASE_AUTH.currentUser?.uid.substring(0, 20)}...
-              </Text>
-              <Text className="text-text-muted text-xs mt-2">
-                {FIREBASE_AUTH.currentUser?.isAnonymous
-                  ? "Anonymous Account"
-                  : "Registered Account"}
-              </Text>
-            </View>
-
-            {/* Subscription Status */}
-            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              <Text className="text-text-secondary mb-2 font-medium">
-                Subscription Status
-              </Text>
-              <Text
-                className={`text-xl font-bold ${hasProAccess ? "text-success" : "text-error"
-                  }`}
-              >
-                {hasProAccess ? "Pro Active" : "No Active Subscription"}
-              </Text>
-              {expirationDate && (
-                <Text className="text-text-secondary mt-2 text-sm">
-                  {customerInfo?.entitlements.active["pro"]?.willRenew
-                    ? `Renews: ${new Date(expirationDate).toLocaleDateString()}`
-                    : `Expires: ${new Date(expirationDate).toLocaleDateString()}`}
-                </Text>
-              )}
-            </View>
 
             {/* Actions */}
             <Pressable
@@ -377,19 +487,10 @@ export default function ProfileScreen() {
                   Alert.alert("Error", "Failed to restore purchases");
                 }
               }}
-              className="bg-primary py-4 rounded-2xl mb-4 hover-scale"
+              className="bg-primary py-4 rounded-2xl mb-4 hover-scale shadow-elevated"
             >
               <Text className="text-background text-center font-bold text-base">
                 Restore Purchases
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleResetProgress}
-              className="border-2 border-warning py-4 rounded-2xl mb-4 hover-scale"
-            >
-              <Text className="text-warning text-center font-bold text-base">
-                Reset Workout Plans
               </Text>
             </Pressable>
           </View>

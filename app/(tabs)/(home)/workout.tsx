@@ -1,3 +1,4 @@
+// app/(tabs)/(home)/workout.tsx - Updated with progression detection
 import { View, Text, Pressable, TextInput, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
@@ -78,7 +79,6 @@ export default function WorkoutScreen() {
     return () => clearInterval(interval);
   }, [restEndTime]);
 
-
   const completeSet = () => {
     if (!plan) return;
 
@@ -107,7 +107,6 @@ export default function WorkoutScreen() {
     }
   };
 
-
   const skipExercise = () => {
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(currentExerciseIndex + 1);
@@ -122,6 +121,7 @@ export default function WorkoutScreen() {
 
       const duration = Math.floor((Date.now() - startTime) / 1000);
 
+      // Save workout history
       await backend.saveWorkoutHistory({
         userId,
         planId: plan.id,
@@ -137,18 +137,48 @@ export default function WorkoutScreen() {
         duration,
       });
 
+      // Check for progressions and mark exercises complete
+      const progressionMessages: string[] = [];
+
       for (const prog of progress) {
         if (prog.actualValues.length > 0) {
           const bestValue = Math.max(...prog.actualValues);
-          await backend.markExerciseCompleted(
-            userId,
-            prog.exerciseId,
-            bestValue
-          );
+          const exercise = exercises.find(ex => ex.id === prog.exerciseId);
+
+          if (exercise && bestValue >= exercise.target.value) {
+            // Check for previous best
+            const previousBest = await backend.getPersonalBest(userId, prog.exerciseId);
+
+            // If this is first time reaching target or beating previous best
+            if (!previousBest || bestValue > previousBest) {
+              await backend.markExerciseCompleted(userId, prog.exerciseId, bestValue);
+
+              // Check if there's a next progression
+              if (exercise.nextProgressionId) {
+                const nextExercise = await backend.getExercise(exercise.nextProgressionId);
+                if (nextExercise) {
+                  progressionMessages.push(
+                    `🎉 ${exercise.name} completed! Ready for: ${nextExercise.name}`
+                  );
+                }
+              } else {
+                progressionMessages.push(`🏆 ${exercise.name} mastered!`);
+              }
+            }
+          } else {
+            // Still save progress even if target not reached
+            await backend.markExerciseCompleted(userId, prog.exerciseId, bestValue);
+          }
         }
       }
 
-      Alert.alert("Workout Complete!", "Great job! Your workout has been logged.", [
+      // Show completion message with progressions
+      let message = "Great job! Your workout has been logged.";
+      if (progressionMessages.length > 0) {
+        message += "\n\n" + progressionMessages.join("\n");
+      }
+
+      Alert.alert("Workout Complete!", message, [
         {
           text: "OK",
           onPress: () => router.back(),
@@ -188,13 +218,11 @@ export default function WorkoutScreen() {
           </Text>
         </View>
 
-        {/* Progress Bar */}
         <View className="bg-surface-elevated h-2 rounded-full overflow-hidden mb-6">
           <View
             className="bg-primary h-full rounded-full"
             style={{
-              width: `${((currentExerciseIndex + 1) / exercises.length) * 100
-                }%`,
+              width: `${((currentExerciseIndex + 1) / exercises.length) * 100}%`,
             }}
           />
         </View>
@@ -205,8 +233,7 @@ export default function WorkoutScreen() {
         data={[0]}
         renderItem={() => (
           <>
-            {/* Current Exercise Card */}
-            <View className="card-frosted p-6 rounded-3xl mb-4">
+            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
               <Text className="text-primary text-sm font-semibold mb-2 uppercase">
                 Current Exercise
               </Text>
@@ -222,9 +249,7 @@ export default function WorkoutScreen() {
                   <Text className="text-text-secondary text-xs">Target</Text>
                   <Text className="text-text-primary font-bold text-lg">
                     {currentPlanExercise.target.value}{" "}
-                    {currentPlanExercise.target.type === "reps"
-                      ? "reps"
-                      : "sec"}
+                    {currentPlanExercise.target.type === "reps" ? "reps" : "sec"}
                   </Text>
                 </View>
                 <View className="bg-surface-elevated px-4 py-2 rounded-lg">
@@ -235,7 +260,6 @@ export default function WorkoutScreen() {
                 </View>
               </View>
 
-              {/* Completed sets */}
               {currentProgress.actualValues.length > 0 && (
                 <View className="bg-surface-elevated p-3 rounded-lg">
                   <Text className="text-text-secondary text-xs mb-2">Completed Sets:</Text>
@@ -252,18 +276,15 @@ export default function WorkoutScreen() {
               )}
             </View>
 
-            {/* Input Section */}
             {!allExercisesComplete && (
-              <View className="card-frosted p-6 rounded-3xl mb-4">
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                 <Text className="text-text-primary text-lg font-bold mb-3">
                   Log Set {currentProgress.completedSets + 1}
                 </Text>
                 <TextInput
                   value={currentSetReps}
                   onChangeText={setCurrentSetReps}
-                  placeholder={`Enter ${currentPlanExercise.target.type === "reps"
-                    ? "reps"
-                    : "seconds"
+                  placeholder={`Enter ${currentPlanExercise.target.type === "reps" ? "reps" : "seconds"
                     }`}
                   placeholderTextColor="#7a86a8"
                   keyboardType="numeric"
@@ -277,7 +298,7 @@ export default function WorkoutScreen() {
 
                 <Pressable
                   onPress={completeSet}
-                  className="bg-primary py-4 rounded-2xl mb-3 hover-scale"
+                  className="bg-primary py-4 rounded-2xl mb-3 hover-scale shadow-elevated"
                 >
                   <Text className="text-background text-center font-bold text-lg">
                     {restRemaining > 0 ? "Log Next Set Early" : "Complete Set"}
@@ -287,15 +308,12 @@ export default function WorkoutScreen() {
                   onPress={skipExercise}
                   className="border-2 border-text-muted py-3 rounded-2xl hover-scale"
                 >
-                  <Text className="text-text-muted text-center font-bold">
-                    Skip Exercise
-                  </Text>
+                  <Text className="text-text-muted text-center font-bold">Skip Exercise</Text>
                 </Pressable>
               </View>
             )}
 
-            {/* All Exercises Overview */}
-            <View className="card-frosted p-6 rounded-3xl mb-8">
+            <View className="card-frosted p-6 rounded-3xl mb-8 shadow-elevated">
               <Text className="text-text-primary text-lg font-bold mb-4">
                 Workout Overview
               </Text>
@@ -307,9 +325,7 @@ export default function WorkoutScreen() {
                 return (
                   <View
                     key={exercise.id}
-                    className={`flex-row items-center justify-between mb-3 pb-3 ${index < exercises.length - 1
-                      ? "border-b border-border"
-                      : ""
+                    className={`flex-row items-center justify-between mb-3 pb-3 ${index < exercises.length - 1 ? "border-b border-border" : ""
                       }`}
                   >
                     <View className="flex-1">
@@ -322,16 +338,11 @@ export default function WorkoutScreen() {
                       <Text className="text-text-secondary text-sm">
                         {prog.completedSets}/{planEx.sets} sets
                         {prog.actualValues.length > 0 &&
-                          ` • Best: ${Math.max(...prog.actualValues)}`
-                        }
+                          ` • Best: ${Math.max(...prog.actualValues)}`}
                       </Text>
                     </View>
                     {isComplete && (
-                      <MaterialCommunityIcons
-                        name="check-circle"
-                        size={24}
-                        color="#22c55e"
-                      />
+                      <MaterialCommunityIcons name="check-circle" size={24} color="#22c55e" />
                     )}
                   </View>
                 );
@@ -345,7 +356,7 @@ export default function WorkoutScreen() {
         <View className="px-6 pb-8 bg-background">
           <Pressable
             onPress={finishWorkout}
-            className="bg-success py-4 rounded-2xl hover-scale"
+            className="bg-success py-4 rounded-2xl hover-scale shadow-elevated"
           >
             <Text className="text-background text-center font-bold text-lg">
               Finish Workout

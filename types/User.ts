@@ -1,15 +1,11 @@
-// types/User.ts
+// types/User.ts - Updated with auto-progression setting
 export type User = {
-  id: string; // Firebase UID
+  id: string;
   email: string;
-
-  goalType: "skill" | "strength";
-  primaryGoalId: string; // skillId or strengthPathId
-
-  level: "beginner" | "intermediate" | "advanced";
-
-  trainingDaysPerWeek: number;
-
   createdAt: number;
-  updatedAt: number;
+  goalType: "skill" | "strength";
+  primaryGoalId: string;
+  level: "beginner" | "intermediate" | "advanced";
+  trainingDaysPerWeek: number;
+  autoProgressExercises: boolean; // New field for automatic progression
 };

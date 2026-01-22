@@ -1,6 +1,7 @@
+// app/(onboarding)/paywall.tsx
 import { View, Text, Pressable, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
 import Purchases, { PurchasesOffering } from "react-native-purchases";
 import { signInAnonymously } from "firebase/auth";
@@ -10,9 +11,16 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+
+  // Get user settings from params
+  const level = (params.level as "beginner" | "intermediate" | "advanced") || "beginner";
+  const trainingDays = parseInt(params.trainingDays as string) || 3;
+  const goalType = (params.goalType as "skill" | "strength") || "strength";
+  const primaryGoalId = (params.primaryGoalId as string) || "push_strength";
 
   useEffect(() => {
     initializeUser();
@@ -23,12 +31,13 @@ export default function PaywallScreen() {
       const userCredential = await signInAnonymously(FIREBASE_AUTH);
       const user = userCredential.user;
 
+      // Initialize user with onboarding settings
       await backend.initializeUser(user.uid, {
         email: "",
-        goalType: "strength",
-        primaryGoalId: "push_strength",
-        level: "beginner",
-        trainingDaysPerWeek: 3,
+        goalType,
+        primaryGoalId,
+        level,
+        trainingDaysPerWeek: trainingDays,
       });
 
       await Purchases.logIn(user.uid);
@@ -51,10 +60,6 @@ export default function PaywallScreen() {
       const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
 
       if (customerInfo.entitlements.active["pro"]) {
-        const userId = FIREBASE_AUTH.currentUser?.uid;
-        if (userId) {
-          await backend.generateWorkoutPlan(userId);
-        }
         router.replace("/(tabs)/(home)");
       }
     } catch (error: any) {
@@ -100,7 +105,7 @@ export default function PaywallScreen() {
           <View className="bg-primary w-24 h-24 rounded-full items-center justify-center mb-6 shadow-elevated-lg mx-auto">
             <Text className="text-6xl">🚀</Text>
           </View>
-          
+
           <Text className="text-primary text-5xl font-bold mb-3 text-center">
             Unlock Ascend
           </Text>
