@@ -1,6 +1,10 @@
+// components/ThemeSwitcher.tsx - Updated with persistence
 import { View, Pressable, Text } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Uniwind, useUniwind } from "uniwind";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const THEME_STORAGE_KEY = '@ascend_theme';
 
 export const ThemeSwitcher = () => {
     const { theme } = useUniwind();
@@ -16,6 +20,20 @@ export const ThemeSwitcher = () => {
 
     const activeTheme = theme;
 
+    const handleThemeChange = async (themeName: string) => {
+        try {
+            // Save to storage
+            await AsyncStorage.setItem(THEME_STORAGE_KEY, themeName);
+
+            // Apply theme
+            Uniwind.setTheme(
+                themeName as "coffee" | "light" | "dark" | "matcha" | "ube" | "zen" | "system"
+            );
+        } catch (error) {
+            console.error('Error saving theme:', error);
+        }
+    };
+
     return (
         <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
             <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
@@ -28,19 +46,8 @@ export const ThemeSwitcher = () => {
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <Pressable
-                        onPress={() =>
-                            Uniwind.setTheme(
-                                item.name as
-                                | "coffee"
-                                | "light"
-                                | "dark"
-                                | "matcha"
-                                | "ube"
-                                | "zen"
-                                | "system"
-                            )
-                        }
-                        className={`  px-5 py-4 rounded-xl mr-3 items-center justify-center
+                        onPress={() => handleThemeChange(item.name)}
+                        className={`px-5 py-4 rounded-xl mr-3 items-center justify-center
               ${activeTheme === item.name ? "bg-primary" : "bg-surface border border-border"}`}
                     >
                         <Text
