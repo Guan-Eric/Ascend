@@ -1,4 +1,4 @@
-// app/(tabs)/(profile)/index.tsx - Updated with editable settings
+// app/(tabs)/(profile)/index.tsx - Updated with scrollable settings
 import { View, Text, Pressable, Alert, TextInput } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -217,131 +217,176 @@ export default function ProfileScreen() {
     );
   }
 
-  // Settings Edit View
+  // Settings Edit View - NOW SCROLLABLE
   if (showSettings) {
-    return (
-      <View className="flex-1 bg-background px-6 pt-16">
-        <View className="flex-row items-center mb-4 gap-2">
-          <Pressable onPress={() => setShowSettings(false)} className=" hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
-          </Pressable>
+    const settingsData = [
+      { id: 'header', type: 'header' },
+      { id: 'experience', type: 'experience' },
+      { id: 'days', type: 'days' },
+      { id: 'goal', type: 'goal' },
+      { id: 'autoprogress', type: 'autoprogress' },
+      { id: 'save', type: 'save' },
+    ];
 
-          <Text className="text-primary text-3xl font-bold ">Settings</Text></View>
+    const renderSettingsItem = ({ item }: { item: typeof settingsData[0] }) => {
+      switch (item.type) {
+        case 'header':
+          return (
+            <View className="flex-row items-center mb-4 gap-2">
+              <Pressable onPress={() => setShowSettings(false)} className="hover-scale">
+                <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+              </Pressable>
+              <Text className="text-primary text-3xl font-bold">Settings</Text>
+            </View>
+          );
 
-        {/* Experience Level */}
-        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-          Experience Level
-        </Text>
-        <View className="flex-row mb-6 gap-2">
-          {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-            <Pressable
-              key={level}
-              onPress={() => setEditLevel(level)}
-              className={`flex-1 card-frosted py-4 rounded-2xl hover-scale border-2 ${editLevel === level ? "border-primary" : ""
-                }`}
-            >
-              <Text
-                className={`text-center font-bold capitalize ${editLevel === level ? "text-primary" : "text-text-secondary"
-                  }`}
+        case 'experience':
+          return (
+            <View className="mb-6">
+              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+                Experience Level
+              </Text>
+              <View className="flex-row gap-2">
+                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
+                  <Pressable
+                    key={level}
+                    onPress={() => setEditLevel(level)}
+                    className={`flex-1 card-frosted py-4 rounded-2xl hover-scale border-2${editLevel === level ? " border-primary" : ""
+                      }`}
+                  >
+                    <Text
+                      className={`text-center font-bold capitalize ${editLevel === level ? "text-primary" : "text-text-secondary"
+                        }`}
+                    >
+                      {level}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          );
+
+        case 'days':
+          return (
+            <View className="mb-6">
+              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+                Training Days Per Week
+              </Text>
+              <View className="card-frosted p-6 rounded-3xl shadow-elevated">
+                <Text className="text-text-primary text-4xl font-bold text-center mb-4">
+                  {editDays}
+                </Text>
+                <View className="flex-row items-center justify-center gap-4">
+                  <Pressable
+                    onPress={() => setEditDays(Math.max(1, editDays - 1))}
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+                  >
+                    <MaterialCommunityIcons name="minus" size={24} color="#00d9ff" />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setEditDays(Math.min(7, editDays + 1))}
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+                  >
+                    <MaterialCommunityIcons name="plus" size={24} color="#00d9ff" />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          );
+
+        case 'goal':
+          return (
+            <View className="mb-6">
+              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+                Goal Type
+              </Text>
+              <View className="flex-row bg-surface-elevated p-1 rounded-2xl">
+                <Pressable
+                  onPress={() => setEditGoalType("strength")}
+                  className={`flex-1 py-3 rounded-xl ${editGoalType === "strength" ? "bg-primary" : ""
+                    }`}
+                >
+                  <Text
+                    className={`text-center font-bold ${editGoalType === "strength" ? "text-background" : "text-text-secondary"
+                      }`}
+                  >
+                    Strength
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setEditGoalType("skill")}
+                  className={`flex-1 py-3 rounded-xl ${editGoalType === "skill" ? "bg-primary" : ""
+                    }`}
+                >
+                  <Text
+                    className={`text-center font-bold ${editGoalType === "skill" ? "text-background" : "text-text-secondary"
+                      }`}
+                  >
+                    Skills
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          );
+
+        case 'autoprogress':
+          return (
+            <View className="mb-6">
+              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
+                Automatic Progression
+              </Text>
+              <Pressable
+                onPress={() => setEditAutoProgress(!editAutoProgress)}
+                className="card-frosted p-5 rounded-3xl shadow-elevated hover-scale"
               >
-                {level}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Training Days */}
-        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-          Training Days Per Week
-        </Text>
-        <View className="card-frosted p-6 rounded-3xl mb-6 shadow-elevated">
-          <Text className="text-text-primary text-4xl font-bold text-center mb-4">
-            {editDays}
-          </Text>
-          <View className="flex-row items-center justify-center gap-4">
-            <Pressable
-              onPress={() => setEditDays(Math.max(1, editDays - 1))}
-              className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
-            >
-              <MaterialCommunityIcons name="minus" size={24} color="#00d9ff" />
-            </Pressable>
-            <Pressable
-              onPress={() => setEditDays(Math.min(7, editDays + 1))}
-              className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
-            >
-              <MaterialCommunityIcons name="plus" size={24} color="#00d9ff" />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Goal Type */}
-        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-          Goal Type
-        </Text>
-        <View className="flex-row mb-6 bg-surface-elevated p-1 rounded-2xl">
-          <Pressable
-            onPress={() => setEditGoalType("strength")}
-            className={`flex-1 py-3 rounded-xl ${editGoalType === "strength" ? "bg-primary" : ""
-              }`}
-          >
-            <Text
-              className={`text-center font-bold ${editGoalType === "strength" ? "text-background" : "text-text-secondary"
-                }`}
-            >
-              Strength
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setEditGoalType("skill")}
-            className={`flex-1 py-3 rounded-xl ${editGoalType === "skill" ? "bg-primary" : ""
-              }`}
-          >
-            <Text
-              className={`text-center font-bold ${editGoalType === "skill" ? "text-background" : "text-text-secondary"
-                }`}
-            >
-              Skills
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* Auto Progression */}
-        <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-          Automatic Progression
-        </Text>
-        <Pressable
-          onPress={() => setEditAutoProgress(!editAutoProgress)}
-          className="card-frosted p-5 rounded-3xl mb-6 shadow-elevated hover-scale"
-        >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                Auto-Progress Exercises
-              </Text>
-              <Text className="text-text-secondary text-sm leading-5">
-                Automatically replace completed exercises with the next progression in your workout plans
-              </Text>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1">
+                    <Text className="text-text-primary text-lg font-bold mb-1">
+                      Auto-Progress Exercises
+                    </Text>
+                    <Text className="text-text-secondary text-sm leading-5">
+                      Automatically replace completed exercises with the next progression in your workout plans
+                    </Text>
+                  </View>
+                  <View
+                    className={`w-14 h-8 rounded-full p-1 ${editAutoProgress ? "bg-primary" : "bg-surface-elevated"
+                      }`}
+                  >
+                    <View
+                      className={`w-6 h-6 rounded-full bg-background shadow-elevated ${editAutoProgress ? "ml-auto" : ""
+                        }`}
+                    />
+                  </View>
+                </View>
+              </Pressable>
             </View>
-            <View
-              className={`w-14 h-8 rounded-full p-1 ${editAutoProgress ? "bg-primary" : "bg-surface-elevated"
-                }`}
-            >
-              <View
-                className={`w-6 h-6 rounded-full bg-background shadow-elevated ${editAutoProgress ? "ml-auto" : ""
-                  }`}
-              />
-            </View>
-          </View>
-        </Pressable>
+          );
 
-        <Pressable
-          onPress={handleSaveSettings}
-          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
-        >
-          <Text className="text-background text-center font-bold text-lg">
-            Save Changes
-          </Text>
-        </Pressable>
+        case 'save':
+          return (
+            <Pressable
+              onPress={handleSaveSettings}
+              className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated mb-6"
+            >
+              <Text className="text-background text-center font-bold text-lg">
+                Save Changes
+              </Text>
+            </Pressable>
+          );
+
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <View className="flex-1 bg-background">
+        <FlashList
+          data={settingsData}
+          renderItem={renderSettingsItem}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64 }}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     );
   }
