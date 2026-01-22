@@ -73,10 +73,6 @@ export default function SignInScreen() {
     return (
         <View className="flex-1 bg-background px-8 justify-center">
             <View className="mb-12">
-                <View className="bg-primary w-24 h-24 rounded-full items-center justify-center mb-6 mx-auto shadow-elevated-lg">
-                    <Text className="text-6xl">💪</Text>
-                </View>
-
                 <Text className="text-primary text-5xl font-bold mb-3 text-center">
                     Welcome Back
                 </Text>
