@@ -7,6 +7,7 @@ import * as backend from "../../../backend";
 import { Skill } from "../../../types/Skill";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function PathDetailsScreen() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function PathDetailsScreen() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const primaryColor = useThemeColor('primary');
 
   useEffect(() => {
     loadPathDetails();
@@ -62,7 +64,7 @@ export default function PathDetailsScreen() {
           <>
             <View className="px-6 pt-16 pb-6">
               <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
-                <MaterialCommunityIcons name="arrow-left" size={28} color="#00d9ff" />
+                <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
               </Pressable>
 
               <Text className="text-text-primary text-4xl font-bold mb-3">{path.name}</Text>
@@ -103,13 +105,12 @@ export default function PathDetailsScreen() {
                     <View className="flex-row">
                       <View className="items-center mr-4">
                         <View
-                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${
-                            isCompleted
+                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${isCompleted
                               ? "bg-success"
                               : isLocked
-                              ? "bg-surface-elevated"
-                              : "bg-primary"
-                          }`}
+                                ? "bg-surface-elevated"
+                                : "bg-primary"
+                            }`}
                         >
                           {isCompleted ? (
                             <MaterialCommunityIcons name="check" size={24} color="#ffffff" />
@@ -133,13 +134,12 @@ export default function PathDetailsScreen() {
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${
-                          isCompleted
+                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${isCompleted
                             ? "border-2 border-success/30"
                             : isLocked
-                            ? "opacity-60"
-                            : "border-2 border-primary/30"
-                        }`}
+                              ? "opacity-60"
+                              : "border-2 border-primary/30"
+                          }`}
                       >
                         <View className="flex-row justify-between items-start mb-2">
                           <Text className="text-text-primary font-bold text-lg flex-1">

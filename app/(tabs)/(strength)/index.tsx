@@ -8,12 +8,15 @@ import { Skill } from "../../../types/Skill";
 import { Exercise } from "../../../types/Exercise";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function StrengthScreen() {
   const [strengthPaths, setStrengthPaths] = useState<Skill[]>([]);
   const [pathExercises, setPathExercises] = useState<Record<string, Exercise[]>>({});
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const primaryColor = useThemeColor('primary');
+  const successColor = useThemeColor('success');
 
   useEffect(() => {
     loadStrengthPaths();
@@ -148,9 +151,8 @@ export default function StrengthScreen() {
                         >
                           <View className="flex-1">
                             <Text
-                              className={`${
-                                isCompleted ? "text-success" : "text-text-primary"
-                              } text-base font-semibold`}
+                              className={`${isCompleted ? "text-success" : "text-text-primary"
+                                } text-base font-semibold`}
                             >
                               {exercise.name}
                             </Text>
@@ -160,7 +162,7 @@ export default function StrengthScreen() {
                             </Text>
                           </View>
                           {isCompleted ? (
-                            <MaterialCommunityIcons name="check-circle" size={20} color="#22c55e" />
+                            <MaterialCommunityIcons name="check-circle" size={20} color={successColor} />
                           ) : (
                             <MaterialCommunityIcons name="chevron-right" size={20} color="#7a86a8" />
                           )}

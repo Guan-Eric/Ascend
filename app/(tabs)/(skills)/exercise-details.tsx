@@ -6,6 +6,7 @@ import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function ExerciseDetailsScreen() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function ExerciseDetailsScreen() {
   const [nextExercise, setNextExercise] = useState<Exercise | null>(null);
   const [previousExercises, setPreviousExercises] = useState<Exercise[]>([]);
   const [canAccess, setCanAccess] = useState(false);
+  const primaryColor = useThemeColor('primary');
+  const warningColor = useThemeColor('warning');
 
   useEffect(() => {
     loadExerciseDetails();
@@ -123,7 +126,7 @@ export default function ExerciseDetailsScreen() {
           <>
             <View className="px-6 pt-16 pb-6">
               <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
-                <MaterialCommunityIcons name="arrow-left" size={28} color="#00d9ff" />
+                <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
               </Pressable>
 
               <View className="flex-row items-center mb-3">
@@ -131,17 +134,16 @@ export default function ExerciseDetailsScreen() {
                   <MaterialCommunityIcons
                     name={getCategoryIcon(exercise.category)}
                     size={32}
-                    color="#00d9ff"
+                    color={primaryColor}
                   />
                 </View>
                 <View
-                  className={`ml-auto px-4 py-2 rounded-full ${
-                    exercise.level === "beginner"
+                  className={`ml-auto px-4 py-2 rounded-full ${exercise.level === "beginner"
                       ? "bg-success/20"
                       : exercise.level === "intermediate"
-                      ? "bg-warning/20"
-                      : "bg-error/20"
-                  }`}
+                        ? "bg-warning/20"
+                        : "bg-error/20"
+                    }`}
                 >
                   <Text
                     className={`${getLevelColor(exercise.level)} text-sm font-bold uppercase`}
@@ -182,7 +184,7 @@ export default function ExerciseDetailsScreen() {
               {!canAccess && (
                 <View className="card-frosted border-2 border-warning p-5 rounded-3xl mb-4 shadow-elevated">
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="lock" size={24} color="#f59e0b" />
+                    <MaterialCommunityIcons name="lock" size={24} color={warningColor} />
                     <Text className="text-warning font-bold ml-2 text-base">
                       Locked Exercise
                     </Text>

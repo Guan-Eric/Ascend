@@ -6,6 +6,7 @@ import * as backend from "../../../backend";
 import { Skill } from "../../../types/Skill";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);

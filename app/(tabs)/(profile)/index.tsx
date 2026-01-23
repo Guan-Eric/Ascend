@@ -11,6 +11,7 @@ import { User } from "../../../types/User";
 import { WorkoutHistory } from "../../../types/WorkoutHistory";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEmailLink, setShowEmailLink] = useState(false);
+  const primaryColor = useThemeColor('primary');
 
   // Settings state
   const [editLevel, setEditLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
@@ -174,7 +176,7 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background px-6 pt-16">
         <Pressable onPress={() => setShowEmailLink(false)} className="mb-4 hover-scale">
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+          <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
         </Pressable>
 
         <Text className="text-primary text-3xl font-bold mb-2">Link Email</Text>
@@ -234,7 +236,7 @@ export default function ProfileScreen() {
           return (
             <View className="flex-row items-center mb-4 gap-2">
               <Pressable onPress={() => setShowSettings(false)} className="hover-scale">
-                <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+                <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
               </Pressable>
               <Text className="text-primary text-3xl font-bold">Settings</Text>
             </View>
@@ -251,7 +253,7 @@ export default function ProfileScreen() {
                   <Pressable
                     key={level}
                     onPress={() => setEditLevel(level)}
-                    className={`flex-1 card-frosted py-4 rounded-2xl hover-scale border-2${editLevel === level ? " border-primary" : ""
+                    className={`flex-1 card-frosted py-4 rounded-2xl hover-scale shadow-elevated border-2${editLevel === level ? " border-primary" : ""
                       }`}
                   >
                     <Text
@@ -279,15 +281,15 @@ export default function ProfileScreen() {
                 <View className="flex-row items-center justify-center gap-4">
                   <Pressable
                     onPress={() => setEditDays(Math.max(1, editDays - 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated hover-scale"
                   >
-                    <MaterialCommunityIcons name="minus" size={24} color="#00d9ff" />
+                    <MaterialCommunityIcons name="minus" size={24} color={primaryColor} />
                   </Pressable>
                   <Pressable
                     onPress={() => setEditDays(Math.min(7, editDays + 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center hover-scale"
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated hover-scale"
                   >
-                    <MaterialCommunityIcons name="plus" size={24} color="#00d9ff" />
+                    <MaterialCommunityIcons name="plus" size={24} color={primaryColor} />
                   </Pressable>
                 </View>
               </View>
@@ -397,7 +399,7 @@ export default function ProfileScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => setShowHistory(false)} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Workout History
@@ -472,7 +474,7 @@ export default function ProfileScreen() {
                 onPress={() => setShowSettings(true)}
                 className="bg-primary/10 p-3 rounded-2xl hover-scale"
               >
-                <MaterialCommunityIcons name="cog" size={24} color="#00d9ff" />
+                <MaterialCommunityIcons name="cog" size={24} color={primaryColor} />
               </Pressable>
             </View>
 
@@ -522,7 +524,7 @@ export default function ProfileScreen() {
 
               <Pressable
                 onPress={() => setShowHistory(true)}
-                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl hover-scale"
+                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  hover-scale"
               >
                 <Text className="text-primary text-center font-bold">
                   View Full History →
@@ -537,7 +539,7 @@ export default function ProfileScreen() {
                 className="card-frosted p-5 rounded-3xl mb-4 shadow-elevated hover-scale"
               >
                 <View className="flex-row items-center">
-                  <MaterialCommunityIcons name="email-plus" size={24} color="#00d9ff" />
+                  <MaterialCommunityIcons name="email-plus" size={24} color={primaryColor} />
                   <View className="ml-3 flex-1">
                     <Text className="text-text-primary font-bold text-base mb-1">
                       Link Email Account

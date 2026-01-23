@@ -7,11 +7,13 @@ import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { router, useFocusEffect } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function HomeScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planExercises, setPlanExercises] = useState<Record<string, Exercise[]>>({});
   const [loading, setLoading] = useState(true);
+  const primaryColor = useThemeColor('primary');
 
   useEffect(() => {
     loadPlans();
@@ -170,7 +172,7 @@ export default function HomeScreen() {
             <MaterialCommunityIcons
               name="plus"
               size={28}
-              color="#00d9ff"
+              color={primaryColor}
             />
           </Pressable>
         </View>
@@ -211,7 +213,7 @@ export default function HomeScreen() {
                   <MaterialCommunityIcons
                     name="pencil-outline"
                     size={20}
-                    color="#00d9ff"
+                    color={primaryColor}
                   />
                 </Pressable>
               </View>

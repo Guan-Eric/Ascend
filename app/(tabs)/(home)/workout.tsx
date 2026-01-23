@@ -8,6 +8,7 @@ import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 type ExerciseProgress = {
   exerciseId: string;
@@ -29,6 +30,8 @@ export default function WorkoutScreen() {
   const [restRemaining, setRestRemaining] = useState(0);
   const [restTime] = useState(60);
   const [startTime, setStartTime] = useState(Date.now());
+  const primaryColor = useThemeColor('primary');
+  const successColor = useThemeColor('success');
 
   useEffect(() => {
     loadWorkout();
@@ -242,7 +245,7 @@ export default function WorkoutScreen() {
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center justify-between mb-4">
           <Pressable onPress={() => router.back()} className="hover-scale">
-            <MaterialCommunityIcons name="close" size={28} color="#00d9ff" />
+            <MaterialCommunityIcons name="close" size={28} color={primaryColor} />
           </Pressable>
           <Text className="text-text-secondary">
             Exercise {currentExerciseIndex + 1}/{exercises.length}
@@ -373,7 +376,7 @@ export default function WorkoutScreen() {
                       </Text>
                     </View>
                     {isComplete && (
-                      <MaterialCommunityIcons name="check-circle" size={24} color="#22c55e" />
+                      <MaterialCommunityIcons name="check-circle" size={24} color={successColor} />
                     )}
                   </View>
                 );

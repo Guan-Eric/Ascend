@@ -8,6 +8,7 @@ import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { Skill } from "../../../types/Skill";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 type PlanExercise = {
   exerciseId: string;
@@ -31,6 +32,8 @@ export default function EditPlanScreen() {
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const primaryColor = useThemeColor('primary');
+  const errorColor = useThemeColor('error');
 
   useEffect(() => {
     loadPlanAndData();
@@ -189,7 +192,7 @@ export default function EditPlanScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => setShowExercisePicker(false)} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-2">
             Add Exercise or Skill
@@ -222,7 +225,7 @@ export default function EditPlanScreen() {
                   className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated hover-scale"
                 >
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="medal-outline" size={24} color="#00d9ff" />
+                    <MaterialCommunityIcons name="medal-outline" size={24} color={primaryColor} />
                     <Text className="text-text-primary text-lg font-bold ml-3 flex-1">
                       {skill.name}
                     </Text>
@@ -270,14 +273,14 @@ export default function EditPlanScreen() {
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center flex-1">
             <Pressable onPress={() => router.back()} className="hover-scale">
-              <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+              <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
             </Pressable>
             <Text className="text-primary text-3xl font-bold ml-4">
               Edit Plan
             </Text>
           </View>
           <Pressable onPress={deletePlan} className="hover-scale">
-            <MaterialCommunityIcons name="delete" size={24} color="#ef4444" />
+            <MaterialCommunityIcons name="delete" size={24} color={errorColor} />
           </Pressable>
         </View>
       </View>
@@ -320,7 +323,7 @@ export default function EditPlanScreen() {
                           </Text>
                         </View>
                         <Pressable onPress={() => removeExercise(index)} className="hover-scale">
-                          <MaterialCommunityIcons name="close-circle" size={24} color="#ef4444" />
+                          <MaterialCommunityIcons name="close-circle" size={24} color={errorColor} />
                         </Pressable>
                       </View>
 
@@ -376,7 +379,7 @@ export default function EditPlanScreen() {
                   onPress={() => setShowExercisePicker(true)}
                   className="card-frosted border-2 border-dashed border-primary/30 p-6 rounded-3xl mb-4 items-center hover-scale"
                 >
-                  <MaterialCommunityIcons name="plus-circle-outline" size={32} color="#00d9ff" />
+                  <MaterialCommunityIcons name="plus-circle-outline" size={32} color={primaryColor} />
                   <Text className="text-primary font-bold mt-2 text-base">
                     Add More Exercises
                   </Text>

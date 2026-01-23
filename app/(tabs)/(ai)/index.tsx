@@ -15,6 +15,7 @@ import Constants from "expo-constants";
 import OpenAI from "openai";
 import Markdown from "react-native-markdown-display";
 import { useUniwind } from "uniwind";
+import { useThemeColor } from "../../../utils/theme";
 
 type Message = {
   role: "user" | "assistant";
@@ -35,6 +36,7 @@ export default function AIScreen() {
   const [loading, setLoading] = useState(false);
   const flashListRef = useRef<FlashList<Message>>(null);
   const { theme } = useUniwind();
+  const primaryColor = useThemeColor('primary');
 
   const openai = new OpenAI({
     apiKey: Constants.expoConfig?.extra?.openaiApiKey,
@@ -146,7 +148,7 @@ export default function AIScreen() {
             <MaterialCommunityIcons
               name="robot-outline"
               size={20}
-              color="#00d9ff"
+              color={primaryColor}
             />
             <Text className="text-primary font-bold ml-2">AI Coach</Text>
           </View>
@@ -191,7 +193,7 @@ export default function AIScreen() {
             <MaterialCommunityIcons
               name="robot-outline"
               size={20}
-              color="#00d9ff"
+              color={primaryColor}
             />
             <Text className="text-text-primary font-bold ml-2">
               AI Coach is typing...

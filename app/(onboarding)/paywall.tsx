@@ -8,6 +8,7 @@ import { signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import * as backend from "../../backend";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../utils/theme";
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-
+  const primaryColor = useThemeColor('primary');
   // Get user settings from params
   const level = (params.level as "beginner" | "intermediate" | "advanced") || "beginner";
   const trainingDays = parseInt(params.trainingDays as string) || 3;
@@ -121,21 +122,25 @@ export default function PaywallScreen() {
               icon="dumbbell"
               title="Unlimited Workouts"
               description="Access all training programs and routines"
+              primaryColor={primaryColor}
             />
             <FeatureItem
               icon="medal-outline"
               title="Skill Progressions"
               description="Master advanced moves with step-by-step guidance"
+              primaryColor={primaryColor}
             />
             <FeatureItem
               icon="brain"
               title="AI Coach"
               description="Get personalized feedback and recommendations"
+              primaryColor={primaryColor}
             />
             <FeatureItem
               icon="chart-line"
               title="Progress Tracking"
               description="Monitor your improvements and achievements"
+              primaryColor={primaryColor}
             />
           </View>
 
@@ -187,15 +192,17 @@ function FeatureItem({
   icon,
   title,
   description,
+  primaryColor
 }: {
   icon: string;
   title: string;
   description: string;
+  primaryColor: string;
 }) {
   return (
     <View className="flex-row items-start mb-5">
       <View className="w-12 h-12 bg-primary rounded-2xl items-center justify-center mr-4">
-        <MaterialCommunityIcons name={icon as any} size={24} color="#000000" />
+        <MaterialCommunityIcons name={icon as any} size={24} color={primaryColor} />
       </View>
       <View className="flex-1">
         <Text className="text-text-primary text-lg font-semibold mb-1">

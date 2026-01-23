@@ -7,6 +7,7 @@ import * as backend from "../../../backend";
 import { Exercise } from "../../../types/Exercise";
 import { Skill } from "../../../types/Skill";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 type PlanExercise = {
   exerciseId: string;
@@ -30,6 +31,8 @@ export default function CreatePlanScreen() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [skillExercises, setSkillExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const primaryColor = useThemeColor('primary');
+  const errorColor = useThemeColor('error');
 
   useEffect(() => {
     loadData();
@@ -132,7 +135,7 @@ export default function CreatePlanScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Choose Training Day
@@ -151,7 +154,7 @@ export default function CreatePlanScreen() {
                 setSelectedDay(day);
                 setViewMode("main");
               }}
-              className="card-frosted p-5 rounded-2xl mb-3 hover-scale"
+              className="card-frosted p-5 rounded-2xl mb-3 hover-scale shadow-elevated"
             >
               <Text className="text-text-primary text-xl font-bold">
                 {getDayName(day)}
@@ -169,7 +172,7 @@ export default function CreatePlanScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-1">
             {selectedSkill.name}
@@ -185,7 +188,7 @@ export default function CreatePlanScreen() {
           renderItem={({ item: exercise }) => (
             <Pressable
               onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 hover-scale"
+              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated hover-scale"
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -223,7 +226,7 @@ export default function CreatePlanScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-4">
             Browse All Exercises
@@ -244,7 +247,7 @@ export default function CreatePlanScreen() {
           renderItem={({ item: exercise }) => (
             <Pressable
               onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 hover-scale"
+              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated hover-scale"
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -268,7 +271,7 @@ export default function CreatePlanScreen() {
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center mb-4">
           <Pressable onPress={() => router.back()} className="hover-scale">
-            <MaterialCommunityIcons name="close" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="close" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-2xl font-bold ml-4">
             {getDayName(selectedDay)} Workout
@@ -295,9 +298,9 @@ export default function CreatePlanScreen() {
 
               <Pressable
                 onPress={() => setViewMode("exercisePicker")}
-                className="card-frosted p-4 rounded-2xl mb-3 flex-row items-center hover-scale"
+                className="card-frosted p-4 rounded-2xl mb-3 flex-row items-center shadow-elevated hover-scale"
               >
-                <MaterialCommunityIcons name="dumbbell" size={24} color="#00d9ff" />
+                <MaterialCommunityIcons name="dumbbell" size={24} color={primaryColor} />
                 <View className="ml-3 flex-1">
                   <Text className="text-text-primary font-bold text-base">
                     Browse All Exercises
@@ -316,9 +319,9 @@ export default function CreatePlanScreen() {
                 <Pressable
                   key={skill.id}
                   onPress={() => loadSkillExercises(skill.id)}
-                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center hover-scale"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated hover-scale"
                 >
-                  <MaterialCommunityIcons name="medal-outline" size={24} color="#00d9ff" />
+                  <MaterialCommunityIcons name="medal-outline" size={24} color={primaryColor} />
                   <View className="ml-3 flex-1">
                     <Text className="text-text-primary font-bold">
                       {skill.name}
@@ -338,9 +341,9 @@ export default function CreatePlanScreen() {
                 <Pressable
                   key={path.id}
                   onPress={() => loadStrengthExercises(path.id)}
-                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center hover-scale"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated hover-scale"
                 >
-                  <MaterialCommunityIcons name="arm-flex" size={24} color="#00d9ff" />
+                  <MaterialCommunityIcons name="arm-flex" size={24} color={primaryColor} />
                   <View className="ml-3 flex-1">
                     <Text className="text-text-primary font-bold">
                       {path.name}
@@ -387,7 +390,7 @@ export default function CreatePlanScreen() {
                           <MaterialCommunityIcons
                             name="close-circle"
                             size={24}
-                            color="#ef4444"
+                            color={errorColor}
                           />
                         </Pressable>
                       </View>

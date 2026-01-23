@@ -123,7 +123,7 @@ export default function SignInScreen() {
             <Pressable
                 onPress={handleAnonymousSignIn}
                 disabled={loading}
-                className="card-frosted border-2 border-primary py-4 rounded-2xl hover-scale"
+                className="card-frosted border-2 border-primary py-4 rounded-2xl shadow-elevated hover-scale"
             >
                 <Text className="text-primary text-center font-bold text-lg">
                     Continue as Guest

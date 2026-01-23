@@ -7,6 +7,7 @@ import * as backend from "../../../backend";
 import { Exercise } from "../../../types/Exercise";
 import { Plan } from "../../../types/Plan";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useThemeColor } from "../../../utils/theme";
 
 export default function StrengthExerciseDetailsScreen() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function StrengthExerciseDetailsScreen() {
   const [canAccess, setCanAccess] = useState(false);
   const [userPlans, setUserPlans] = useState<Plan[]>([]);
   const [showPlanPicker, setShowPlanPicker] = useState(false);
+  const primaryColor = useThemeColor('primary');
+  const warningColor = useThemeColor('warning');
 
   useEffect(() => {
     loadExerciseDetails();
@@ -176,7 +179,7 @@ export default function StrengthExerciseDetailsScreen() {
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
           <Pressable onPress={() => setShowPlanPicker(false)} className="mb-4 hover-scale">
-            <MaterialCommunityIcons name="arrow-left" size={24} color="#00d9ff" />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
           </Pressable>
           <Text className="text-primary text-2xl font-bold mb-2">Add to Existing Plan</Text>
           <Text className="text-text-secondary mb-4">
@@ -227,7 +230,7 @@ export default function StrengthExerciseDetailsScreen() {
           <>
             <View className="px-6 pt-16 pb-6">
               <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
-                <MaterialCommunityIcons name="arrow-left" size={28} color="#00d9ff" />
+                <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
               </Pressable>
 
               <View className="flex-row items-center mb-3">
@@ -235,17 +238,16 @@ export default function StrengthExerciseDetailsScreen() {
                   <MaterialCommunityIcons
                     name={getCategoryIcon(exercise.category)}
                     size={32}
-                    color="#00d9ff"
+                    color={primaryColor}
                   />
                 </View>
                 <View
-                  className={`ml-auto px-4 py-2 rounded-full ${
-                    exercise.level === "beginner"
+                  className={`ml-auto px-4 py-2 rounded-full ${exercise.level === "beginner"
                       ? "bg-success/20"
                       : exercise.level === "intermediate"
-                      ? "bg-warning/20"
-                      : "bg-error/20"
-                  }`}
+                        ? "bg-warning/20"
+                        : "bg-error/20"
+                    }`}
                 >
                   <Text
                     className={`${getLevelColor(exercise.level)} text-sm font-bold uppercase`}
@@ -284,7 +286,7 @@ export default function StrengthExerciseDetailsScreen() {
               {!canAccess && (
                 <View className="card-frosted border-2 border-warning p-5 rounded-3xl mb-4 shadow-elevated">
                   <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="lock" size={24} color="#f59e0b" />
+                    <MaterialCommunityIcons name="lock" size={24} color={warningColor} />
                     <Text className="text-warning font-bold ml-2 text-base">Locked Exercise</Text>
                   </View>
                   <Text className="text-text-secondary leading-5">
