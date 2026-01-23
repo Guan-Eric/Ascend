@@ -1,11 +1,12 @@
 // app/(auth)/signin.tsx
-import { View, Text, Pressable, TextInput, Alert } from "react-native";
+import { View, Text, TextInput, Alert } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import Purchases from "react-native-purchases";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 
 export default function SignInScreen() {
     const router = useRouter();
@@ -104,15 +105,15 @@ export default function SignInScreen() {
                 />
             </View>
 
-            <Pressable
+            <AnimatedPressable
                 onPress={handleEmailSignIn}
                 disabled={loading}
-                className="bg-primary py-4 rounded-2xl mb-4 hover-scale shadow-elevated"
+                className="bg-primary py-4 rounded-2xl mb-4 shadow-elevated"
             >
                 <Text className="text-background text-center font-bold text-lg">
                     {loading ? "Signing In..." : "Sign In"}
                 </Text>
-            </Pressable>
+            </AnimatedPressable>
 
             <View className="flex-row items-center my-6">
                 <View className="flex-1 h-px bg-border" />
@@ -120,15 +121,15 @@ export default function SignInScreen() {
                 <View className="flex-1 h-px bg-border" />
             </View>
 
-            <Pressable
+            <AnimatedPressable
                 onPress={handleAnonymousSignIn}
                 disabled={loading}
-                className="card-frosted border-2 border-primary py-4 rounded-2xl shadow-elevated hover-scale"
+                className="card-frosted border-2 border-primary py-4 rounded-2xl shadow-elevated"
             >
                 <Text className="text-primary text-center font-bold text-lg">
                     Continue as Guest
                 </Text>
-            </Pressable>
+            </AnimatedPressable>
 
             <Text className="text-text-muted text-xs text-center mt-8 leading-5">
                 Don't have an account? Sign up as a guest and link your email later in settings.

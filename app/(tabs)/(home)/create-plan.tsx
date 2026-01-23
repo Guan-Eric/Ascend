@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, Alert } from "react-native";
+import { View, Text, TextInput, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -8,6 +8,7 @@ import { Exercise } from "../../../types/Exercise";
 import { Skill } from "../../../types/Skill";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
 
 type PlanExercise = {
   exerciseId: string;
@@ -134,9 +135,9 @@ export default function CreatePlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+          <AnimatedPressable onPress={() => router.back()} className="mb-4 ">
             <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Choose Training Day
           </Text>
@@ -149,17 +150,17 @@ export default function CreatePlanScreen() {
           className="flex-1 px-6"
           data={[0, 1, 2, 3, 4, 5, 6]}
           renderItem={({ item: day }) => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => {
                 setSelectedDay(day);
                 setViewMode("main");
               }}
-              className="card-frosted p-5 rounded-2xl mb-3 hover-scale shadow-elevated"
+              className="card-frosted p-5 rounded-2xl mb-3  shadow-elevated"
             >
               <Text className="text-text-primary text-xl font-bold">
                 {getDayName(day)}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           )}
         />
       </View>
@@ -171,9 +172,9 @@ export default function CreatePlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
+          <AnimatedPressable onPress={() => setViewMode("main")} className="mb-4 ">
             <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-2xl font-bold mb-1">
             {selectedSkill.name}
           </Text>
@@ -186,9 +187,9 @@ export default function CreatePlanScreen() {
           className="flex-1 px-6"
           data={skillExercises}
           renderItem={({ item: exercise }) => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated hover-scale"
+              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -208,7 +209,7 @@ export default function CreatePlanScreen() {
                   </Text>
                 </View>
               </View>
-            </Pressable>
+            </AnimatedPressable>
           )}
           keyExtractor={(item) => item.id}
         />
@@ -225,9 +226,9 @@ export default function CreatePlanScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setViewMode("main")} className="mb-4 hover-scale">
+          <AnimatedPressable onPress={() => setViewMode("main")} className="mb-4 ">
             <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-2xl font-bold mb-4">
             Browse All Exercises
           </Text>
@@ -245,9 +246,9 @@ export default function CreatePlanScreen() {
           className="flex-1 px-6"
           data={filteredExercises}
           renderItem={({ item: exercise }) => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated hover-scale"
+              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
             >
               <Text className="text-text-primary text-lg font-bold mb-1">
                 {exercise.name}
@@ -257,7 +258,7 @@ export default function CreatePlanScreen() {
                   ? `${exercise.target.value} reps`
                   : `${exercise.target.value}s hold`}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           )}
           keyExtractor={(item) => item.id}
         />
@@ -270,18 +271,18 @@ export default function CreatePlanScreen() {
     <View className="flex-1 bg-background">
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center mb-4">
-          <Pressable onPress={() => router.back()} className="hover-scale">
+          <AnimatedPressable onPress={() => router.back()} className="">
             <MaterialCommunityIcons name="close" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-2xl font-bold ml-4">
             {getDayName(selectedDay)} Workout
           </Text>
-          <Pressable
+          <AnimatedPressable
             onPress={() => setViewMode("dayPicker")}
-            className="ml-auto hover-scale"
+            className="ml-auto "
           >
             <Text className="text-primary text-sm">Change Day</Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
       </View>
 
@@ -296,9 +297,9 @@ export default function CreatePlanScreen() {
                 Add Exercises
               </Text>
 
-              <Pressable
+              <AnimatedPressable
                 onPress={() => setViewMode("exercisePicker")}
-                className="card-frosted p-4 rounded-2xl mb-3 flex-row items-center shadow-elevated hover-scale"
+                className="card-frosted p-4 rounded-2xl mb-3 flex-row items-center shadow-elevated "
               >
                 <MaterialCommunityIcons name="dumbbell" size={24} color={primaryColor} />
                 <View className="ml-3 flex-1">
@@ -310,16 +311,16 @@ export default function CreatePlanScreen() {
                   </Text>
                 </View>
                 <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-              </Pressable>
+              </AnimatedPressable>
 
               <Text className="text-text-secondary text-xs font-semibold mb-2 mt-4 uppercase">
                 Skills
               </Text>
               {allSkills.map((skill) => (
-                <Pressable
+                <AnimatedPressable
                   key={skill.id}
                   onPress={() => loadSkillExercises(skill.id)}
-                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated hover-scale"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated "
                 >
                   <MaterialCommunityIcons name="medal-outline" size={24} color={primaryColor} />
                   <View className="ml-3 flex-1">
@@ -331,17 +332,17 @@ export default function CreatePlanScreen() {
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                </Pressable>
+                </AnimatedPressable>
               ))}
 
               <Text className="text-text-secondary text-xs font-semibold mb-2 mt-4 uppercase">
                 Strength Paths
               </Text>
               {strengthPaths.map((path) => (
-                <Pressable
+                <AnimatedPressable
                   key={path.id}
                   onPress={() => loadStrengthExercises(path.id)}
-                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated hover-scale"
+                  className="card-frosted p-4 rounded-2xl mb-2 flex-row items-center shadow-elevated "
                 >
                   <MaterialCommunityIcons name="arm-flex" size={24} color={primaryColor} />
                   <View className="ml-3 flex-1">
@@ -353,7 +354,7 @@ export default function CreatePlanScreen() {
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                </Pressable>
+                </AnimatedPressable>
               ))}
             </View>
 
@@ -386,33 +387,33 @@ export default function CreatePlanScreen() {
                               : `${planExercise.target.value}s`}
                           </Text>
                         </View>
-                        <Pressable onPress={() => removeExercise(index)} className="hover-scale">
+                        <AnimatedPressable onPress={() => removeExercise(index)} className="">
                           <MaterialCommunityIcons
                             name="close-circle"
                             size={24}
                             color={errorColor}
                           />
-                        </Pressable>
+                        </AnimatedPressable>
                       </View>
 
                       <View className="flex-row items-center mt-2">
                         <Text className="text-text-secondary mr-3">Sets:</Text>
                         <View className="flex-row items-center bg-surface-elevated rounded-lg">
-                          <Pressable
+                          <AnimatedPressable
                             onPress={() => updateSets(index, planExercise.sets - 1)}
-                            className="px-4 py-2 hover-scale"
+                            className="px-4 py-2 "
                           >
                             <Text className="text-primary text-xl font-bold">-</Text>
-                          </Pressable>
+                          </AnimatedPressable>
                           <Text className="text-text-primary font-bold text-lg px-4">
                             {planExercise.sets}
                           </Text>
-                          <Pressable
+                          <AnimatedPressable
                             onPress={() => updateSets(index, planExercise.sets + 1)}
-                            className="px-4 py-2 hover-scale"
+                            className="px-4 py-2 "
                           >
                             <Text className="text-primary text-xl font-bold">+</Text>
-                          </Pressable>
+                          </AnimatedPressable>
                         </View>
                       </View>
                     </View>
@@ -426,11 +427,11 @@ export default function CreatePlanScreen() {
 
       {selectedExercises.length > 0 && (
         <View className="px-6 pb-8 bg-background">
-          <Pressable onPress={savePlan} className="bg-primary py-4 rounded-2xl hover-scale">
+          <AnimatedPressable onPress={savePlan} className="bg-primary py-4 rounded-2xl ">
             <Text className="text-background text-center font-bold text-lg">
               Save Workout Plan
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
       )}
     </View>

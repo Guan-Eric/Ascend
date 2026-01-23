@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -7,6 +7,8 @@ import { Skill } from "../../../types/Skill";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function SkillsScreen() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -62,7 +64,7 @@ export default function SkillsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <LoadingSpinner size={64} />
         <Text className="text-text-secondary mt-4">Loading skills...</Text>
       </View>
     );
@@ -95,7 +97,7 @@ export default function SkillsScreen() {
               const minLevel = skill.unlockCriteria?.minLevel || "beginner";
 
               return (
-                <Pressable
+                <AnimatedPressable
                   key={skill.id}
                   onPress={() =>
                     router.push({
@@ -103,7 +105,7 @@ export default function SkillsScreen() {
                       params: { skillId: skill.id },
                     })
                   }
-                  className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated hover-scale"
+                  className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated "
                 >
                   <View className="flex-row items-center mb-4">
 
@@ -145,7 +147,7 @@ export default function SkillsScreen() {
                       </Text>
                     </View>
                   </View>
-                </Pressable>
+                </AnimatedPressable>
               );
             })}
           </View>

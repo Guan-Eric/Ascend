@@ -1,8 +1,9 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 
 export default function Step2Screen() {
   const router = useRouter();
@@ -47,13 +48,13 @@ export default function Step2Screen() {
     <View className="flex-1 bg-background px-8">
       {/* Header */}
       <View className="pt-16 pb-8">
-        <Pressable onPress={() => router.back()} className="mb-6 hover-scale self-start">
+        <View className="flex-row items-center gap-2 mb-2"> <AnimatedPressable onPress={() => router.back()} className="self-start">
           <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-        </Pressable>
+        </AnimatedPressable>
 
-        <Text className="text-primary text-5xl font-bold mb-3">
-          Experience Level
-        </Text>
+          <Text className="text-primary text-4xl font-bold">
+            Experience Level
+          </Text></View>
         <Text className="text-text-secondary text-lg">
           Choose your current fitness level
         </Text>
@@ -62,10 +63,10 @@ export default function Step2Screen() {
       {/* Level Cards */}
       <View className="flex-1 justify-center">
         {levels.map((item) => (
-          <Pressable
+          <AnimatedPressable
             key={item.value}
             onPress={() => setLevel(item.value)}
-            className={`card-frosted p-6 rounded-3xl mb-4 shadow-elevated hover-scale border-2 ${level === item.value ? "border-primary" : "border-transparent"
+            className={`card-frosted p-6 rounded-3xl mb-4 shadow-elevated border-2 ${level === item.value ? "border-primary" : "border-transparent"
               }`}
           >
             <View className="flex-row items-center">
@@ -84,29 +85,30 @@ export default function Step2Screen() {
                 </Text>
               </View>
 
-              {level === item.value && (
+              {level === item.value ? (
                 <View className="w-8 h-8 bg-primary rounded-full items-center justify-center">
                   <MaterialCommunityIcons name="check" size={20} color="#ffffff" />
                 </View>
-              )}
+              ) : <View className="w-8 h-8 bg-background rounded-full items-center justify-center">
+                <MaterialCommunityIcons name="check" size={20} color="transparent" />
+              </View>}
             </View>
-          </Pressable>
+          </AnimatedPressable>
         ))}
       </View>
 
       {/* Footer */}
       <View className="pb-12">
-        <Pressable
+        <AnimatedPressable
           onPress={handleContinue}
-          className="bg-primary py-6 rounded-2xl shadow-elevated-lg hover-scale mb-6"
+          className="bg-primary py-4 rounded-2xl shadow-elevated-lg mb-6"
         >
           <View className="flex-row items-center justify-center gap-2">
             <Text className="text-background text-center font-bold text-xl">
               Continue
             </Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color={primaryColor} />
           </View>
-        </Pressable>
+        </AnimatedPressable>
 
         <View className="flex-row justify-center gap-2">
           <View className="w-2 h-2 bg-surface-elevated rounded-full" />

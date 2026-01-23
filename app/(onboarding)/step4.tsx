@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as backend from "../../backend";
 import { Skill } from "../../types/Skill";
 import { useThemeColor } from "../../utils/theme";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 
 export default function Step4Screen() {
   const router = useRouter();
@@ -39,9 +40,9 @@ export default function Step4Screen() {
   return (
     <View className="flex-1 bg-background">
       <View className="px-8 pt-16 pb-6">
-        <Pressable onPress={() => router.back()} className="mb-6 hover-scale self-start">
+        <AnimatedPressable onPress={() => router.back()} className="mb-6 self-start">
           <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-        </Pressable>
+        </AnimatedPressable>
 
         <Text className="text-primary text-5xl font-bold mb-3">
           Choose Your Goal
@@ -56,7 +57,7 @@ export default function Step4Screen() {
             <Pressable
               onPress={() => {
                 setGoalType("strength");
-                setPrimaryGoalId("push_strength");
+                setPrimaryGoalId(strengthPaths[0]?.id || "core_strength");
               }}
               className={`flex-1 py-4 rounded-xl transition-all ${goalType === "strength" ? "bg-primary shadow-lg" : ""
                 }`}
@@ -103,9 +104,9 @@ export default function Step4Screen() {
         className="flex-1 px-8"
         data={goals}
         renderItem={({ item: goal }) => (
-          <Pressable
+          <AnimatedPressable
             onPress={() => setPrimaryGoalId(goal.id)}
-            className={`card-frosted p-6 rounded-3xl mb-3 shadow-elevated hover-scale border-2 ${primaryGoalId === goal.id ? "border-primary bg-primary/5" : "border-transparent"
+            className={`card-frosted p-6 rounded-3xl mb-3 shadow-elevated border-2 ${primaryGoalId === goal.id ? "border-primary bg-primary/5" : "border-transparent"
               }`}
           >
             <View className="flex-row items-center justify-between">
@@ -128,23 +129,22 @@ export default function Step4Screen() {
                 )}
               </View>
             </View>
-          </Pressable>
+          </AnimatedPressable>
         )}
         keyExtractor={(item) => item.id}
       />
 
       <View className="px-8 pb-12">
-        <Pressable
+        <AnimatedPressable
           onPress={handleContinue}
-          className="bg-primary py-6 rounded-2xl shadow-elevated-lg hover-scale mb-6"
+          className="bg-primary py-4 rounded-2xl shadow-elevated-lg mb-6"
         >
           <View className="flex-row items-center justify-center gap-2">
             <Text className="text-background text-center font-bold text-xl">
               Complete Setup
             </Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color={primaryColor} />
           </View>
-        </Pressable>
+        </AnimatedPressable>
 
         <View className="flex-row justify-center gap-2">
           <View className="w-2 h-2 bg-surface-elevated rounded-full" />

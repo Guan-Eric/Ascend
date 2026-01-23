@@ -1,5 +1,5 @@
 // app/(tabs)/(home)/workout.tsx - Updated with progression detection
-import { View, Text, Pressable, TextInput, Alert } from "react-native";
+import { View, Text, TextInput, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -9,6 +9,8 @@ import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 type ExerciseProgress = {
   exerciseId: string;
@@ -227,8 +229,8 @@ export default function WorkoutScreen() {
   if (!plan || exercises.length === 0) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-text-secondary">Loading workout...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-text-secondary mt-4">Loading workout...</Text>
       </View>
     );
   }
@@ -244,9 +246,9 @@ export default function WorkoutScreen() {
     <View className="flex-1 bg-background">
       <View className="px-6 pt-16 pb-4">
         <View className="flex-row items-center justify-between mb-4">
-          <Pressable onPress={() => router.back()} className="hover-scale">
+          <AnimatedPressable onPress={() => router.back()} className="">
             <MaterialCommunityIcons name="close" size={28} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-text-secondary">
             Exercise {currentExerciseIndex + 1}/{exercises.length}
           </Text>
@@ -330,20 +332,20 @@ export default function WorkoutScreen() {
                   </Text>
                 )}
 
-                <Pressable
+                <AnimatedPressable
                   onPress={completeSet}
-                  className="bg-primary py-4 rounded-2xl mb-3 hover-scale shadow-elevated"
+                  className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
                 >
                   <Text className="text-background text-center font-bold text-lg">
                     {restRemaining > 0 ? "Log Next Set Early" : "Complete Set"}
                   </Text>
-                </Pressable>
-                <Pressable
+                </AnimatedPressable>
+                <AnimatedPressable
                   onPress={skipExercise}
-                  className="border-2 border-text-muted py-3 rounded-2xl hover-scale"
+                  className="border-2 border-text-muted py-3 rounded-2xl "
                 >
                   <Text className="text-text-muted text-center font-bold">Skip Exercise</Text>
-                </Pressable>
+                </AnimatedPressable>
               </View>
             )}
 
@@ -388,14 +390,14 @@ export default function WorkoutScreen() {
 
       {allExercisesComplete && (
         <View className="px-6 pb-8 bg-background">
-          <Pressable
+          <AnimatedPressable
             onPress={finishWorkout}
-            className="bg-success py-4 rounded-2xl hover-scale shadow-elevated"
+            className="bg-success py-4 rounded-2xl  shadow-elevated"
           >
             <Text className="text-background text-center font-bold text-lg">
               Finish Workout
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
       )}
     </View>

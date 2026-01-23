@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -7,6 +7,8 @@ import * as backend from "../../../backend";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function ExerciseDetailsScreen() {
   const router = useRouter();
@@ -111,8 +113,8 @@ export default function ExerciseDetailsScreen() {
   if (!exercise) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-text-secondary">Loading...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-text-secondary mt-4">Loading...</Text>
       </View>
     );
   }
@@ -125,9 +127,9 @@ export default function ExerciseDetailsScreen() {
         renderItem={() => (
           <>
             <View className="px-6 pt-16 pb-6">
-              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+              <AnimatedPressable onPress={() => router.back()} className="mb-4 ">
                 <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
 
               <View className="flex-row items-center mb-3">
                 <View className="bg-primary/10 w-14 h-14 rounded-2xl items-center justify-center">
@@ -139,10 +141,10 @@ export default function ExerciseDetailsScreen() {
                 </View>
                 <View
                   className={`ml-auto px-4 py-2 rounded-full ${exercise.level === "beginner"
-                      ? "bg-success/20"
-                      : exercise.level === "intermediate"
-                        ? "bg-warning/20"
-                        : "bg-error/20"
+                    ? "bg-success/20"
+                    : exercise.level === "intermediate"
+                      ? "bg-warning/20"
+                      : "bg-error/20"
                     }`}
                 >
                   <Text
@@ -204,7 +206,7 @@ export default function ExerciseDetailsScreen() {
                 <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                   <Text className="text-primary text-lg font-bold mb-3">Prerequisites</Text>
                   {previousExercises.map((prevEx) => (
-                    <Pressable
+                    <AnimatedPressable
                       key={prevEx.id}
                       onPress={() =>
                         router.push({
@@ -212,13 +214,13 @@ export default function ExerciseDetailsScreen() {
                           params: { exerciseId: prevEx.id },
                         })
                       }
-                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 hover-scale"
+                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 "
                     >
                       <Text className="text-text-primary font-semibold flex-1">
                         {prevEx.name}
                       </Text>
                       <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                    </Pressable>
+                    </AnimatedPressable>
                   ))}
                 </View>
               )}
@@ -226,14 +228,14 @@ export default function ExerciseDetailsScreen() {
               {nextExercise && (
                 <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                   <Text className="text-primary text-lg font-bold mb-3">Next Progression</Text>
-                  <Pressable
+                  <AnimatedPressable
                     onPress={() =>
                       router.push({
                         pathname: "/(tabs)/(skills)/exercise-details",
                         params: { exerciseId: nextExercise.id },
                       })
                     }
-                    className="glass flex-row items-center justify-between p-4 rounded-2xl hover-scale"
+                    className="glass flex-row items-center justify-between p-4 rounded-2xl "
                   >
                     <View className="flex-1">
                       <Text className="text-text-primary font-semibold mb-1">
@@ -245,7 +247,7 @@ export default function ExerciseDetailsScreen() {
                       </Text>
                     </View>
                     <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                  </Pressable>
+                  </AnimatedPressable>
                 </View>
               )}
             </View>
@@ -254,14 +256,14 @@ export default function ExerciseDetailsScreen() {
       />
 
       <View className="px-6 pb-8 bg-background">
-        <Pressable
+        <AnimatedPressable
           onPress={addToPlan}
-          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
+          className="bg-primary py-4 rounded-2xl  shadow-elevated"
         >
           <Text className="text-background text-center font-bold text-lg">
             + Add to Plan
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
     </View>
   );

@@ -4,6 +4,7 @@ import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { FIREBASE_AUTH } from "../config/firebase";
 import Purchases from "react-native-purchases";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export default function Index() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Index() {
         if (customerInfo.entitlements.active["pro"]) {
           router.replace("/(tabs)/(home)");
         } else {
-          router.replace("/(tabs)/(home)");//router.replace("/(onboarding)/paywall");
+          router.replace("/(onboarding)/signin");//router.replace("/(onboarding)/paywall");
         }
       } else {
         // No user signed in
@@ -35,8 +36,8 @@ export default function Index() {
 
   return (
     <View className="flex-1 bg-background justify-center items-center">
-      <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-      <Text className="text-primary text-2xl font-bold">Loading...</Text>
+      <LoadingSpinner size={64} />
+      <Text className="text-primary text-2xl font-bold mt-4">Loading...</Text>
     </View>
   );
 }

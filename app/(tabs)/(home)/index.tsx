@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ActivityIndicator, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -8,6 +8,8 @@ import { Exercise } from "../../../types/Exercise";
 import { router, useFocusEffect } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function HomeScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -101,7 +103,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <LoadingSpinner size={64} />
         <Text className="text-text-secondary mt-4">Loading workouts...</Text>
       </View>
     );
@@ -129,9 +131,9 @@ export default function HomeScreen() {
                 <Text className="text-text-secondary text-center mb-8 leading-6">
                   Create your first workout plan and begin your transformation
                 </Text>
-                <Pressable
+                <AnimatedPressable
                   onPress={() => router.push("/(tabs)/(home)/create-plan")}
-                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg hover-scale"
+                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg"
                 >
                   <MaterialCommunityIcons
                     name="plus-circle-outline"
@@ -141,7 +143,7 @@ export default function HomeScreen() {
                   <Text className="text-background font-bold text-lg ml-2">
                     Create Workout Plan
                   </Text>
-                </Pressable>
+                </AnimatedPressable>
               </View>
             </>
           )}
@@ -165,16 +167,16 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-          <Pressable
+          <AnimatedPressable
             onPress={() => router.push("/(tabs)/(home)/create-plan")}
-            className="bg-primary/10 p-4 rounded-2xl border border-primary/30 hover-scale"
+            className="bg-primary/10 p-4 rounded-2xl border border-primary/30"
           >
             <MaterialCommunityIcons
               name="plus"
               size={28}
               color={primaryColor}
             />
-          </Pressable>
+          </AnimatedPressable>
         </View>
       </View>
 
@@ -201,21 +203,21 @@ export default function HomeScreen() {
                   </View>
                 </View>
 
-                <Pressable
+                <AnimatedPressable
                   onPress={() =>
                     router.push({
                       pathname: "/(tabs)/(home)/edit-plan",
                       params: { planId: plan.id },
                     })
                   }
-                  className="bg-surface-elevated p-3 rounded-xl hover-scale"
+                  className="bg-surface-elevated p-3 rounded-xl"
                 >
                   <MaterialCommunityIcons
                     name="pencil-outline"
                     size={20}
                     color={primaryColor}
                   />
-                </Pressable>
+                </AnimatedPressable>
               </View>
 
               {/* Exercise Preview with Glass Effect */}
@@ -254,14 +256,14 @@ export default function HomeScreen() {
 
               {/* Action Button */}
               <View className="">
-                <Pressable
+                <AnimatedPressable
                   onPress={() =>
                     router.push({
                       pathname: "/(tabs)/(home)/workout",
                       params: { planId: plan.id },
                     })
                   }
-                  className="flex-1 bg-primary py-4 rounded-2xl shadow-elevated hover-scale"
+                  className="flex-1 bg-primary py-4 rounded-2xl shadow-elevated"
                 >
                   <View className="flex-row items-center justify-center">
                     <MaterialCommunityIcons name="play" size={20} color="#000000" />
@@ -269,7 +271,7 @@ export default function HomeScreen() {
                       Start
                     </Text>
                   </View>
-                </Pressable>
+                </AnimatedPressable>
               </View>
             </View>
           );

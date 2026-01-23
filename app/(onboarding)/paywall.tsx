@@ -1,5 +1,5 @@
 // app/(onboarding)/paywall.tsx
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
@@ -9,6 +9,8 @@ import { FIREBASE_AUTH } from "../../config/firebase";
 import * as backend from "../../backend";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const primaryColor = useThemeColor('primary');
+  const primaryColor = useThemeColor('secondary');
   // Get user settings from params
   const level = (params.level as "beginner" | "intermediate" | "advanced") || "beginner";
   const trainingDays = parseInt(params.trainingDays as string) || 3;
@@ -45,6 +47,7 @@ export default function PaywallScreen() {
 
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
+        console.log(offerings.current)
         setOfferings(offerings.current);
       }
     } catch (error) {
@@ -91,8 +94,8 @@ export default function PaywallScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-primary text-2xl font-bold">Loading...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-primary text-2xl font-bold mt-4">Loading...</Text>
       </View>
     );
   }
@@ -103,10 +106,6 @@ export default function PaywallScreen() {
       data={[0]}
       renderItem={() => (
         <View className="px-8 pt-16 pb-8">
-          <View className="bg-primary w-24 h-24 rounded-full items-center justify-center mb-6 shadow-elevated-lg mx-auto">
-            <Text className="text-6xl">🚀</Text>
-          </View>
-
           <Text className="text-primary text-5xl font-bold mb-3 text-center">
             Unlock Ascend
           </Text>
@@ -145,11 +144,11 @@ export default function PaywallScreen() {
           </View>
 
           {offerings?.availablePackages.map((pkg) => (
-            <Pressable
+            <AnimatedPressable
               key={pkg.identifier}
               onPress={() => handlePurchase(pkg)}
               disabled={purchasing}
-              className="card-frosted border-2 border-primary/30 p-6 rounded-3xl mb-4 shadow-elevated hover-scale"
+              className="card-frosted border-2 border-primary/30 p-6 rounded-3xl mb-4 shadow-elevated"
             >
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-text-primary text-xl font-bold">
@@ -169,14 +168,14 @@ export default function PaywallScreen() {
               <Text className="text-text-secondary text-sm">
                 {pkg.product.subscriptionPeriod}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           ))}
 
-          <Pressable onPress={handleRestore} className="mt-4 mb-2 hover-scale">
+          <AnimatedPressable onPress={handleRestore} className="mt-4 mb-2">
             <Text className="text-text-secondary text-center font-medium underline-animated">
               Restore Purchases
             </Text>
-          </Pressable>
+          </AnimatedPressable>
 
           <Text className="text-text-muted text-xs text-center leading-5 mt-4">
             Subscription automatically renews unless auto-renew is turned off at

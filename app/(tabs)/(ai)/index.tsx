@@ -2,7 +2,6 @@ import {
   View,
   Text,
   TextInput,
-  Pressable,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -16,6 +15,7 @@ import OpenAI from "openai";
 import Markdown from "react-native-markdown-display";
 import { useUniwind } from "uniwind";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
 
 type Message = {
   role: "user" | "assistant";
@@ -34,7 +34,7 @@ export default function AIScreen() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const flashListRef = useRef<FlashList<Message>>(null);
+  const flashListRef = useRef<any>(null);
   const { theme } = useUniwind();
   const primaryColor = useThemeColor('primary');
 
@@ -245,10 +245,10 @@ export default function AIScreen() {
               maxLength={500}
               className="flex-1 bg-surface-elevated text-text-primary px-4 py-3 rounded-xl mr-3 max-h-32"
             />
-            <Pressable
+            <AnimatedPressable
               onPress={sendMessage}
               disabled={!input.trim() || loading}
-              className={`w-12 h-12 rounded-full items-center justify-center hover-scale ${input.trim() && !loading ? "bg-primary" : "bg-surface-elevated"
+              className={`w-12 h-12 rounded-full items-center justify-center  ${input.trim() && !loading ? "bg-primary" : "bg-surface-elevated"
                 }`}
             >
               <MaterialCommunityIcons
@@ -256,7 +256,7 @@ export default function AIScreen() {
                 size={24}
                 color={input.trim() && !loading ? "#000000" : "#7a86a8"}
               />
-            </Pressable>
+            </AnimatedPressable>
           </View>
         </View>
       </View>

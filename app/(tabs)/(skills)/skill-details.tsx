@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -8,6 +8,8 @@ import { Skill } from "../../../types/Skill";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function SkillDetailsScreen() {
   const router = useRouter();
@@ -92,8 +94,8 @@ export default function SkillDetailsScreen() {
   if (!skill || exercises.length === 0) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-text-secondary">Loading...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-text-secondary mt-4">Loading...</Text>
       </View>
     );
   }
@@ -106,9 +108,9 @@ export default function SkillDetailsScreen() {
         renderItem={() => (
           <>
             <View className="px-6 pt-16 pb-6">
-              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+              <AnimatedPressable onPress={() => router.back()} className="mb-4 ">
                 <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
 
               <Text className="text-text-primary text-4xl font-bold mb-3">{skill.name}</Text>
 
@@ -170,14 +172,14 @@ export default function SkillDetailsScreen() {
                         )}
                       </View>
 
-                      <Pressable
+                      <AnimatedPressable
                         onPress={() =>
                           router.push({
                             pathname: "/(tabs)/(skills)/exercise-details",
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${isCompleted
+                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
                           ? "border-2 border-success/30"
                           : isLocked
                             ? "opacity-60"
@@ -206,7 +208,7 @@ export default function SkillDetailsScreen() {
                             </Text>
                           </View>
                         </View>
-                      </Pressable>
+                      </AnimatedPressable>
                     </View>
                   </View>
                 );
@@ -217,22 +219,22 @@ export default function SkillDetailsScreen() {
       />
 
       <View className="px-6 pb-8 bg-background">
-        <Pressable
+        <AnimatedPressable
           onPress={setAsGoal}
-          className="bg-primary py-4 rounded-2xl mb-3 hover-scale shadow-elevated"
+          className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
         >
           <Text className="text-background text-center font-bold text-lg">
             🎯 Set as Primary Goal
           </Text>
-        </Pressable>
-        <Pressable
+        </AnimatedPressable>
+        <AnimatedPressable
           onPress={addSkillToPlan}
-          className="card-frosted border-2 border-primary py-4 rounded-2xl hover-scale"
+          className="card-frosted border-2 border-primary py-4 rounded-2xl "
         >
           <Text className="text-primary text-center font-bold text-lg">
             + Add Full Progression to Plan
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
     </View>
   );

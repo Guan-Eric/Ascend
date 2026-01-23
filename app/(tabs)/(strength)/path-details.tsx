@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -8,6 +8,8 @@ import { Skill } from "../../../types/Skill";
 import { Exercise } from "../../../types/Exercise";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function PathDetailsScreen() {
   const router = useRouter();
@@ -49,8 +51,8 @@ export default function PathDetailsScreen() {
   if (!path || exercises.length === 0) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-text-secondary">Loading...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-text-secondary mt-4">Loading...</Text>
       </View>
     );
   }
@@ -63,9 +65,9 @@ export default function PathDetailsScreen() {
         renderItem={() => (
           <>
             <View className="px-6 pt-16 pb-6">
-              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+              <AnimatedPressable onPress={() => router.back()} className="mb-4 ">
                 <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
 
               <Text className="text-text-primary text-4xl font-bold mb-3">{path.name}</Text>
 
@@ -106,10 +108,10 @@ export default function PathDetailsScreen() {
                       <View className="items-center mr-4">
                         <View
                           className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${isCompleted
-                              ? "bg-success"
-                              : isLocked
-                                ? "bg-surface-elevated"
-                                : "bg-primary"
+                            ? "bg-success"
+                            : isLocked
+                              ? "bg-surface-elevated"
+                              : "bg-primary"
                             }`}
                         >
                           {isCompleted ? (
@@ -127,18 +129,18 @@ export default function PathDetailsScreen() {
                         )}
                       </View>
 
-                      <Pressable
+                      <AnimatedPressable
                         onPress={() =>
                           router.push({
                             pathname: "/(tabs)/(strength)/exercise-details",
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated hover-scale ${isCompleted
-                            ? "border-2 border-success/30"
-                            : isLocked
-                              ? "opacity-60"
-                              : "border-2 border-primary/30"
+                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
+                          ? "border-2 border-success/30"
+                          : isLocked
+                            ? "opacity-60"
+                            : "border-2 border-primary/30"
                           }`}
                       >
                         <View className="flex-row justify-between items-start mb-2">
@@ -163,7 +165,7 @@ export default function PathDetailsScreen() {
                             </Text>
                           </View>
                         </View>
-                      </Pressable>
+                      </AnimatedPressable>
                     </View>
                   </View>
                 );

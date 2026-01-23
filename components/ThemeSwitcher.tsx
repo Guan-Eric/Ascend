@@ -1,8 +1,9 @@
 // components/ThemeSwitcher.tsx - Updated with persistence
-import { View, Pressable, Text } from "react-native";
+import { View, Text } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { Uniwind, useUniwind } from "uniwind";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AnimatedPressable } from "./AnimatedPressable";
 
 const THEME_STORAGE_KEY = '@ascend_theme';
 
@@ -45,7 +46,7 @@ export const ThemeSwitcher = () => {
                 data={themes}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
-                    <Pressable
+                    <AnimatedPressable
                         onPress={() => handleThemeChange(item.name)}
                         className={`px-5 py-4 rounded-xl mr-3 items-center justify-center
               ${activeTheme === item.name ? "bg-primary" : "bg-surface border border-border"}`}
@@ -62,7 +63,7 @@ export const ThemeSwitcher = () => {
                         >
                             {item.label}
                         </Text>
-                    </Pressable>
+                    </AnimatedPressable>
                 )}
                 keyExtractor={(item) => item.name}
             />

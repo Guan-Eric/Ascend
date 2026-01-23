@@ -1,8 +1,8 @@
 // app/(tabs)/(profile)/index.tsx - Updated with scrollable settings
-import { View, Text, Pressable, Alert, TextInput } from "react-native";
+import { View, Text, Alert, TextInput } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect, useRouter } from "expo-router";
-import { signOut, linkWithCredential, EmailAuthProvider } from "firebase/auth";
+import { signOut, linkWithCredential, EmailAuthProvider, deleteUser } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import { useCallback, useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
@@ -12,6 +12,8 @@ import { WorkoutHistory } from "../../../types/WorkoutHistory";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function ProfileScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [showEmailLink, setShowEmailLink] = useState(false);
   const primaryColor = useThemeColor('primary');
+  const errorColor = useThemeColor('error');
 
   // Settings state
   const [editLevel, setEditLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
@@ -135,6 +138,63 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone. All your data, workouts, and progress will be permanently deleted.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const currentUser = FIREBASE_AUTH.currentUser;
+              if (!currentUser) return;
+
+              const userId = currentUser.uid;
+
+              // Delete all user data from Firestore
+              await backend.deleteUserAccount(userId);
+
+              // Log out from RevenueCat
+              try {
+                await Purchases.logOut();
+              } catch (error) {
+                console.error("Error logging out from RevenueCat:", error);
+              }
+
+              // Delete Firebase Auth account
+              await deleteUser(currentUser);
+
+              // Sign out and redirect
+              await signOut(FIREBASE_AUTH);
+              router.replace("/(onboarding)/signin");
+            } catch (error: any) {
+              console.error("Error deleting account:", error);
+
+              // Handle re-authentication required error
+              if (error.code === "auth/requires-recent-login") {
+                Alert.alert(
+                  "Re-authentication Required",
+                  "For security reasons, please sign out and sign back in, then try deleting your account again."
+                );
+              } else {
+                Alert.alert(
+                  "Error",
+                  error.message || "Failed to delete account. Please try again."
+                );
+              }
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     const today = new Date();
@@ -165,7 +225,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <LoadingSpinner size={64} />
         <Text className="text-text-secondary mt-4">Loading workouts...</Text>
       </View>
     );
@@ -175,9 +235,9 @@ export default function ProfileScreen() {
   if (showEmailLink && FIREBASE_AUTH.currentUser?.isAnonymous) {
     return (
       <View className="flex-1 bg-background px-6 pt-16">
-        <Pressable onPress={() => setShowEmailLink(false)} className="mb-4 hover-scale">
+        <AnimatedPressable onPress={() => setShowEmailLink(false)} className="mb-4 ">
           <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-        </Pressable>
+        </AnimatedPressable>
 
         <Text className="text-primary text-3xl font-bold mb-2">Link Email</Text>
         <Text className="text-text-secondary mb-6">
@@ -207,14 +267,14 @@ export default function ProfileScreen() {
           />
         </View>
 
-        <Pressable
+        <AnimatedPressable
           onPress={handleLinkEmail}
-          className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated"
+          className="bg-primary py-4 rounded-2xl  shadow-elevated"
         >
           <Text className="text-background text-center font-bold text-lg">
             Link Email
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
     );
   }
@@ -235,9 +295,9 @@ export default function ProfileScreen() {
         case 'header':
           return (
             <View className="flex-row items-center mb-4 gap-2">
-              <Pressable onPress={() => setShowSettings(false)} className="hover-scale">
+              <AnimatedPressable onPress={() => setShowSettings(false)} className="">
                 <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
               <Text className="text-primary text-3xl font-bold">Settings</Text>
             </View>
           );
@@ -250,10 +310,10 @@ export default function ProfileScreen() {
               </Text>
               <View className="flex-row gap-2">
                 {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-                  <Pressable
+                  <AnimatedPressable
                     key={level}
                     onPress={() => setEditLevel(level)}
-                    className={`flex-1 card-frosted py-4 rounded-2xl hover-scale shadow-elevated border-2${editLevel === level ? " border-primary" : ""
+                    className={`flex-1 card-frosted py-4 rounded-2xl  shadow-elevated border-2${editLevel === level ? " border-primary" : ""
                       }`}
                   >
                     <Text
@@ -262,7 +322,7 @@ export default function ProfileScreen() {
                     >
                       {level}
                     </Text>
-                  </Pressable>
+                  </AnimatedPressable>
                 ))}
               </View>
             </View>
@@ -279,18 +339,18 @@ export default function ProfileScreen() {
                   {editDays}
                 </Text>
                 <View className="flex-row items-center justify-center gap-4">
-                  <Pressable
+                  <AnimatedPressable
                     onPress={() => setEditDays(Math.max(1, editDays - 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated hover-scale"
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated "
                   >
                     <MaterialCommunityIcons name="minus" size={24} color={primaryColor} />
-                  </Pressable>
-                  <Pressable
+                  </AnimatedPressable>
+                  <AnimatedPressable
                     onPress={() => setEditDays(Math.min(7, editDays + 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated hover-scale"
+                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated "
                   >
                     <MaterialCommunityIcons name="plus" size={24} color={primaryColor} />
-                  </Pressable>
+                  </AnimatedPressable>
                 </View>
               </View>
             </View>
@@ -303,7 +363,7 @@ export default function ProfileScreen() {
                 Goal Type
               </Text>
               <View className="flex-row bg-surface-elevated p-1 rounded-2xl">
-                <Pressable
+                <AnimatedPressable
                   onPress={() => setEditGoalType("strength")}
                   className={`flex-1 py-3 rounded-xl ${editGoalType === "strength" ? "bg-primary" : ""
                     }`}
@@ -314,8 +374,8 @@ export default function ProfileScreen() {
                   >
                     Strength
                   </Text>
-                </Pressable>
-                <Pressable
+                </AnimatedPressable>
+                <AnimatedPressable
                   onPress={() => setEditGoalType("skill")}
                   className={`flex-1 py-3 rounded-xl ${editGoalType === "skill" ? "bg-primary" : ""
                     }`}
@@ -326,7 +386,7 @@ export default function ProfileScreen() {
                   >
                     Skills
                   </Text>
-                </Pressable>
+                </AnimatedPressable>
               </View>
             </View>
           );
@@ -337,9 +397,9 @@ export default function ProfileScreen() {
               <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
                 Automatic Progression
               </Text>
-              <Pressable
+              <AnimatedPressable
                 onPress={() => setEditAutoProgress(!editAutoProgress)}
-                className="card-frosted p-5 rounded-3xl shadow-elevated hover-scale"
+                className="card-frosted p-5 rounded-3xl shadow-elevated "
               >
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
@@ -360,20 +420,20 @@ export default function ProfileScreen() {
                     />
                   </View>
                 </View>
-              </Pressable>
+              </AnimatedPressable>
             </View>
           );
 
         case 'save':
           return (
-            <Pressable
+            <AnimatedPressable
               onPress={handleSaveSettings}
-              className="bg-primary py-4 rounded-2xl hover-scale shadow-elevated mb-6"
+              className="bg-primary py-4 rounded-2xl  shadow-elevated mb-6"
             >
               <Text className="text-background text-center font-bold text-lg">
                 Save Changes
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           );
 
         default:
@@ -398,9 +458,9 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setShowHistory(false)} className="mb-4 hover-scale">
+          <AnimatedPressable onPress={() => setShowHistory(false)} className="mb-4 ">
             <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-3xl font-bold mb-2">
             Workout History
           </Text>
@@ -470,12 +530,12 @@ export default function ProfileScreen() {
           <View className="px-6 pt-16">
             <View className="flex-row items-center justify-between mb-8">
               <Text className="text-primary text-4xl font-bold">Profile</Text>
-              <Pressable
+              <AnimatedPressable
                 onPress={() => setShowSettings(true)}
-                className="bg-primary/10 p-3 rounded-2xl hover-scale"
+                className="bg-primary/10 p-3 rounded-2xl "
               >
                 <MaterialCommunityIcons name="cog" size={24} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
             </View>
 
             {/* Workout Stats */}
@@ -522,21 +582,21 @@ export default function ProfileScreen() {
                 </View>
               </View>
 
-              <Pressable
+              <AnimatedPressable
                 onPress={() => setShowHistory(true)}
-                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  hover-scale"
+                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  "
               >
                 <Text className="text-primary text-center font-bold">
                   View Full History →
                 </Text>
-              </Pressable>
+              </AnimatedPressable>
             </View>
 
             {/* Link Email (if anonymous) */}
             {FIREBASE_AUTH.currentUser?.isAnonymous && (
-              <Pressable
+              <AnimatedPressable
                 onPress={() => setShowEmailLink(true)}
-                className="card-frosted p-5 rounded-3xl mb-4 shadow-elevated hover-scale"
+                className="card-frosted p-5 rounded-3xl mb-4 shadow-elevated "
               >
                 <View className="flex-row items-center">
                   <MaterialCommunityIcons name="email-plus" size={24} color={primaryColor} />
@@ -550,14 +610,14 @@ export default function ProfileScreen() {
                   </View>
                   <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
                 </View>
-              </Pressable>
+              </AnimatedPressable>
             )}
 
             {/* Theme Switcher */}
             <ThemeSwitcher />
 
             {/* Actions */}
-            <Pressable
+            <AnimatedPressable
               onPress={async () => {
                 try {
                   const info = await Purchases.restorePurchases();
@@ -567,12 +627,25 @@ export default function ProfileScreen() {
                   Alert.alert("Error", "Failed to restore purchases");
                 }
               }}
-              className="bg-primary py-4 rounded-2xl mb-4 hover-scale shadow-elevated"
+              className="bg-primary py-4 rounded-2xl mb-4  shadow-elevated"
             >
               <Text className="text-background text-center font-bold text-base">
                 Restore Purchases
               </Text>
-            </Pressable>
+            </AnimatedPressable>
+
+            {/* Delete Account */}
+            <AnimatedPressable
+              onPress={handleDeleteAccount}
+              className="bg-error/10 border-2 border-error/30 py-4 rounded-2xl mb-4 shadow-elevated"
+            >
+              <View className="flex-row items-center justify-center">
+                <MaterialCommunityIcons name="delete-outline" size={20} color={errorColor} />
+                <Text className="text-error text-center font-bold text-base ml-2">
+                  Delete Account
+                </Text>
+              </View>
+            </AnimatedPressable>
           </View>
         </>
       )}

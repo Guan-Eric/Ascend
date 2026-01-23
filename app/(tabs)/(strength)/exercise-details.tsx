@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -8,6 +8,8 @@ import { Exercise } from "../../../types/Exercise";
 import { Plan } from "../../../types/Plan";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function StrengthExerciseDetailsScreen() {
   const router = useRouter();
@@ -168,8 +170,8 @@ export default function StrengthExerciseDetailsScreen() {
   if (!exercise) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
-        <Text className="text-text-secondary">Loading...</Text>
+        <LoadingSpinner size={64} />
+        <Text className="text-text-secondary mt-4">Loading...</Text>
       </View>
     );
   }
@@ -178,9 +180,9 @@ export default function StrengthExerciseDetailsScreen() {
     return (
       <View className="flex-1 bg-background">
         <View className="px-6 pt-16 pb-4">
-          <Pressable onPress={() => setShowPlanPicker(false)} className="mb-4 hover-scale">
+          <AnimatedPressable onPress={() => setShowPlanPicker(false)} className="mb-4 ">
             <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </Pressable>
+          </AnimatedPressable>
           <Text className="text-primary text-2xl font-bold mb-2">Add to Existing Plan</Text>
           <Text className="text-text-secondary mb-4">
             Choose a workout plan to add this exercise to
@@ -191,9 +193,9 @@ export default function StrengthExerciseDetailsScreen() {
           className="flex-1 px-6"
           data={userPlans}
           renderItem={({ item: plan }) => (
-            <Pressable
+            <AnimatedPressable
               onPress={() => addToExistingPlan(plan.id)}
-              className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated hover-scale"
+              className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated "
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-1">
@@ -206,7 +208,7 @@ export default function StrengthExerciseDetailsScreen() {
                 </View>
                 <MaterialCommunityIcons name="plus-circle-outline" size={28} color="#00d9ff" />
               </View>
-            </Pressable>
+            </AnimatedPressable>
           )}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
@@ -229,9 +231,9 @@ export default function StrengthExerciseDetailsScreen() {
         renderItem={() => (
           <>
             <View className="px-6 pt-16 pb-6">
-              <Pressable onPress={() => router.back()} className="mb-4 hover-scale">
+              <AnimatedPressable onPress={() => router.back()} className="mb-4 ">
                 <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-              </Pressable>
+              </AnimatedPressable>
 
               <View className="flex-row items-center mb-3">
                 <View className="bg-primary/10 w-14 h-14 rounded-2xl items-center justify-center">
@@ -243,10 +245,10 @@ export default function StrengthExerciseDetailsScreen() {
                 </View>
                 <View
                   className={`ml-auto px-4 py-2 rounded-full ${exercise.level === "beginner"
-                      ? "bg-success/20"
-                      : exercise.level === "intermediate"
-                        ? "bg-warning/20"
-                        : "bg-error/20"
+                    ? "bg-success/20"
+                    : exercise.level === "intermediate"
+                      ? "bg-warning/20"
+                      : "bg-error/20"
                     }`}
                 >
                   <Text
@@ -304,7 +306,7 @@ export default function StrengthExerciseDetailsScreen() {
                 <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                   <Text className="text-primary text-lg font-bold mb-3">Prerequisites</Text>
                   {previousExercises.map((prevEx) => (
-                    <Pressable
+                    <AnimatedPressable
                       key={prevEx.id}
                       onPress={() =>
                         router.push({
@@ -312,13 +314,13 @@ export default function StrengthExerciseDetailsScreen() {
                           params: { exerciseId: prevEx.id },
                         })
                       }
-                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 hover-scale"
+                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 "
                     >
                       <Text className="text-text-primary font-semibold flex-1">
                         {prevEx.name}
                       </Text>
                       <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                    </Pressable>
+                    </AnimatedPressable>
                   ))}
                 </View>
               )}
@@ -326,14 +328,14 @@ export default function StrengthExerciseDetailsScreen() {
               {nextExercise && (
                 <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
                   <Text className="text-primary text-lg font-bold mb-3">Next Progression</Text>
-                  <Pressable
+                  <AnimatedPressable
                     onPress={() =>
                       router.push({
                         pathname: "/(tabs)/(strength)/exercise-details",
                         params: { exerciseId: nextExercise.id },
                       })
                     }
-                    className="glass flex-row items-center justify-between p-4 rounded-2xl hover-scale"
+                    className="glass flex-row items-center justify-between p-4 rounded-2xl "
                   >
                     <View className="flex-1">
                       <Text className="text-text-primary font-semibold mb-1">
@@ -345,7 +347,7 @@ export default function StrengthExerciseDetailsScreen() {
                       </Text>
                     </View>
                     <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                  </Pressable>
+                  </AnimatedPressable>
                 </View>
               )}
             </View>
@@ -354,24 +356,24 @@ export default function StrengthExerciseDetailsScreen() {
       />
 
       <View className="px-6 pb-8 bg-background">
-        <Pressable
+        <AnimatedPressable
           onPress={addToNewPlan}
-          className="bg-primary py-4 rounded-2xl mb-3 hover-scale shadow-elevated"
+          className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
         >
           <Text className="text-background text-center font-bold text-lg">
             + Create New Plan
           </Text>
-        </Pressable>
+        </AnimatedPressable>
 
         {userPlans.length > 0 && (
-          <Pressable
+          <AnimatedPressable
             onPress={() => setShowPlanPicker(true)}
-            className="card-frosted border-2 border-primary py-4 rounded-2xl hover-scale"
+            className="card-frosted border-2 border-primary py-4 rounded-2xl "
           >
             <Text className="text-primary text-center font-bold text-lg">
               Add to Existing Plan
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         )}
       </View>
     </View>

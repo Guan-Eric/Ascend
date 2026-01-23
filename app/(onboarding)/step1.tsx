@@ -1,8 +1,9 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 
 export default function Step1Screen() {
   const router = useRouter();
@@ -19,9 +20,7 @@ export default function Step1Screen() {
       <View className="flex-1 justify-center items-center px-8">
         {/* Hero Icon */}
         <View className="mb-12 items-center">
-          <View className="w-32 h-32 bg-gradient-primary rounded-full items-center justify-center shadow-elevated-lg mb-6">
-            <MaterialCommunityIcons name="rocket-launch" size={64} color="#ffffff" />
-          </View>
+
 
           <Text className="text-primary text-5xl font-bold mb-4 text-center">
             Welcome to
@@ -54,17 +53,16 @@ export default function Step1Screen() {
       </View>
 
       <View className="px-8 mb-12">
-        <Pressable
+        <AnimatedPressable
           onPress={() => router.push("/(onboarding)/step2")}
-          className="bg-primary py-6 rounded-2xl shadow-elevated-lg hover-scale"
+          className="bg-primary py-4 rounded-2xl shadow-elevated-lg"
         >
           <View className="flex-row items-center justify-center gap-2">
             <Text className="text-background text-center font-bold text-xl">
               Let's Get Started
             </Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color={primaryColor} />
           </View>
-        </Pressable>
+        </AnimatedPressable>
 
         {/* Progress Dots */}
         <View className="flex-row justify-center mt-8 gap-2">

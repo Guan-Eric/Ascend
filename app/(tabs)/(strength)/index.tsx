@@ -1,5 +1,5 @@
 // app/(tabs)/(strength)/index.tsx - Updated
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useEffect, useState } from "react";
 import { FIREBASE_AUTH } from "../../../config/firebase";
@@ -9,6 +9,8 @@ import { Exercise } from "../../../types/Exercise";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
+import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { LoadingSpinner } from "../../../components/LoadingSpinner";
 
 export default function StrengthScreen() {
   const [strengthPaths, setStrengthPaths] = useState<Skill[]>([]);
@@ -78,7 +80,7 @@ export default function StrengthScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background justify-center items-center">
-        <View className="shimmer w-16 h-16 rounded-full bg-surface mb-4" />
+        <LoadingSpinner size={64} />
         <Text className="text-text-secondary mt-4">Loading strength paths...</Text>
       </View>
     );
@@ -139,7 +141,7 @@ export default function StrengthScreen() {
                       const isCompleted = completedIds.includes(exercise.id);
 
                       return (
-                        <Pressable
+                        <AnimatedPressable
                           key={exercise.id}
                           onPress={() =>
                             router.push({
@@ -147,7 +149,7 @@ export default function StrengthScreen() {
                               params: { exerciseId: exercise.id },
                             })
                           }
-                          className="flex-row items-center justify-between mb-2 pb-2 border-b border-border/30 hover-scale"
+                          className="flex-row items-center justify-between mb-2 pb-2 border-b border-border/30 "
                         >
                           <View className="flex-1">
                             <Text
@@ -166,23 +168,23 @@ export default function StrengthScreen() {
                           ) : (
                             <MaterialCommunityIcons name="chevron-right" size={20} color="#7a86a8" />
                           )}
-                        </Pressable>
+                        </AnimatedPressable>
                       );
                     })}
                     {exercises.length > 3 && (
-                      <Pressable
+                      <AnimatedPressable
                         onPress={() =>
                           router.push({
                             pathname: "/(tabs)/(strength)/path-details",
                             params: { pathId: path.id },
                           })
                         }
-                        className="mt-2 hover-scale"
+                        className="mt-2 "
                       >
                         <Text className="text-primary text-sm font-semibold">
                           View all {exercises.length} exercises →
                         </Text>
-                      </Pressable>
+                      </AnimatedPressable>
                     )}
                   </View>
                 </View>
