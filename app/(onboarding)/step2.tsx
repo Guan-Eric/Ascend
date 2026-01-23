@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -16,24 +16,21 @@ export default function Step2Screen() {
       label: "Beginner",
       description: "New to calisthenics or working out",
       icon: "sprout",
-      emoji: "🌱",
-      gradient: ["#10b981", "#059669"],
+      iconColor: "#10b981",
     },
     {
       value: "intermediate" as const,
       label: "Intermediate",
       description: "Can do push-ups and pull-ups",
       icon: "run-fast",
-      emoji: "🔥",
-      gradient: ["#f59e0b", "#d97706"],
+      iconColor: "#f59e0b",
     },
     {
       value: "advanced" as const,
       label: "Advanced",
       description: "Training for advanced skills",
       icon: "trophy",
-      emoji: "🏆",
-      gradient: ["#8b5cf6", "#7c3aed"],
+      iconColor: "#8b5cf6",
     },
   ];
 
@@ -66,13 +63,17 @@ export default function Step2Screen() {
           <AnimatedPressable
             key={item.value}
             onPress={() => setLevel(item.value)}
-            className={`card-frosted p-6 rounded-3xl mb-4 shadow-elevated border-2 ${level === item.value ? "border-primary" : "border-transparent"
+            className={`card-frosted p-6 rounded-3xl mb-4 shadow-elevated hover-scale border-2 ${level === item.value ? "border-primary" : "border-transparent"
               }`}
           >
             <View className="flex-row items-center">
               <View className={`w-16 h-16 rounded-2xl items-center justify-center mr-4 ${level === item.value ? "bg-primary" : "bg-surface-elevated"
                 }`}>
-                <Text className="text-4xl">{item.emoji}</Text>
+                <MaterialCommunityIcons
+                  name={item.icon as any}
+                  size={32}
+                  color={level === item.value ? "#ffffff" : item.iconColor}
+                />
               </View>
 
               <View className="flex-1">

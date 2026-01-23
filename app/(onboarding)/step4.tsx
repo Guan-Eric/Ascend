@@ -40,13 +40,14 @@ export default function Step4Screen() {
   return (
     <View className="flex-1 bg-background">
       <View className="px-8 pt-16 pb-6">
-        <AnimatedPressable onPress={() => router.back()} className="mb-6 self-start">
-          <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
-        </AnimatedPressable>
+        <View className="flex-row mb-4 items-center gap-2">
+          <AnimatedPressable onPress={() => router.back()} className=" self-start">
+            <MaterialCommunityIcons name="arrow-left" size={28} color={primaryColor} />
+          </AnimatedPressable>
 
-        <Text className="text-primary text-5xl font-bold mb-3">
-          Choose Your Goal
-        </Text>
+          <Text className="text-primary text-3xl font-bold">
+            Choose Your Goal
+          </Text></View>
         <Text className="text-text-secondary text-lg mb-6">
           What do you want to achieve?
         </Text>

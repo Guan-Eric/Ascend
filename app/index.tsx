@@ -23,7 +23,7 @@ export default function Index() {
         if (customerInfo.entitlements.active["pro"]) {
           router.replace("/(tabs)/(home)");
         } else {
-          router.replace("/(onboarding)/signin");//router.replace("/(onboarding)/paywall");
+          router.replace("/(onboarding)/paywall");
         }
       } else {
         // No user signed in
