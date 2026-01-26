@@ -400,7 +400,7 @@ export default function PaywallScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>
-                  Linking.openURL("https://yourwebsite.com/privacy")
+                  Linking.openURL("https://policies.google.com/privacy")
                 }
               >
                 <Text className="text-primary text-sm">Privacy Policy</Text>
