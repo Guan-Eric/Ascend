@@ -41,7 +41,7 @@ export default function PaywallScreen() {
   const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<string>("$rc_annual");
+  const [selectedPackage, setSelectedPackage] = useState<string>("$rc_weekly");
   const primaryColor = useThemeColor('primary');
 
   // Get user settings from params
@@ -73,7 +73,7 @@ export default function PaywallScreen() {
       if (offerings.current) {
         setOfferings(offerings.current);
         // Default to annual
-        setSelectedPackage("$rc_annual");
+        setSelectedPackage("$rc_weekly");
       }
     } catch (error) {
       console.error("Error initializing user:", error);
@@ -100,7 +100,7 @@ export default function PaywallScreen() {
 
       const { customerInfo } = await Purchases.purchasePackage(pkg);
 
-      if (customerInfo.entitlements.active["pro"]) {
+      if (customerInfo.entitlements.active["Ascend Pro"]) {
         Alert.alert("Success! 🎉", "Welcome to Ascend Pro!", [
           {
             text: "Let's Go!",
@@ -122,7 +122,7 @@ export default function PaywallScreen() {
     try {
       const customerInfo = await Purchases.restorePurchases();
 
-      if (customerInfo.entitlements.active["pro"]) {
+      if (customerInfo.entitlements.active["Ascend Pro"]) {
         router.replace("/(tabs)/(home)");
       } else {
         Alert.alert("No Purchases Found", "You don't have any active subscriptions.");
@@ -134,7 +134,7 @@ export default function PaywallScreen() {
   };
 
   const getPackageDetails = (pkg: PurchasesPackage) => {
-    const isWeekly = pkg.identifier === "$rc_monthly";
+    const isWeekly = pkg.identifier === "$rc_weekly";
     const isAnnual = pkg.identifier === "$rc_annual";
 
     if (isWeekly) {
@@ -150,7 +150,7 @@ export default function PaywallScreen() {
     if (isAnnual) {
       const annualPrice = pkg.product.price || 0;
       const weeklyPkg = offerings?.availablePackages.find(
-        (p) => p.identifier === "$rc_monthly"
+        (p) => p.identifier === "$rc_weekly"
       );
       const weeklyPrice = weeklyPkg?.product.price || 0;
 
@@ -430,7 +430,7 @@ export default function PaywallScreen() {
               </View>
             ) : (
               <Text className="text-center text-lg font-bold text-background">
-                {selectedPackage === "$rc_monthly"
+                {selectedPackage === "$rc_weekly"
                   ? "Start Free Trial"
                   : "Start Annual Plan"}
               </Text>
