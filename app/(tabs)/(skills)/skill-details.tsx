@@ -179,7 +179,7 @@ export default function SkillDetailsScreen() {
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
+                        className={`w-[90%] flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
                           ? "border-2 border-success/30"
                           : isLocked
                             ? "opacity-60"
@@ -224,7 +224,7 @@ export default function SkillDetailsScreen() {
           className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
         >
           <Text className="text-background text-center font-bold text-lg">
-            🎯 Set as Primary Goal
+            Set as Primary Goal
           </Text>
         </AnimatedPressable>
         <AnimatedPressable

@@ -136,7 +136,7 @@ export default function PathDetailsScreen() {
                             params: { exerciseId: exercise.id },
                           })
                         }
-                        className={`flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
+                        className={`w-[90%] flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
                           ? "border-2 border-success/30"
                           : isLocked
                             ? "opacity-60"
