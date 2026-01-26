@@ -1,12 +1,11 @@
-// app/(auth)/signin.tsx
 import { View, Text, TextInput, Alert } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import Purchases from "react-native-purchases";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { getUser } from "../../backend";
 
 export default function SignInScreen() {
     const router = useRouter();
@@ -30,10 +29,19 @@ export default function SignInScreen() {
 
             await Purchases.logIn(userCredential.user.uid);
 
-            // Check if they have pro access
+            // Check if user has completed onboarding
+            const userData = await getUser(userCredential.user.uid);
+
+            if (!userData) {
+                // User exists in auth but not in database - needs onboarding
+                router.replace("/(onboarding)/step1");
+                return;
+            }
+
+            // User has completed onboarding, check subscription
             const customerInfo = await Purchases.getCustomerInfo();
 
-            if (customerInfo.entitlements.active["pro"]) {
+            if (customerInfo.entitlements.active["Ascend Pro"]) {
                 router.replace("/(tabs)/(home)");
             } else {
                 router.replace("/(onboarding)/paywall");
