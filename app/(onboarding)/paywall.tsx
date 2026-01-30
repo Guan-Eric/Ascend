@@ -400,7 +400,7 @@ export default function PaywallScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>
-                  Linking.openURL("https://policies.google.com/privacy")
+                  Linking.openURL("https://www.gym-pulse.fit/ascend")
                 }
               >
                 <Text className="text-primary text-sm">Privacy Policy</Text>
