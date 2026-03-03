@@ -141,7 +141,7 @@ export default function PaywallScreen() {
       return {
         name: "Weekly",
         badge: "3-DAY FREE TRIAL",
-        description: "Try free for 3 days",
+        description: "Billed weekly • Cancel anytime",
         savings: null,
         perMonth: null,
       };
@@ -166,7 +166,7 @@ export default function PaywallScreen() {
       return {
         name: "Annual",
         badge: percentOff > 0 ? `BEST VALUE - Save ${percentOff}%` : "BEST VALUE",
-        description: "Best value • Cancel anytime",
+        description: "Best value • Billed annually",
         savings: weeklyPrice > 0 ? `Save vs weekly` : null,
         perMonth: annualPrice > 0 ? `Just $${perMonth.toFixed(2)}/month` : null,
       };
@@ -430,9 +430,9 @@ export default function PaywallScreen() {
               </View>
             ) : (
               <Text className="text-center text-lg font-bold text-background">
-                {selectedPackage === "$rc_weekly"
-                  ? "Start Free Trial"
-                  : "Start Annual Plan"}
+                Continue — {offerings?.availablePackages.find(
+                  (p) => p.identifier === selectedPackage
+                )?.product.priceString}
               </Text>
             )}
           </LinearGradient>
