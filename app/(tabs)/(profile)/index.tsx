@@ -14,6 +14,8 @@ import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
+import { AnimatedCounter } from "../../../components/AnimatedCounter";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -539,58 +541,64 @@ export default function ProfileScreen() {
             </View>
 
             {/* Workout Stats */}
-            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-                Workout Stats
-              </Text>
-
-              <View className="flex-row justify-between mb-4">
-                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
-                  <Text className="text-primary text-3xl font-bold mb-1">
-                    {historyStats.totalWorkouts}
-                  </Text>
-                  <Text className="text-text-secondary text-xs text-center">
-                    Total Workouts
-                  </Text>
-                </View>
-                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                  <Text className="text-coral text-3xl font-bold mb-1">
-                    {historyStats.weeklyStreak}
-                  </Text>
-                  <Text className="text-text-secondary text-xs text-center">
-                    Week Streak
-                  </Text>
-                </View>
-              </View>
-
-              <View className="flex-row justify-between">
-                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
-                  <Text className="text-primary text-3xl font-bold mb-1">
-                    {stats.totalCompleted}
-                  </Text>
-                  <Text className="text-text-secondary text-xs text-center">
-                    Exercises Done
-                  </Text>
-                </View>
-                <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                  <Text className="text-coral text-3xl font-bold mb-1">
-                    {historyStats.longestWeeklyStreak}
-                  </Text>
-                  <Text className="text-text-secondary text-xs text-center">
-                    Best Streak
-                  </Text>
-                </View>
-              </View>
-
-              <AnimatedPressable
-                onPress={() => setShowHistory(true)}
-                className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  "
-              >
-                <Text className="text-primary text-center font-bold">
-                  View Full History →
+            <FadeSlideIn delay={50}>
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
+                  Workout Stats
                 </Text>
-              </AnimatedPressable>
-            </View>
+
+                <View className="flex-row justify-between mb-4">
+                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
+                    <AnimatedCounter
+                      value={historyStats.totalWorkouts}
+                      className="text-primary text-3xl font-bold mb-1"
+                    />
+                    <Text className="text-text-secondary text-xs text-center">
+                      Total Workouts
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
+                    <AnimatedCounter
+                      value={historyStats.weeklyStreak}
+                      className="text-coral text-3xl font-bold mb-1"
+                    />
+                    <Text className="text-text-secondary text-xs text-center">
+                      Week Streak
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row justify-between">
+                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
+                    <AnimatedCounter
+                      value={stats.totalCompleted}
+                      className="text-primary text-3xl font-bold mb-1"
+                    />
+                    <Text className="text-text-secondary text-xs text-center">
+                      Exercises Done
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
+                    <AnimatedCounter
+                      value={historyStats.longestWeeklyStreak}
+                      className="text-coral text-3xl font-bold mb-1"
+                    />
+                    <Text className="text-text-secondary text-xs text-center">
+                      Best Streak
+                    </Text>
+                  </View>
+                </View>
+
+                <AnimatedPressable
+                  onPress={() => setShowHistory(true)}
+                  className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  "
+                >
+                  <Text className="text-primary text-center font-bold">
+                    View Full History →
+                  </Text>
+                </AnimatedPressable>
+              </View>
+            </FadeSlideIn>
 
             {/* Link Email (if anonymous) */}
             {FIREBASE_AUTH.currentUser?.isAnonymous && (
