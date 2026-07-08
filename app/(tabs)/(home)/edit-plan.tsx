@@ -11,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 type PlanExercise = {
   exerciseId: string;
@@ -314,66 +315,68 @@ export default function EditPlanScreen() {
                   if (!exercise) return null;
 
                   return (
-                    <View key={index} className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated">
-                      <View className="flex-row justify-between items-start mb-3">
-                        <View className="flex-1">
-                          <Text className="text-text-primary text-lg font-bold mb-1">
-                            {exercise.name}
-                          </Text>
-                          <Text className="text-text-secondary text-sm">
-                            {exercise.description}
-                          </Text>
+                    <FadeSlideIn key={index} delay={Math.min(index * 40, 200)}>
+                      <View className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated">
+                        <View className="flex-row justify-between items-start mb-3">
+                          <View className="flex-1">
+                            <Text className="text-text-primary text-lg font-bold mb-1">
+                              {exercise.name}
+                            </Text>
+                            <Text className="text-text-secondary text-sm">
+                              {exercise.description}
+                            </Text>
+                          </View>
+                          <AnimatedPressable onPress={() => removeExercise(index)} className="">
+                            <MaterialCommunityIcons name="close-circle" size={24} color={errorColor} />
+                          </AnimatedPressable>
                         </View>
-                        <AnimatedPressable onPress={() => removeExercise(index)} className="">
-                          <MaterialCommunityIcons name="close-circle" size={24} color={errorColor} />
-                        </AnimatedPressable>
-                      </View>
 
-                      <View className="flex-row items-center mb-2">
-                        <Text className="text-text-secondary mr-3 w-12">Sets:</Text>
-                        <View className="flex-row items-center bg-surface-elevated rounded-xl">
-                          <AnimatedPressable
-                            onPress={() => updateSets(index, planExercise.sets - 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">-</Text>
-                          </AnimatedPressable>
-                          <Text className="text-text-primary font-bold text-lg px-4">
-                            {planExercise.sets}
-                          </Text>
-                          <AnimatedPressable
-                            onPress={() => updateSets(index, planExercise.sets + 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">+</Text>
-                          </AnimatedPressable>
+                        <View className="flex-row items-center mb-2">
+                          <Text className="text-text-secondary mr-3 w-12">Sets:</Text>
+                          <View className="flex-row items-center bg-surface-elevated rounded-xl">
+                            <AnimatedPressable
+                              onPress={() => updateSets(index, planExercise.sets - 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">-</Text>
+                            </AnimatedPressable>
+                            <Text className="text-text-primary font-bold text-lg px-4">
+                              {planExercise.sets}
+                            </Text>
+                            <AnimatedPressable
+                              onPress={() => updateSets(index, planExercise.sets + 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">+</Text>
+                            </AnimatedPressable>
+                          </View>
                         </View>
-                      </View>
 
-                      <View className="flex-row items-center">
-                        <Text className="text-text-secondary mr-3 w-12">
-                          {planExercise.target.type === "reps" ? "Reps:" : "Time:"}
-                        </Text>
-                        <View className="flex-row items-center bg-surface-elevated rounded-xl">
-                          <AnimatedPressable
-                            onPress={() => updateTarget(index, planExercise.target.value - 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">-</Text>
-                          </AnimatedPressable>
-                          <Text className="text-text-primary font-bold text-lg px-4">
-                            {planExercise.target.value}
-                            {planExercise.target.type === "time" ? "s" : ""}
+                        <View className="flex-row items-center">
+                          <Text className="text-text-secondary mr-3 w-12">
+                            {planExercise.target.type === "reps" ? "Reps:" : "Time:"}
                           </Text>
-                          <AnimatedPressable
-                            onPress={() => updateTarget(index, planExercise.target.value + 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">+</Text>
-                          </AnimatedPressable>
+                          <View className="flex-row items-center bg-surface-elevated rounded-xl">
+                            <AnimatedPressable
+                              onPress={() => updateTarget(index, planExercise.target.value - 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">-</Text>
+                            </AnimatedPressable>
+                            <Text className="text-text-primary font-bold text-lg px-4">
+                              {planExercise.target.value}
+                              {planExercise.target.type === "time" ? "s" : ""}
+                            </Text>
+                            <AnimatedPressable
+                              onPress={() => updateTarget(index, planExercise.target.value + 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">+</Text>
+                            </AnimatedPressable>
+                          </View>
                         </View>
                       </View>
-                    </View>
+                    </FadeSlideIn>
                   );
                 })}
 

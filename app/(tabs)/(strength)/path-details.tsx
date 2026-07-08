@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 export default function PathDetailsScreen() {
   const router = useRouter();
@@ -75,22 +76,24 @@ export default function PathDetailsScreen() {
                 {path.description}
               </Text>
 
-              <View className="card-frosted p-5 rounded-3xl shadow-elevated">
-                <View className="flex-row justify-between items-center mb-3">
-                  <Text className="text-text-secondary font-medium">Your Progress</Text>
-                  <Text className="text-primary text-2xl font-bold">{progress}%</Text>
+              <FadeSlideIn>
+                <View className="card-frosted p-5 rounded-3xl shadow-elevated">
+                  <View className="flex-row justify-between items-center mb-3">
+                    <Text className="text-text-secondary font-medium">Your Progress</Text>
+                    <Text className="text-primary text-2xl font-bold">{progress}%</Text>
+                  </View>
+                  <View className="bg-surface-elevated/50 h-3 rounded-full overflow-hidden mb-2">
+                    <View
+                      className="bg-primary h-full rounded-full shadow-elevated"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </View>
+                  <Text className="text-text-muted text-sm">
+                    {completedIds.filter((id) => exercises.map((e) => e.id).includes(id)).length}/
+                    {exercises.length} exercises completed
+                  </Text>
                 </View>
-                <View className="bg-surface-elevated/50 h-3 rounded-full overflow-hidden mb-2">
-                  <View
-                    className="bg-primary h-full rounded-full shadow-elevated"
-                    style={{ width: `${progress}%` }}
-                  />
-                </View>
-                <Text className="text-text-muted text-sm">
-                  {completedIds.filter((id) => exercises.map((e) => e.id).includes(id)).length}/
-                  {exercises.length} exercises completed
-                </Text>
-              </View>
+              </FadeSlideIn>
             </View>
 
             <View className="px-6 pb-8">
@@ -103,71 +106,73 @@ export default function PathDetailsScreen() {
                   !exercise.prerequisites.every((prereq) => completedIds.includes(prereq));
 
                 return (
-                  <View key={exercise.id} className="mb-3">
-                    <View className="flex-row">
-                      <View className="items-center mr-4">
-                        <View
-                          className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${isCompleted
-                            ? "bg-success"
-                            : isLocked
-                              ? "bg-surface-elevated"
-                              : "bg-primary"
-                            }`}
-                        >
-                          {isCompleted ? (
-                            <MaterialCommunityIcons name="check" size={24} color="#ffffff" />
-                          ) : isLocked ? (
-                            <MaterialCommunityIcons name="lock" size={20} color="#7a86a8" />
-                          ) : (
-                            <Text className="text-background font-bold text-base">
-                              {index + 1}
-                            </Text>
+                  <FadeSlideIn key={exercise.id} delay={Math.min(index * 50, 300)}>
+                    <View className="mb-3">
+                      <View className="flex-row">
+                        <View className="items-center mr-4">
+                          <View
+                            className={`w-11 h-11 rounded-full items-center justify-center shadow-elevated ${isCompleted
+                              ? "bg-success"
+                              : isLocked
+                                ? "bg-surface-elevated"
+                                : "bg-primary"
+                              }`}
+                          >
+                            {isCompleted ? (
+                              <MaterialCommunityIcons name="check" size={24} color="#ffffff" />
+                            ) : isLocked ? (
+                              <MaterialCommunityIcons name="lock" size={20} color="#7a86a8" />
+                            ) : (
+                              <Text className="text-background font-bold text-base">
+                                {index + 1}
+                              </Text>
+                            )}
+                          </View>
+                          {index < exercises.length - 1 && (
+                            <View className="w-0.5 h-16 bg-border/50 mt-2" />
                           )}
                         </View>
-                        {index < exercises.length - 1 && (
-                          <View className="w-0.5 h-16 bg-border/50 mt-2" />
-                        )}
-                      </View>
 
-                      <AnimatedPressable
-                        onPress={() =>
-                          router.push({
-                            pathname: "/(tabs)/(strength)/exercise-details",
-                            params: { exerciseId: exercise.id },
-                          })
-                        }
-                        className={`w-[90%] flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
-                          ? "border-2 border-success/30"
-                          : isLocked
-                            ? "opacity-60"
-                            : "border-2 border-primary/30"
-                          }`}
-                      >
-                        <View className="flex-row justify-between items-start mb-2">
-                          <Text className="text-text-primary font-bold text-lg flex-1">
-                            {exercise.name}
+                        <AnimatedPressable
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(tabs)/(strength)/exercise-details",
+                              params: { exerciseId: exercise.id },
+                            })
+                          }
+                          className={`w-[90%] flex-1 card-frosted p-5 rounded-3xl shadow-elevated  ${isCompleted
+                            ? "border-2 border-success/30"
+                            : isLocked
+                              ? "opacity-60"
+                              : "border-2 border-primary/30"
+                            }`}
+                        >
+                          <View className="flex-row justify-between items-start mb-2">
+                            <Text className="text-text-primary font-bold text-lg flex-1">
+                              {exercise.name}
+                            </Text>
+                            <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
+                          </View>
+                          <Text className="text-text-secondary text-sm mb-3 leading-5">
+                            {exercise.description}
                           </Text>
-                          <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                        </View>
-                        <Text className="text-text-secondary text-sm mb-3 leading-5">
-                          {exercise.description}
-                        </Text>
-                        <View className="flex-row gap-2">
-                          <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
-                            <Text className="text-text-secondary text-xs">
-                              {exercise.target.value}{" "}
-                              {exercise.target.type === "reps" ? "reps" : "sec"}
-                            </Text>
+                          <View className="flex-row gap-2">
+                            <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
+                              <Text className="text-text-secondary text-xs">
+                                {exercise.target.value}{" "}
+                                {exercise.target.type === "reps" ? "reps" : "sec"}
+                              </Text>
+                            </View>
+                            <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
+                              <Text className="text-text-secondary text-xs capitalize">
+                                {exercise.level}
+                              </Text>
+                            </View>
                           </View>
-                          <View className="bg-surface-elevated px-3 py-1.5 rounded-lg">
-                            <Text className="text-text-secondary text-xs capitalize">
-                              {exercise.level}
-                            </Text>
-                          </View>
-                        </View>
-                      </AnimatedPressable>
+                        </AnimatedPressable>
+                      </View>
                     </View>
-                  </View>
+                  </FadeSlideIn>
                 );
               })}
             </View>

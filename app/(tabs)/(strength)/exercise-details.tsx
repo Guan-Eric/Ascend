@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 export default function StrengthExerciseDetailsScreen() {
   const router = useRouter();
@@ -285,71 +286,73 @@ export default function StrengthExerciseDetailsScreen() {
             </View>
 
             <View className="px-6">
-              {!canAccess && (
-                <View className="card-frosted border-2 border-warning p-5 rounded-3xl mb-4 shadow-elevated">
-                  <View className="flex-row items-center mb-2">
-                    <MaterialCommunityIcons name="lock" size={24} color={warningColor} />
-                    <Text className="text-warning font-bold ml-2 text-base">Locked Exercise</Text>
+              <FadeSlideIn>
+                {!canAccess && (
+                  <View className="card-frosted border-2 border-warning p-5 rounded-3xl mb-4 shadow-elevated">
+                    <View className="flex-row items-center mb-2">
+                      <MaterialCommunityIcons name="lock" size={24} color={warningColor} />
+                      <Text className="text-warning font-bold ml-2 text-base">Locked Exercise</Text>
+                    </View>
+                    <Text className="text-text-secondary leading-5">
+                      Complete the prerequisites below to unlock this exercise
+                    </Text>
                   </View>
-                  <Text className="text-text-secondary leading-5">
-                    Complete the prerequisites below to unlock this exercise
-                  </Text>
-                </View>
-              )}
+                )}
 
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-primary text-lg font-bold mb-3">How to Perform</Text>
-                <Text className="text-text-primary leading-6">{exercise.description}</Text>
-              </View>
-
-              {previousExercises.length > 0 && (
                 <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                  <Text className="text-primary text-lg font-bold mb-3">Prerequisites</Text>
-                  {previousExercises.map((prevEx) => (
+                  <Text className="text-primary text-lg font-bold mb-3">How to Perform</Text>
+                  <Text className="text-text-primary leading-6">{exercise.description}</Text>
+                </View>
+
+                {previousExercises.length > 0 && (
+                  <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                    <Text className="text-primary text-lg font-bold mb-3">Prerequisites</Text>
+                    {previousExercises.map((prevEx) => (
+                      <AnimatedPressable
+                        key={prevEx.id}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/(tabs)/(strength)/exercise-details",
+                            params: { exerciseId: prevEx.id },
+                          })
+                        }
+                        className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 "
+                      >
+                        <Text className="text-text-primary font-semibold flex-1">
+                          {prevEx.name}
+                        </Text>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
+                      </AnimatedPressable>
+                    ))}
+                  </View>
+                )}
+
+                {nextExercise && (
+                  <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                    <Text className="text-primary text-lg font-bold mb-3">Next Progression</Text>
                     <AnimatedPressable
-                      key={prevEx.id}
                       onPress={() =>
                         router.push({
                           pathname: "/(tabs)/(strength)/exercise-details",
-                          params: { exerciseId: prevEx.id },
+                          params: { exerciseId: nextExercise.id },
                         })
                       }
-                      className="glass flex-row items-center justify-between p-4 rounded-2xl mb-2 "
+                      className="glass flex-row items-center justify-between p-4 rounded-2xl "
                     >
-                      <Text className="text-text-primary font-semibold flex-1">
-                        {prevEx.name}
-                      </Text>
+                      <View className="flex-1">
+                        <Text className="text-text-primary font-semibold mb-1">
+                          {nextExercise.name}
+                        </Text>
+                        <Text className="text-text-secondary text-sm">
+                          {nextExercise.target.value}{" "}
+                          {nextExercise.target.type === "reps" ? "reps" : "sec"}
+                        </Text>
+                      </View>
                       <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
                     </AnimatedPressable>
-                  ))}
-                </View>
-              )}
-
-              {nextExercise && (
-                <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                  <Text className="text-primary text-lg font-bold mb-3">Next Progression</Text>
-                  <AnimatedPressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(tabs)/(strength)/exercise-details",
-                        params: { exerciseId: nextExercise.id },
-                      })
-                    }
-                    className="glass flex-row items-center justify-between p-4 rounded-2xl "
-                  >
-                    <View className="flex-1">
-                      <Text className="text-text-primary font-semibold mb-1">
-                        {nextExercise.name}
-                      </Text>
-                      <Text className="text-text-secondary text-sm">
-                        {nextExercise.target.value}{" "}
-                        {nextExercise.target.type === "reps" ? "reps" : "sec"}
-                      </Text>
-                    </View>
-                    <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                  </AnimatedPressable>
-                </View>
-              )}
+                  </View>
+                )}
+              </FadeSlideIn>
             </View>
           </>
         )}

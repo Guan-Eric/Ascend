@@ -11,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 type ExerciseProgress = {
   exerciseId: string;
@@ -269,121 +270,127 @@ export default function WorkoutScreen() {
         data={[0]}
         renderItem={() => (
           <>
-            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              <Text className="text-primary text-sm font-semibold mb-2 uppercase">
-                Current Exercise
-              </Text>
-              <Text className="text-text-primary text-3xl font-bold mb-2">
-                {currentExercise.name}
-              </Text>
-              <Text className="text-text-secondary mb-4">
-                {currentExercise.description}
-              </Text>
+            <FadeSlideIn key={`current-${currentExerciseIndex}`}>
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                <Text className="text-primary text-sm font-semibold mb-2 uppercase">
+                  Current Exercise
+                </Text>
+                <Text className="text-text-primary text-3xl font-bold mb-2">
+                  {currentExercise.name}
+                </Text>
+                <Text className="text-text-secondary mb-4">
+                  {currentExercise.description}
+                </Text>
 
-              <View className="flex-row items-center mb-4">
-                <View className="bg-surface-elevated px-4 py-2 rounded-lg mr-3">
-                  <Text className="text-text-secondary text-xs">Target</Text>
-                  <Text className="text-text-primary font-bold text-lg">
-                    {currentPlanExercise.target.value}{" "}
-                    {currentPlanExercise.target.type === "reps" ? "reps" : "sec"}
-                  </Text>
-                </View>
-                <View className="bg-surface-elevated px-4 py-2 rounded-lg">
-                  <Text className="text-text-secondary text-xs">Sets</Text>
-                  <Text className="text-text-primary font-bold text-lg">
-                    {currentProgress.completedSets}/{currentPlanExercise.sets}
-                  </Text>
-                </View>
-              </View>
-
-              {currentProgress.actualValues.length > 0 && (
-                <View className="bg-surface-elevated p-3 rounded-lg">
-                  <Text className="text-text-secondary text-xs mb-2">Completed Sets:</Text>
-                  <View className="flex-row flex-wrap gap-2">
-                    {currentProgress.actualValues.map((value, idx) => (
-                      <View key={idx} className="bg-success/20 px-3 py-1 rounded">
-                        <Text className="text-success font-bold text-sm">
-                          Set {idx + 1}: {value}
-                        </Text>
-                      </View>
-                    ))}
+                <View className="flex-row items-center mb-4">
+                  <View className="bg-surface-elevated px-4 py-2 rounded-lg mr-3">
+                    <Text className="text-text-secondary text-xs">Target</Text>
+                    <Text className="text-text-primary font-bold text-lg">
+                      {currentPlanExercise.target.value}{" "}
+                      {currentPlanExercise.target.type === "reps" ? "reps" : "sec"}
+                    </Text>
+                  </View>
+                  <View className="bg-surface-elevated px-4 py-2 rounded-lg">
+                    <Text className="text-text-secondary text-xs">Sets</Text>
+                    <Text className="text-text-primary font-bold text-lg">
+                      {currentProgress.completedSets}/{currentPlanExercise.sets}
+                    </Text>
                   </View>
                 </View>
-              )}
-            </View>
+
+                {currentProgress.actualValues.length > 0 && (
+                  <View className="bg-surface-elevated p-3 rounded-lg">
+                    <Text className="text-text-secondary text-xs mb-2">Completed Sets:</Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      {currentProgress.actualValues.map((value, idx) => (
+                        <View key={idx} className="bg-success/20 px-3 py-1 rounded">
+                          <Text className="text-success font-bold text-sm">
+                            Set {idx + 1}: {value}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            </FadeSlideIn>
 
             {!allExercisesComplete && (
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-text-primary text-lg font-bold mb-3">
-                  Log Set {currentProgress.completedSets + 1}
-                </Text>
-                <TextInput
-                  value={currentSetReps}
-                  onChangeText={setCurrentSetReps}
-                  placeholder={`Enter ${currentPlanExercise.target.type === "reps" ? "reps" : "seconds"
-                    }`}
-                  placeholderTextColor="#7a86a8"
-                  keyboardType="numeric"
-                  className="bg-surface-elevated text-text-primary px-4 py-4 rounded-xl text-xl font-bold mb-4 text-center"
-                />
-                {restRemaining > 0 && (
-                  <Text className="text-warning text-sm text-center mb-2">
-                    Suggested rest: {restRemaining}s remaining
+              <FadeSlideIn key={`log-${currentExerciseIndex}`} delay={80}>
+                <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                  <Text className="text-text-primary text-lg font-bold mb-3">
+                    Log Set {currentProgress.completedSets + 1}
                   </Text>
-                )}
+                  <TextInput
+                    value={currentSetReps}
+                    onChangeText={setCurrentSetReps}
+                    placeholder={`Enter ${currentPlanExercise.target.type === "reps" ? "reps" : "seconds"
+                      }`}
+                    placeholderTextColor="#7a86a8"
+                    keyboardType="numeric"
+                    className="bg-surface-elevated text-text-primary px-4 py-4 rounded-xl text-xl font-bold mb-4 text-center"
+                  />
+                  {restRemaining > 0 && (
+                    <Text className="text-warning text-sm text-center mb-2">
+                      Suggested rest: {restRemaining}s remaining
+                    </Text>
+                  )}
 
-                <AnimatedPressable
-                  onPress={completeSet}
-                  className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
-                >
-                  <Text className="text-background text-center font-bold text-lg">
-                    {restRemaining > 0 ? "Log Next Set Early" : "Complete Set"}
-                  </Text>
-                </AnimatedPressable>
-                <AnimatedPressable
-                  onPress={skipExercise}
-                  className="border-2 border-text-muted py-3 rounded-2xl "
-                >
-                  <Text className="text-text-muted text-center font-bold">Skip Exercise</Text>
-                </AnimatedPressable>
-              </View>
+                  <AnimatedPressable
+                    onPress={completeSet}
+                    className="bg-primary py-4 rounded-2xl mb-3  shadow-elevated"
+                  >
+                    <Text className="text-background text-center font-bold text-lg">
+                      {restRemaining > 0 ? "Log Next Set Early" : "Complete Set"}
+                    </Text>
+                  </AnimatedPressable>
+                  <AnimatedPressable
+                    onPress={skipExercise}
+                    className="border-2 border-text-muted py-3 rounded-2xl "
+                  >
+                    <Text className="text-text-muted text-center font-bold">Skip Exercise</Text>
+                  </AnimatedPressable>
+                </View>
+              </FadeSlideIn>
             )}
 
-            <View className="card-frosted p-6 rounded-3xl mb-8 shadow-elevated">
-              <Text className="text-text-primary text-lg font-bold mb-4">
-                Workout Overview
-              </Text>
-              {exercises.map((exercise, index) => {
-                const planEx = plan.exercises[index];
-                const prog = progress[index];
-                const isComplete = prog.completedSets >= planEx.sets;
+            <FadeSlideIn delay={160}>
+              <View className="card-frosted p-6 rounded-3xl mb-8 shadow-elevated">
+                <Text className="text-text-primary text-lg font-bold mb-4">
+                  Workout Overview
+                </Text>
+                {exercises.map((exercise, index) => {
+                  const planEx = plan.exercises[index];
+                  const prog = progress[index];
+                  const isComplete = prog.completedSets >= planEx.sets;
 
-                return (
-                  <View
-                    key={exercise.id}
-                    className={`flex-row items-center justify-between mb-3 pb-3 ${index < exercises.length - 1 ? "border-b border-border" : ""
-                      }`}
-                  >
-                    <View className="flex-1">
-                      <Text
-                        className={`${isComplete ? "text-success" : "text-text-primary"
-                          } font-semibold`}
-                      >
-                        {exercise.name}
-                      </Text>
-                      <Text className="text-text-secondary text-sm">
-                        {prog.completedSets}/{planEx.sets} sets
-                        {prog.actualValues.length > 0 &&
-                          ` • Best: ${Math.max(...prog.actualValues)}`}
-                      </Text>
+                  return (
+                    <View
+                      key={exercise.id}
+                      className={`flex-row items-center justify-between mb-3 pb-3 ${index < exercises.length - 1 ? "border-b border-border" : ""
+                        }`}
+                    >
+                      <View className="flex-1">
+                        <Text
+                          className={`${isComplete ? "text-success" : "text-text-primary"
+                            } font-semibold`}
+                        >
+                          {exercise.name}
+                        </Text>
+                        <Text className="text-text-secondary text-sm">
+                          {prog.completedSets}/{planEx.sets} sets
+                          {prog.actualValues.length > 0 &&
+                            ` • Best: ${Math.max(...prog.actualValues)}`}
+                        </Text>
+                      </View>
+                      {isComplete && (
+                        <MaterialCommunityIcons name="check-circle" size={24} color={successColor} />
+                      )}
                     </View>
-                    {isComplete && (
-                      <MaterialCommunityIcons name="check-circle" size={24} color={successColor} />
-                    )}
-                  </View>
-                );
-              })}
-            </View>
+                  );
+                })}
+              </View>
+            </FadeSlideIn>
           </>
         )}
       />

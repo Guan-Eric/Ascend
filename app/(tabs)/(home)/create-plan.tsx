@@ -9,6 +9,7 @@ import { Skill } from "../../../types/Skill";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 type PlanExercise = {
   exerciseId: string;
@@ -149,18 +150,20 @@ export default function CreatePlanScreen() {
         <FlashList
           className="flex-1 px-6"
           data={[0, 1, 2, 3, 4, 5, 6]}
-          renderItem={({ item: day }) => (
-            <AnimatedPressable
-              onPress={() => {
-                setSelectedDay(day);
-                setViewMode("main");
-              }}
-              className="card-frosted p-5 rounded-2xl mb-3  shadow-elevated"
-            >
-              <Text className="text-text-primary text-xl font-bold">
-                {getDayName(day)}
-              </Text>
-            </AnimatedPressable>
+          renderItem={({ item: day, index }) => (
+            <FadeSlideIn delay={Math.min(index * 50, 300)}>
+              <AnimatedPressable
+                onPress={() => {
+                  setSelectedDay(day);
+                  setViewMode("main");
+                }}
+                className="card-frosted p-5 rounded-2xl mb-3  shadow-elevated"
+              >
+                <Text className="text-text-primary text-xl font-bold">
+                  {getDayName(day)}
+                </Text>
+              </AnimatedPressable>
+            </FadeSlideIn>
           )}
         />
       </View>
@@ -186,30 +189,32 @@ export default function CreatePlanScreen() {
         <FlashList
           className="flex-1 px-6"
           data={skillExercises}
-          renderItem={({ item: exercise }) => (
-            <AnimatedPressable
-              onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
-            >
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                {exercise.name}
-              </Text>
-              <Text className="text-text-secondary text-sm mb-2">
-                {exercise.description}
-              </Text>
-              <View className="flex-row gap-2">
-                <View className="bg-surface-elevated px-3 py-1 rounded">
-                  <Text className="text-text-secondary text-xs capitalize">
-                    {exercise.level}
-                  </Text>
+          renderItem={({ item: exercise, index }) => (
+            <FadeSlideIn delay={Math.min(index * 50, 300)}>
+              <AnimatedPressable
+                onPress={() => addExercise(exercise)}
+                className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
+              >
+                <Text className="text-text-primary text-lg font-bold mb-1">
+                  {exercise.name}
+                </Text>
+                <Text className="text-text-secondary text-sm mb-2">
+                  {exercise.description}
+                </Text>
+                <View className="flex-row gap-2">
+                  <View className="bg-surface-elevated px-3 py-1 rounded">
+                    <Text className="text-text-secondary text-xs capitalize">
+                      {exercise.level}
+                    </Text>
+                  </View>
+                  <View className="bg-surface-elevated px-3 py-1 rounded">
+                    <Text className="text-text-secondary text-xs">
+                      {exercise.target.value} {exercise.target.type === "reps" ? "reps" : "sec"}
+                    </Text>
+                  </View>
                 </View>
-                <View className="bg-surface-elevated px-3 py-1 rounded">
-                  <Text className="text-text-secondary text-xs">
-                    {exercise.target.value} {exercise.target.type === "reps" ? "reps" : "sec"}
-                  </Text>
-                </View>
-              </View>
-            </AnimatedPressable>
+              </AnimatedPressable>
+            </FadeSlideIn>
           )}
           keyExtractor={(item) => item.id}
         />
@@ -245,20 +250,22 @@ export default function CreatePlanScreen() {
         <FlashList
           className="flex-1 px-6"
           data={filteredExercises}
-          renderItem={({ item: exercise }) => (
-            <AnimatedPressable
-              onPress={() => addExercise(exercise)}
-              className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
-            >
-              <Text className="text-text-primary text-lg font-bold mb-1">
-                {exercise.name}
-              </Text>
-              <Text className="text-text-secondary text-sm">
-                {exercise.target.type === "reps"
-                  ? `${exercise.target.value} reps`
-                  : `${exercise.target.value}s hold`}
-              </Text>
-            </AnimatedPressable>
+          renderItem={({ item: exercise, index }) => (
+            <FadeSlideIn delay={Math.min(index * 50, 300)}>
+              <AnimatedPressable
+                onPress={() => addExercise(exercise)}
+                className="card-frosted p-4 rounded-2xl mb-3 shadow-elevated "
+              >
+                <Text className="text-text-primary text-lg font-bold mb-1">
+                  {exercise.name}
+                </Text>
+                <Text className="text-text-secondary text-sm">
+                  {exercise.target.type === "reps"
+                    ? `${exercise.target.value} reps`
+                    : `${exercise.target.value}s hold`}
+                </Text>
+              </AnimatedPressable>
+            </FadeSlideIn>
           )}
           keyExtractor={(item) => item.id}
         />
@@ -372,51 +379,52 @@ export default function CreatePlanScreen() {
                   if (!exercise) return null;
 
                   return (
-                    <View
-                      key={index}
-                      className="card-frosted p-4 rounded-2xl mb-3"
-                    >
-                      <View className="flex-row justify-between items-start mb-2">
-                        <View className="flex-1">
-                          <Text className="text-text-primary text-lg font-bold">
-                            {exercise.name}
-                          </Text>
-                          <Text className="text-text-secondary text-sm">
-                            {planExercise.target.type === "reps"
-                              ? `${planExercise.target.value} reps`
-                              : `${planExercise.target.value}s`}
-                          </Text>
+                    <FadeSlideIn key={index} delay={Math.min(index * 40, 200)}>
+                      <View
+                        className="card-frosted p-4 rounded-2xl mb-3"
+                      >
+                        <View className="flex-row justify-between items-start mb-2">
+                          <View className="flex-1">
+                            <Text className="text-text-primary text-lg font-bold">
+                              {exercise.name}
+                            </Text>
+                            <Text className="text-text-secondary text-sm">
+                              {planExercise.target.type === "reps"
+                                ? `${planExercise.target.value} reps`
+                                : `${planExercise.target.value}s`}
+                            </Text>
+                          </View>
+                          <AnimatedPressable onPress={() => removeExercise(index)} className="">
+                            <MaterialCommunityIcons
+                              name="close-circle"
+                              size={24}
+                              color={errorColor}
+                            />
+                          </AnimatedPressable>
                         </View>
-                        <AnimatedPressable onPress={() => removeExercise(index)} className="">
-                          <MaterialCommunityIcons
-                            name="close-circle"
-                            size={24}
-                            color={errorColor}
-                          />
-                        </AnimatedPressable>
-                      </View>
 
-                      <View className="flex-row items-center mt-2">
-                        <Text className="text-text-secondary mr-3">Sets:</Text>
-                        <View className="flex-row items-center bg-surface-elevated rounded-lg">
-                          <AnimatedPressable
-                            onPress={() => updateSets(index, planExercise.sets - 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">-</Text>
-                          </AnimatedPressable>
-                          <Text className="text-text-primary font-bold text-lg px-4">
-                            {planExercise.sets}
-                          </Text>
-                          <AnimatedPressable
-                            onPress={() => updateSets(index, planExercise.sets + 1)}
-                            className="px-4 py-2 "
-                          >
-                            <Text className="text-primary text-xl font-bold">+</Text>
-                          </AnimatedPressable>
+                        <View className="flex-row items-center mt-2">
+                          <Text className="text-text-secondary mr-3">Sets:</Text>
+                          <View className="flex-row items-center bg-surface-elevated rounded-lg">
+                            <AnimatedPressable
+                              onPress={() => updateSets(index, planExercise.sets - 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">-</Text>
+                            </AnimatedPressable>
+                            <Text className="text-text-primary font-bold text-lg px-4">
+                              {planExercise.sets}
+                            </Text>
+                            <AnimatedPressable
+                              onPress={() => updateSets(index, planExercise.sets + 1)}
+                              className="px-4 py-2 "
+                            >
+                              <Text className="text-primary text-xl font-bold">+</Text>
+                            </AnimatedPressable>
+                          </View>
                         </View>
                       </View>
-                    </View>
+                    </FadeSlideIn>
                   );
                 })}
               </>
