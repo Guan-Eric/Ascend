@@ -11,6 +11,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 export default function StrengthScreen() {
   const [strengthPaths, setStrengthPaths] = useState<Skill[]>([]);
@@ -106,88 +107,90 @@ export default function StrengthScreen() {
               </View>
             )}
 
-            {strengthPaths.map((path) => {
+            {strengthPaths.map((path, index) => {
               const exercises = pathExercises[path.id] || [];
               const progress = getPathProgress(path.id);
 
               return (
-                <View key={path.id} className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                  <View className={`${getPathColor(path.id)} w-20 h-1.5 rounded-full mb-4`} />
+                <FadeSlideIn key={path.id} delay={Math.min(index * 60, 300)}>
+                  <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                    <View className={`${getPathColor(path.id)} w-20 h-1.5 rounded-full mb-4`} />
 
-                  <Text className="text-text-primary text-2xl font-bold mb-2">{path.name}</Text>
+                    <Text className="text-text-primary text-2xl font-bold mb-2">{path.name}</Text>
 
-                  <Text className="text-text-secondary text-sm mb-4 leading-5">
-                    {path.description}
-                  </Text>
-
-                  <View className="mb-4">
-                    <View className="flex-row justify-between items-center mb-2">
-                      <Text className="text-text-secondary text-sm">Your Progress</Text>
-                      <Text className="text-primary font-bold">{progress}%</Text>
-                    </View>
-                    <View className="bg-surface-elevated/50 h-2.5 rounded-full overflow-hidden">
-                      <View
-                        className="bg-primary h-full rounded-full shadow-elevated"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </View>
-                  </View>
-
-                  <View className="glass p-4 rounded-2xl">
-                    <Text className="text-text-secondary text-xs font-semibold mb-3 uppercase">
-                      Exercises ({exercises.length})
+                    <Text className="text-text-secondary text-sm mb-4 leading-5">
+                      {path.description}
                     </Text>
-                    {exercises.slice(0, 3).map((exercise) => {
-                      const isCompleted = completedIds.includes(exercise.id);
 
-                      return (
+                    <View className="mb-4">
+                      <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-text-secondary text-sm">Your Progress</Text>
+                        <Text className="text-primary font-bold">{progress}%</Text>
+                      </View>
+                      <View className="bg-surface-elevated/50 h-2.5 rounded-full overflow-hidden">
+                        <View
+                          className="bg-primary h-full rounded-full shadow-elevated"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </View>
+                    </View>
+
+                    <View className="glass p-4 rounded-2xl">
+                      <Text className="text-text-secondary text-xs font-semibold mb-3 uppercase">
+                        Exercises ({exercises.length})
+                      </Text>
+                      {exercises.slice(0, 3).map((exercise) => {
+                        const isCompleted = completedIds.includes(exercise.id);
+
+                        return (
+                          <AnimatedPressable
+                            key={exercise.id}
+                            onPress={() =>
+                              router.push({
+                                pathname: "/(tabs)/(strength)/exercise-details",
+                                params: { exerciseId: exercise.id },
+                              })
+                            }
+                            className="flex-row items-center justify-between mb-2 pb-2 border-b border-border/30 "
+                          >
+                            <View className="flex-1">
+                              <Text
+                                className={`${isCompleted ? "text-success" : "text-text-primary"
+                                  } text-base font-semibold`}
+                              >
+                                {exercise.name}
+                              </Text>
+                              <Text className="text-text-secondary text-xs">
+                                {exercise.target.value}{" "}
+                                {exercise.target.type === "reps" ? "reps" : "sec"} • {exercise.level}
+                              </Text>
+                            </View>
+                            {isCompleted ? (
+                              <MaterialCommunityIcons name="check-circle" size={20} color={successColor} />
+                            ) : (
+                              <MaterialCommunityIcons name="chevron-right" size={20} color="#7a86a8" />
+                            )}
+                          </AnimatedPressable>
+                        );
+                      })}
+                      {exercises.length > 3 && (
                         <AnimatedPressable
-                          key={exercise.id}
                           onPress={() =>
                             router.push({
-                              pathname: "/(tabs)/(strength)/exercise-details",
-                              params: { exerciseId: exercise.id },
+                              pathname: "/(tabs)/(strength)/path-details",
+                              params: { pathId: path.id },
                             })
                           }
-                          className="flex-row items-center justify-between mb-2 pb-2 border-b border-border/30 "
+                          className="mt-2 "
                         >
-                          <View className="flex-1">
-                            <Text
-                              className={`${isCompleted ? "text-success" : "text-text-primary"
-                                } text-base font-semibold`}
-                            >
-                              {exercise.name}
-                            </Text>
-                            <Text className="text-text-secondary text-xs">
-                              {exercise.target.value}{" "}
-                              {exercise.target.type === "reps" ? "reps" : "sec"} • {exercise.level}
-                            </Text>
-                          </View>
-                          {isCompleted ? (
-                            <MaterialCommunityIcons name="check-circle" size={20} color={successColor} />
-                          ) : (
-                            <MaterialCommunityIcons name="chevron-right" size={20} color="#7a86a8" />
-                          )}
+                          <Text className="text-primary text-sm font-semibold">
+                            View all {exercises.length} exercises →
+                          </Text>
                         </AnimatedPressable>
-                      );
-                    })}
-                    {exercises.length > 3 && (
-                      <AnimatedPressable
-                        onPress={() =>
-                          router.push({
-                            pathname: "/(tabs)/(strength)/path-details",
-                            params: { pathId: path.id },
-                          })
-                        }
-                        className="mt-2 "
-                      >
-                        <Text className="text-primary text-sm font-semibold">
-                          View all {exercises.length} exercises →
-                        </Text>
-                      </AnimatedPressable>
-                    )}
+                      )}
+                    </View>
                   </View>
-                </View>
+                </FadeSlideIn>
               );
             })}
           </View>

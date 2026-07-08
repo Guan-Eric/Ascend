@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
+import { FadeSlideIn } from "../../../components/FadeSlideIn";
 
 export default function HomeScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -183,97 +184,99 @@ export default function HomeScreen() {
       <FlashList
         className="flex-1 px-6"
         data={plans}
-        renderItem={({ item: plan }) => {
+        renderItem={({ item: plan, index }) => {
           const exercises = planExercises[plan.id] || [];
 
           return (
-            <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-              {/* Plan Header */}
-              <View className="flex-row items-center mb-4">
+            <FadeSlideIn delay={Math.min(index * 60, 300)}>
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                {/* Plan Header */}
+                <View className="flex-row items-center mb-4">
 
-                <View className="flex-1">
-                  <Text className="text-text-primary text-2xl font-bold mb-1">
-                    {getDayName(plan.dayIndex)}
-                  </Text>
-                  <View className="flex-row items-center">
-
-                    <Text className="text-text-secondary text-sm">
-                      {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+                  <View className="flex-1">
+                    <Text className="text-text-primary text-2xl font-bold mb-1">
+                      {getDayName(plan.dayIndex)}
                     </Text>
+                    <View className="flex-row items-center">
+
+                      <Text className="text-text-secondary text-sm">
+                        {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+                      </Text>
+                    </View>
                   </View>
+
+                  <AnimatedPressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(tabs)/(home)/edit-plan",
+                        params: { planId: plan.id },
+                      })
+                    }
+                    className="bg-surface-elevated p-3 rounded-xl"
+                  >
+                    <MaterialCommunityIcons
+                      name="pencil-outline"
+                      size={20}
+                      color={primaryColor}
+                    />
+                  </AnimatedPressable>
                 </View>
 
-                <AnimatedPressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(tabs)/(home)/edit-plan",
-                      params: { planId: plan.id },
-                    })
-                  }
-                  className="bg-surface-elevated p-3 rounded-xl"
-                >
-                  <MaterialCommunityIcons
-                    name="pencil-outline"
-                    size={20}
-                    color={primaryColor}
-                  />
-                </AnimatedPressable>
-              </View>
-
-              {/* Exercise Preview with Glass Effect */}
-              <View className="glass p-5 rounded-2xl mb-4">
-                {exercises.slice(0, 3).map((exercise, index) => {
-                  const planExercise = plan.exercises[index];
-                  return (
-                    <View
-                      key={exercise.id}
-                      className={`flex-row items-center mb-3 ${index < Math.min(exercises.length, 3) - 1 ? 'pb-3 border-b border-border/30' : ''
-                        }`}
-                    >
-                      <View className="bg-primary/10 w-10 h-10 rounded-xl items-center justify-center mr-3">
-                        <Text className="text-primary font-bold">{index + 1}</Text>
+                {/* Exercise Preview with Glass Effect */}
+                <View className="glass p-5 rounded-2xl mb-4">
+                  {exercises.slice(0, 3).map((exercise, index) => {
+                    const planExercise = plan.exercises[index];
+                    return (
+                      <View
+                        key={exercise.id}
+                        className={`flex-row items-center mb-3 ${index < Math.min(exercises.length, 3) - 1 ? 'pb-3 border-b border-border/30' : ''
+                          }`}
+                      >
+                        <View className="bg-primary/10 w-10 h-10 rounded-xl items-center justify-center mr-3">
+                          <Text className="text-primary font-bold">{index + 1}</Text>
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-text-primary font-semibold mb-1">
+                            {exercise.name}
+                          </Text>
+                          <Text className="text-text-secondary text-xs">
+                            {planExercise?.sets} sets × {planExercise?.target.value}{" "}
+                            {planExercise?.target.type === "reps" ? "reps" : "sec"}
+                          </Text>
+                        </View>
                       </View>
-                      <View className="flex-1">
-                        <Text className="text-text-primary font-semibold mb-1">
-                          {exercise.name}
-                        </Text>
-                        <Text className="text-text-secondary text-xs">
-                          {planExercise?.sets} sets × {planExercise?.target.value}{" "}
-                          {planExercise?.target.type === "reps" ? "reps" : "sec"}
-                        </Text>
-                      </View>
+                    );
+                  })}
+                  {exercises.length > 3 && (
+                    <View className="bg-surface-elevated/50 px-3 py-2 rounded-lg mt-1">
+                      <Text className="text-text-muted text-xs text-center">
+                        +{exercises.length - 3} more exercises
+                      </Text>
                     </View>
-                  );
-                })}
-                {exercises.length > 3 && (
-                  <View className="bg-surface-elevated/50 px-3 py-2 rounded-lg mt-1">
-                    <Text className="text-text-muted text-xs text-center">
-                      +{exercises.length - 3} more exercises
-                    </Text>
-                  </View>
-                )}
-              </View>
+                  )}
+                </View>
 
-              {/* Action Button */}
-              <View className="">
-                <AnimatedPressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(tabs)/(home)/workout",
-                      params: { planId: plan.id },
-                    })
-                  }
-                  className="flex-1 bg-primary py-4 rounded-2xl shadow-elevated"
-                >
-                  <View className="flex-row items-center justify-center">
-                    <MaterialCommunityIcons name="play" size={20} color="#000000" />
-                    <Text className="text-background text-center font-bold text-base ml-2">
-                      Start
-                    </Text>
-                  </View>
-                </AnimatedPressable>
+                {/* Action Button */}
+                <View className="">
+                  <AnimatedPressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(tabs)/(home)/workout",
+                        params: { planId: plan.id },
+                      })
+                    }
+                    className="flex-1 bg-primary py-4 rounded-2xl shadow-elevated"
+                  >
+                    <View className="flex-row items-center justify-center">
+                      <MaterialCommunityIcons name="play" size={20} color="#000000" />
+                      <Text className="text-background text-center font-bold text-base ml-2">
+                        Start
+                      </Text>
+                    </View>
+                  </AnimatedPressable>
+                </View>
               </View>
-            </View>
+            </FadeSlideIn>
           );
         }}
         keyExtractor={(item) => item.id}
