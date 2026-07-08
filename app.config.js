@@ -20,7 +20,7 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
       },
     },
-    plugins: [["expo-font"], "expo-router"],
+    plugins: [["expo-font"], "expo-router", "expo-status-bar"],
     extra: {
       eas: {
         projectId: "fc4507c1-e06b-4acc-8537-55dfa89cc3cd"

@@ -14,4 +14,9 @@ const uniwindConfig = withUniwindConfig(config, {
   adaptiveThemes: false,
 });
 
+uniwindConfig.resolver.extraNodeModules = {
+  ...uniwindConfig.resolver.extraNodeModules,
+  punycode: require.resolve("punycode"),
+};
+
 module.exports = uniwindConfig;
