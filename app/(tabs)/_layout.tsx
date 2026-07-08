@@ -45,6 +45,12 @@ const tabThemeColors: Record<string, {
     active: "#d6a26a",
     inactive: "#9ca3af",
   },
+  ascend: {
+    background: "#17181B",
+    border: "#2A2B2E",
+    active: "#A8D93F",
+    inactive: "#8A8B8D",
+  },
 };
 
 export default function TabsLayout() {

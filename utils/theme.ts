@@ -1,7 +1,10 @@
 // utils/theme.ts - Theme utility for getting primary color
 import { useUniwind } from 'uniwind';
 
-export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error') => {
+export const getThemeColor = (
+  theme: string,
+  colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'coral'
+) => {
   const themeColors: Record<string, Record<string, string>> = {
     dark: {
       primary: '#00d9ff',
@@ -9,6 +12,7 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#10b981',
       warning: '#f59e0b',
       error: '#ef4444',
+      coral: '#ff7849',
     },
     light: {
       primary: '#3b82f6',
@@ -16,6 +20,7 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#16a34a',
       warning: '#eab308',
       error: '#dc2626',
+      coral: '#f2653d',
     },
     matcha: {
       primary: '#6fa76f',
@@ -23,6 +28,7 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#4ade80',
       warning: '#facc15',
       error: '#ef4444',
+      coral: '#e2703a',
     },
     ube: {
       primary: '#a78bfa',
@@ -30,6 +36,7 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#34d399',
       warning: '#fbbf24',
       error: '#fb7185',
+      coral: '#ff8a5c',
     },
     zen: {
       primary: '#64748b',
@@ -37,6 +44,7 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#22c55e',
       warning: '#eab308',
       error: '#ef4444',
+      coral: '#d97a4d',
     },
     coffee: {
       primary: '#c08457',
@@ -44,13 +52,24 @@ export const getThemeColor = (theme: string, colorKey: 'primary' | 'secondary' |
       success: '#22c55e',
       warning: '#f59e0b',
       error: '#ef4444',
+      coral: '#e0733f',
+    },
+    ascend: {
+      primary: '#a8d93f',
+      secondary: '#7c6cff',
+      success: '#3a9e7e',
+      warning: '#f59e0b',
+      error: '#ef4444',
+      coral: '#ff6b4a',
     },
   };
 
   return themeColors[theme]?.[colorKey] || themeColors.dark[colorKey];
 };
 
-export const useThemeColor = (colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error' = 'primary') => {
+export const useThemeColor = (
+  colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'coral' = 'primary'
+) => {
   const { theme } = useUniwind();
   return getThemeColor(theme, colorKey);
 };

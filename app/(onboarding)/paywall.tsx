@@ -11,6 +11,11 @@ import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { LinearGradient } from "expo-linear-gradient";
+import {
+  logPaywallViewed,
+  logTrialStarted,
+  logPurchaseFailed,
+} from "../../utils/analytics";
 
 const premiumFeatures = [
   {
@@ -74,6 +79,7 @@ export default function PaywallScreen() {
         setOfferings(offerings.current);
         // Default to annual
         setSelectedPackage("$rc_weekly");
+        logPaywallViewed({ source: "onboarding" });
       }
     } catch (error) {
       console.error("Error initializing user:", error);
@@ -101,6 +107,7 @@ export default function PaywallScreen() {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
 
       if (customerInfo.entitlements.active["Ascend Pro"]) {
+        logTrialStarted({ packageId: pkg.identifier });
         Alert.alert("Success! 🎉", "Welcome to Ascend Pro!", [
           {
             text: "Let's Go!",
@@ -111,6 +118,7 @@ export default function PaywallScreen() {
     } catch (error: any) {
       if (!error.userCancelled) {
         console.error("Purchase error:", error);
+        logPurchaseFailed({ packageId: selectedPackage, reason: error?.message });
         Alert.alert("Purchase Failed", "Please try again.");
       }
     } finally {

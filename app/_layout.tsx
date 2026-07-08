@@ -6,6 +6,7 @@ import "../global.css";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Uniwind } from "uniwind";
+import { logAppOpen } from "../utils/analytics";
 
 const THEME_STORAGE_KEY = '@ascend_theme';
 
@@ -30,6 +31,9 @@ export default function RootLayout() {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme) {
         Uniwind.setTheme(savedTheme as any);
+      } else {
+        // New installs land on the Ascend brand theme by default
+        Uniwind.setTheme("ascend" as any);
       }
     } catch (error) {
       console.error('Error loading saved theme:', error);
@@ -39,6 +43,7 @@ export default function RootLayout() {
   useEffect(() => {
     loadSavedTheme();
     initializeRevenueCat();
+    logAppOpen();
   }, []);
 
   return (

@@ -1,25 +1,15 @@
 // backend/workoutHistory.ts - Updated with weekly streaks
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-} from "firebase/firestore";
-import { FIRESTORE_DB } from "../config/firebase";
-import { WorkoutHistory } from "../types/WorkoutHistory";
+import { collection, doc, getDocs, setDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { FIRESTORE_DB } from '../config/firebase';
+import { WorkoutHistory } from '../types/WorkoutHistory';
+import { logWorkoutCompleted } from '../utils/analytics';
 
 /**
  * Save completed workout to history
  */
-export async function saveWorkoutHistory(
-  historyData: Omit<WorkoutHistory, "id">
-): Promise<string> {
+export async function saveWorkoutHistory(historyData: Omit<WorkoutHistory, 'id'>): Promise<string> {
   try {
-    const historyRef = collection(FIRESTORE_DB, "workoutHistory");
+    const historyRef = collection(FIRESTORE_DB, 'workoutHistory');
     const newHistoryRef = doc(historyRef);
 
     const history: WorkoutHistory = {
@@ -28,11 +18,13 @@ export async function saveWorkoutHistory(
     };
 
     await setDoc(newHistoryRef, history);
-    console.log("✅ Workout history saved:", newHistoryRef.id);
+    console.log('✅ Workout history saved:', newHistoryRef.id);
+
+    logWorkoutCompleted({ exerciseCount: historyData.exercises.length });
 
     return newHistoryRef.id;
   } catch (error) {
-    console.error("Error saving workout history:", error);
+    console.error('Error saving workout history:', error);
     throw error;
   }
 }
@@ -40,21 +32,15 @@ export async function saveWorkoutHistory(
 /**
  * Get all workout history for a user
  */
-export async function getUserWorkoutHistory(
-  userId: string
-): Promise<WorkoutHistory[]> {
+export async function getUserWorkoutHistory(userId: string): Promise<WorkoutHistory[]> {
   try {
-    const historyRef = collection(FIRESTORE_DB, "workoutHistory");
-    const q = query(
-      historyRef,
-      where("userId", "==", userId),
-      orderBy("completedAt", "desc")
-    );
+    const historyRef = collection(FIRESTORE_DB, 'workoutHistory');
+    const q = query(historyRef, where('userId', '==', userId), orderBy('completedAt', 'desc'));
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => doc.data() as WorkoutHistory);
   } catch (error) {
-    console.error("Error getting workout history:", error);
+    console.error('Error getting workout history:', error);
     throw error;
   }
 }
@@ -67,18 +53,18 @@ export async function getRecentWorkoutHistory(
   limitCount: number = 10
 ): Promise<WorkoutHistory[]> {
   try {
-    const historyRef = collection(FIRESTORE_DB, "workoutHistory");
+    const historyRef = collection(FIRESTORE_DB, 'workoutHistory');
     const q = query(
       historyRef,
-      where("userId", "==", userId),
-      orderBy("completedAt", "desc"),
+      where('userId', '==', userId),
+      orderBy('completedAt', 'desc'),
       limit(limitCount)
     );
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => doc.data() as WorkoutHistory);
   } catch (error) {
-    console.error("Error getting recent workout history:", error);
+    console.error('Error getting recent workout history:', error);
     throw error;
   }
 }
@@ -96,10 +82,7 @@ export async function getWorkoutHistoryStats(userId: string): Promise<{
     const history = await getUserWorkoutHistory(userId);
 
     const totalWorkouts = history.length;
-    const totalExercises = history.reduce(
-      (sum, workout) => sum + workout.exercises.length,
-      0
-    );
+    const totalExercises = history.reduce((sum, workout) => sum + workout.exercises.length, 0);
 
     // Get unique workout weeks (year-week format)
     const getWeekKey = (timestamp: number) => {
@@ -112,14 +95,14 @@ export async function getWorkoutHistoryStats(userId: string): Promise<{
       return `${year}-W${weekNumber}`;
     };
 
-    const workoutWeeks = [...new Set(
-      history.map(h => getWeekKey(h.completedAt))
-    )].sort().reverse(); // Sort most recent first
+    const workoutWeeks = [...new Set(history.map((h) => getWeekKey(h.completedAt)))]
+      .sort()
+      .reverse(); // Sort most recent first
 
     // Calculate current weekly streak
     let weeklyStreak = 0;
     const currentWeek = getWeekKey(Date.now());
-    
+
     // Get previous week
     const getPreviousWeek = (weekKey: string) => {
       const [year, week] = weekKey.split('-W').map(Number);
@@ -132,7 +115,7 @@ export async function getWorkoutHistoryStats(userId: string): Promise<{
     if (workoutWeeks.includes(currentWeek)) {
       weeklyStreak = 1;
       let checkWeek = getPreviousWeek(currentWeek);
-      
+
       while (workoutWeeks.includes(checkWeek)) {
         weeklyStreak++;
         checkWeek = getPreviousWeek(checkWeek);
@@ -148,7 +131,7 @@ export async function getWorkoutHistoryStats(userId: string): Promise<{
         tempStreak = 1;
       } else {
         const expectedPrevWeek = getPreviousWeek(workoutWeeks[i - 1]);
-        
+
         if (workoutWeeks[i] === expectedPrevWeek) {
           tempStreak++;
         } else {
@@ -166,7 +149,7 @@ export async function getWorkoutHistoryStats(userId: string): Promise<{
       longestWeeklyStreak,
     };
   } catch (error) {
-    console.error("Error getting workout history stats:", error);
+    console.error('Error getting workout history stats:', error);
     return {
       totalWorkouts: 0,
       totalExercises: 0,

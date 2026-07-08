@@ -7,11 +7,11 @@ export default {
     platforms: ["ios", "android"],
     name: "Ascend: Calisthenics",
     slug: "ascend",
-    icon: "./assets/icon.png",
+    icon: "./assets/ascend_icon.jpg",
     splash: {
-      image: "./assets/icon.png",
+      image: "./assets/ascend_logo.png",
       resizeMode: "contain",
-      backgroundColor: "#000000",
+      backgroundColor: "#17181B",
     },
     ios: {
       bundleIdentifier: 'com.ascend.calisthenics',
@@ -32,6 +32,7 @@ export default {
       messagingSenderId: process.env.MESSAGING_SENDER_ID,
       appId: process.env.APP_ID,
       measurementId: process.env.MEASUREMENT_ID,
+      measurementApiSecret: process.env.MEASUREMENT_API_SECRET,
       revenuecatApiKey: process.env.REVENUECAT_API_KEY,
       openaiApiKey: process.env.OPENAI_API_KEY,
       openaiOrganizationId: process.env.OPENAI_ORGANIZATION_ID,

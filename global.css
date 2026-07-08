@@ -34,6 +34,11 @@
       --color-error-glow: rgba(239, 68, 68, 0.3);
       --color-info: #3b82f6;
 
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #ff7849;
+      --color-coral-glow: rgba(255, 120, 73, 0.3);
+      --color-coral-fill: #3a1408;
+
       /* Glassmorphism support */
       --backdrop-blur: blur(12px);
       --glass-background: rgba(15, 23, 41, 0.7);
@@ -80,6 +85,11 @@
       --color-error-glow: rgba(220, 38, 38, 0.25);
       --color-info: #2563eb;
 
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #f2653d;
+      --color-coral-glow: rgba(242, 101, 61, 0.25);
+      --color-coral-fill: #fce6de;
+
       /* Glass for light mode */
       --backdrop-blur: blur(12px);
       --glass-background: rgba(255, 255, 255, 0.75);
@@ -120,6 +130,11 @@
       --color-error: #ef4444;
       --color-error-glow: rgba(239, 68, 68, 0.25);
       --color-info: #6fa76f;
+
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #e2703a;
+      --color-coral-glow: rgba(226, 112, 58, 0.25);
+      --color-coral-fill: #f6e2d6;
 
       --backdrop-blur: blur(12px);
       --glass-background: rgba(255, 255, 255, 0.7);
@@ -162,6 +177,11 @@
       --color-error-glow: rgba(251, 113, 133, 0.25);
       --color-info: #a78bfa;
 
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #ff8a5c;
+      --color-coral-glow: rgba(255, 138, 92, 0.3);
+      --color-coral-fill: #3a1f14;
+
       --backdrop-blur: blur(12px);
       --glass-background: rgba(34, 24, 63, 0.75);
       --glass-border: rgba(255, 255, 255, 0.12);
@@ -202,10 +222,67 @@
       --color-error-glow: rgba(239, 68, 68, 0.25);
       --color-info: #64748b;
 
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #d97a4d;
+      --color-coral-glow: rgba(217, 122, 77, 0.25);
+      --color-coral-fill: #f3e0d5;
+
       --backdrop-blur: blur(12px);
       --glass-background: rgba(255, 255, 255, 0.6);
       --glass-border: rgba(15, 23, 42, 0.08);
 
+      --color-zinc-400: #a1a1aa;
+      --color-zinc-500: #71717a;
+      --color-zinc-600: #52525b;
+      --color-zinc-700: #3f3f46;
+      --color-zinc-800: #27272a;
+      --color-zinc-900: #18181b;
+
+      --color-orange-500: #f97316;
+    }
+
+    @variant ascend {
+      /* Ascend brand theme: near-black + lime */
+      --color-background: #0d0e10;
+      --color-surface: #17181b;
+      --color-surface-elevated: #1f2023;
+      --color-border: #2a2b2e;
+
+      /* Lime primary action color */
+      --color-primary: #a8d93f;
+      --color-primary-dark: #8fbe2e;
+      --color-primary-glow: rgba(168, 217, 63, 0.3);
+
+      /* Violet secondary, used for Ascend Pro / paywall */
+      --color-secondary: #7c6cff;
+      --color-secondary-glow: rgba(124, 108, 255, 0.3);
+
+      /* Text hierarchy */
+      --color-text-primary: #f5f4f1;
+      --color-text-secondary: #c7c6c3;
+      --color-text-muted: #8a8b8d;
+      --color-text-disabled: #55565a;
+
+      /* Status colors */
+      --color-success: #3a9e7e;
+      --color-success-glow: rgba(58, 158, 126, 0.25);
+      --color-warning: #f59e0b;
+      --color-warning-glow: rgba(245, 158, 11, 0.25);
+      --color-error: #ef4444;
+      --color-error-glow: rgba(239, 68, 68, 0.25);
+      --color-info: #a8d93f;
+
+      /* Coral: reserved for streaks/fire only, never decorative */
+      --color-coral: #ff6b4a;
+      --color-coral-glow: rgba(255, 107, 74, 0.3);
+      --color-coral-fill: #3d1508;
+
+      /* Glassmorphism */
+      --backdrop-blur: blur(12px);
+      --glass-background: rgba(23, 24, 27, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+
+      /* compatibility colors */
       --color-zinc-400: #a1a1aa;
       --color-zinc-500: #71717a;
       --color-zinc-600: #52525b;
@@ -246,6 +323,11 @@
       --color-error: #ef4444;
       --color-error-glow: rgba(239, 68, 68, 0.25);
       --color-info: #c08457;
+
+      /* Coral: reserved for streaks/fire only */
+      --color-coral: #e0733f;
+      --color-coral-glow: rgba(224, 115, 63, 0.3);
+      --color-coral-fill: #2a160c;
 
       /* Warm glass */
       --backdrop-blur: blur(12px);

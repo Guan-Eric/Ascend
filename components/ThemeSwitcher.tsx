@@ -11,6 +11,7 @@ export const ThemeSwitcher = () => {
     const { theme } = useUniwind();
 
     const themes = [
+        { name: "ascend", label: "Ascend", icon: "⚡" },
         { name: "light", label: "Light", icon: "☀️" },
         { name: "dark", label: "Dark", icon: "🌙" },
         { name: "matcha", label: "Matcha", icon: "🍵" },
@@ -28,7 +29,7 @@ export const ThemeSwitcher = () => {
 
             // Apply theme
             Uniwind.setTheme(
-                themeName as "coffee" | "light" | "dark" | "matcha" | "ube" | "zen" | "system"
+                themeName as "ascend" | "coffee" | "light" | "dark" | "matcha" | "ube" | "zen" | "system"
             );
         } catch (error) {
             console.error('Error saving theme:', error);

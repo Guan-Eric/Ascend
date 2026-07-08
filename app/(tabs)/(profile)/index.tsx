@@ -554,7 +554,7 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
                 <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                  <Text className="text-primary text-3xl font-bold mb-1">
+                  <Text className="text-coral text-3xl font-bold mb-1">
                     {historyStats.weeklyStreak}
                   </Text>
                   <Text className="text-text-secondary text-xs text-center">
@@ -573,7 +573,7 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
                 <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                  <Text className="text-primary text-3xl font-bold mb-1">
+                  <Text className="text-coral text-3xl font-bold mb-1">
                     {historyStats.longestWeeklyStreak}
                   </Text>
                   <Text className="text-text-secondary text-xs text-center">
