@@ -32,9 +32,9 @@ const premiumFeatures = [
     description: "Master advanced moves with step-by-step guidance",
   },
   {
-    icon: "brain",
-    title: "AI Coach",
-    description: "Get personalized feedback and recommendations",
+    icon: "book-open-variant",
+    title: "Workout Presets",
+    description: "Curated routines from top calisthenics programs",
   },
   {
     icon: "chart-line",

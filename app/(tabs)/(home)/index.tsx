@@ -217,7 +217,7 @@ export default function HomeScreen() {
               2. Log your sets during the session
             </Text>
             <Text className="text-text-secondary">
-              3. Ask the AI coach a question after
+              3. Browse presets to add more workouts
             </Text>
           </View>
         )}
@@ -253,6 +253,30 @@ export default function HomeScreen() {
         <Text className="text-text-secondary text-sm mb-4">
           {plans.length} active {plans.length === 1 ? "plan" : "plans"}
         </Text>
+
+        <AnimatedPressable
+          onPress={() => router.push("/(tabs)/(home)/workout-presets")}
+          className="card-frosted p-4 rounded-2xl mb-4 flex-row items-center shadow-elevated"
+        >
+          <MaterialCommunityIcons
+            name="book-open-variant"
+            size={24}
+            color={primaryColor}
+          />
+          <View className="ml-3 flex-1">
+            <Text className="text-text-primary font-bold text-base">
+              Browse Workout Presets
+            </Text>
+            <Text className="text-text-secondary text-sm">
+              Routines from r/bodyweightfitness, FitnessFAQs & more
+            </Text>
+          </View>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={24}
+            color="#7a86a8"
+          />
+        </AnimatedPressable>
       </View>
     );
   };
@@ -286,19 +310,35 @@ export default function HomeScreen() {
                   Start Your Journey
                 </Text>
                 <Text className="text-text-secondary text-center mb-8 leading-6">
-                  Create your first workout plan and begin your transformation
+                  Browse curated presets from popular programs or build your own
+                  custom plan
                 </Text>
                 <AnimatedPressable
-                  onPress={() => router.push("/(tabs)/(home)/create-plan")}
-                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg"
+                  onPress={() =>
+                    router.push("/(tabs)/(home)/workout-presets")
+                  }
+                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg mb-3 w-full justify-center"
                 >
                   <MaterialCommunityIcons
-                    name="plus-circle-outline"
+                    name="book-open-variant"
                     size={24}
                     color="#000000"
                   />
                   <Text className="text-background font-bold text-lg ml-2">
-                    Create Workout Plan
+                    Browse Workout Presets
+                  </Text>
+                </AnimatedPressable>
+                <AnimatedPressable
+                  onPress={() => router.push("/(tabs)/(home)/create-plan")}
+                  className="bg-surface-elevated px-8 py-5 rounded-2xl flex-row items-center border border-border/40 w-full justify-center"
+                >
+                  <MaterialCommunityIcons
+                    name="plus-circle-outline"
+                    size={24}
+                    color={primaryColor}
+                  />
+                  <Text className="text-text-primary font-bold text-lg ml-2">
+                    Create Custom Plan
                   </Text>
                 </AnimatedPressable>
               </View>
@@ -317,14 +357,30 @@ export default function HomeScreen() {
         ListHeaderComponent={renderListHeader}
         renderItem={({ item, index }) => renderPlanCard(item, index)}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 112 }}
       />
 
-      <AnimatedPressable
-        onPress={() => router.push("/(tabs)/(home)/create-plan")}
-        className="absolute bottom-6 right-6 bg-primary/10 p-4 rounded-2xl border border-primary/30"
+      <View
+        className="absolute bottom-6 right-6 flex-row gap-3 z-50"
+        style={{ elevation: 12 }}
       >
-        <MaterialCommunityIcons name="plus" size={28} color={primaryColor} />
-      </AnimatedPressable>
+        <AnimatedPressable
+          onPress={() => router.push("/(tabs)/(home)/workout-presets")}
+          className="bg-surface-elevated p-4 rounded-2xl border border-border/40 shadow-elevated"
+        >
+          <MaterialCommunityIcons
+            name="book-open-variant"
+            size={28}
+            color={primaryColor}
+          />
+        </AnimatedPressable>
+        <AnimatedPressable
+          onPress={() => router.push("/(tabs)/(home)/create-plan")}
+          className="bg-primary p-4 rounded-2xl shadow-elevated-lg"
+        >
+          <MaterialCommunityIcons name="plus" size={28} color="#000000" />
+        </AnimatedPressable>
+      </View>
     </View>
   );
 }

@@ -7,3 +7,4 @@ export * from "./progress";
 export * from "./workoutHistory";
 export * from "./autoProgression";
 export * from "./planGeneration";
+export * from "./workoutPresets";
