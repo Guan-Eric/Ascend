@@ -30,7 +30,7 @@ export async function initializeUser(
       autoProgressExercises: true, // Default to true for better UX
     };
 
-    await setDoc(userRef, user);
+    await setDoc(userRef, user, { merge: true });
     console.log("✅ User initialized:", userId);
   } catch (error) {
     console.error("Error initializing user:", error);

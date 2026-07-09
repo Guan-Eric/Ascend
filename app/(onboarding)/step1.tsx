@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { logOnboardingStepCompleted } from "../../utils/analytics";
 
 export default function Step1Screen() {
   const router = useRouter();
@@ -55,7 +56,10 @@ export default function Step1Screen() {
 
       <View className="px-8 mb-12">
         <AnimatedPressable
-          onPress={() => router.push("/(onboarding)/step2")}
+          onPress={() => {
+            logOnboardingStepCompleted({ step: 1 });
+            router.push("/(onboarding)/step2");
+          }}
           className="bg-primary py-4 rounded-2xl shadow-elevated-lg"
         >
           <View className="flex-row items-center justify-center gap-2">

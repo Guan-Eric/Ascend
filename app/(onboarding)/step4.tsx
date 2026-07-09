@@ -7,6 +7,7 @@ import * as backend from "../../backend";
 import { Skill } from "../../types/Skill";
 import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { logOnboardingStepCompleted } from "../../utils/analytics";
 
 export default function Step4Screen() {
   const router = useRouter();
@@ -29,6 +30,11 @@ export default function Step4Screen() {
   };
 
   const handleContinue = () => {
+    logOnboardingStepCompleted({
+      step: 4,
+      goalType,
+      primaryGoalId,
+    });
     router.push({
       pathname: "/(onboarding)/paywall",
       params: { ...params, goalType, primaryGoalId },

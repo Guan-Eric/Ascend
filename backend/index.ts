@@ -6,5 +6,4 @@ export * from "./plans";
 export * from "./progress";
 export * from "./workoutHistory";
 export * from "./autoProgression";
-
-// Note: planGeneration exports have been removed as auto-generation is deprecated
+export * from "./planGeneration";

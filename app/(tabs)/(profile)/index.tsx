@@ -15,6 +15,7 @@ import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { FadeSlideIn } from "../../../components/FadeSlideIn";
+import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
 import { AnimatedCounter } from "../../../components/AnimatedCounter";
 
 export default function ProfileScreen() {
@@ -221,8 +222,8 @@ export default function ProfileScreen() {
     return days[dayIndex] || `Day ${dayIndex}`;
   };
 
-  const hasProAccess = customerInfo?.entitlements.active["pro"] !== undefined;
-  const expirationDate = customerInfo?.entitlements.active["pro"]?.expirationDate;
+  const hasProAccess = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+  const expirationDate = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID]?.expirationDate;
 
   if (loading) {
     return (

@@ -8,4 +8,6 @@ export type User = {
   level: "beginner" | "intermediate" | "advanced";
   trainingDaysPerWeek: number;
   autoProgressExercises: boolean; // New field for automatic progression
+  /** Set after onboarding auto-plan generation runs once */
+  initialPlansGenerated?: boolean;
 };

@@ -6,6 +6,7 @@ import { FIREBASE_AUTH } from "../config/firebase";
 import Purchases from "react-native-purchases";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { getUser } from "../backend";
+import { PRO_ENTITLEMENT_ID } from "../constants/revenuecat";
 
 export default function Index() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function Index() {
         // User has completed onboarding, check subscription
         const customerInfo = await Purchases.getCustomerInfo();
 
-        if (customerInfo.entitlements.active["Ascend Pro"]) {
+        if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
           router.replace("/(tabs)/(home)");
         } else {
           router.replace("/(onboarding)/paywall");

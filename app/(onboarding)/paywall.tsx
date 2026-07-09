@@ -6,6 +6,7 @@ import Purchases, { PurchasesOffering, PurchasesPackage } from "react-native-pur
 import { signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import * as backend from "../../backend";
+import { PRO_ENTITLEMENT_ID } from "../../constants/revenuecat";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
@@ -15,6 +16,8 @@ import {
   logPaywallViewed,
   logTrialStarted,
   logPurchaseFailed,
+  logPlansGenerated,
+  logPaywallPurchaseTapped,
 } from "../../utils/analytics";
 
 const premiumFeatures = [
@@ -47,6 +50,7 @@ export default function PaywallScreen() {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string>("$rc_weekly");
+  const [goalName, setGoalName] = useState<string>("");
   const primaryColor = useThemeColor('primary');
 
   // Get user settings from params
@@ -55,31 +59,56 @@ export default function PaywallScreen() {
   const goalType = (params.goalType as "skill" | "strength") || "strength";
   const primaryGoalId = (params.primaryGoalId as string) || "push_strength";
 
+  const hasOnboardingParams = Boolean(params.level && params.trainingDays);
+
   useEffect(() => {
     initializeUser();
   }, []);
 
+  const loadGoalName = async () => {
+    try {
+      if (goalType === "skill") {
+        const skill = await backend.getSkill(primaryGoalId);
+        if (skill) setGoalName(skill.name);
+      } else {
+        const path = await backend.getStrengthPath(primaryGoalId);
+        if (path) setGoalName(path.name);
+      }
+    } catch (error) {
+      console.error("Error loading goal name:", error);
+    }
+  };
+
   const initializeUser = async () => {
     try {
-      const userCredential = await signInAnonymously(FIREBASE_AUTH);
-      const user = userCredential.user;
+      let user = FIREBASE_AUTH.currentUser;
+      if (!user) {
+        const userCredential = await signInAnonymously(FIREBASE_AUTH);
+        user = userCredential.user;
+      }
 
-      await backend.initializeUser(user.uid, {
-        email: "",
-        goalType,
-        primaryGoalId,
-        level,
-        trainingDaysPerWeek: trainingDays,
-      });
+      const existingUser = await backend.getUser(user.uid);
 
+      if (!existingUser && hasOnboardingParams) {
+        await backend.initializeUser(user.uid, {
+          email: user.email ?? "",
+          goalType,
+          primaryGoalId,
+          level,
+          trainingDaysPerWeek: trainingDays,
+        });
+      }
+
+      await loadGoalName();
       await Purchases.logIn(user.uid);
 
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
         setOfferings(offerings.current);
-        // Default to annual
         setSelectedPackage("$rc_weekly");
-        logPaywallViewed({ source: "onboarding" });
+        logPaywallViewed({
+          source: hasOnboardingParams ? "onboarding" : "returning",
+        });
       }
     } catch (error) {
       console.error("Error initializing user:", error);
@@ -93,6 +122,8 @@ export default function PaywallScreen() {
     if (!offerings) return;
 
     setPurchasing(true);
+    logPaywallPurchaseTapped({ packageId: selectedPackage });
+
     try {
       const pkg = offerings.availablePackages.find(
         (p) => p.identifier === selectedPackage
@@ -106,14 +137,35 @@ export default function PaywallScreen() {
 
       const { customerInfo } = await Purchases.purchasePackage(pkg);
 
-      if (customerInfo.entitlements.active["Ascend Pro"]) {
+      if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
         logTrialStarted({ packageId: pkg.identifier });
-        Alert.alert("Success! 🎉", "Welcome to Ascend Pro!", [
-          {
-            text: "Let's Go!",
-            onPress: () => router.replace("/(tabs)/(home)"),
-          },
-        ]);
+
+        const userId = FIREBASE_AUTH.currentUser?.uid;
+        let planCount = 0;
+
+        if (userId) {
+          try {
+            const planIds = await backend.generateInitialPlans(userId);
+            planCount = planIds.length;
+            logPlansGenerated({ planCount, goalType });
+          } catch (planError) {
+            console.error("Error generating initial plans:", planError);
+          }
+        }
+
+        const goalLabel = goalName || "program";
+        Alert.alert(
+          "Success! 🎉",
+          planCount > 0
+            ? `Welcome to Ascend Pro! Your ${trainingDays}-day ${goalLabel} plan is ready.`
+            : "Welcome to Ascend Pro!",
+          [
+            {
+              text: "Start Day 1",
+              onPress: () => router.replace("/(tabs)/(home)"),
+            },
+          ]
+        );
       }
     } catch (error: any) {
       if (!error.userCancelled) {
@@ -130,7 +182,15 @@ export default function PaywallScreen() {
     try {
       const customerInfo = await Purchases.restorePurchases();
 
-      if (customerInfo.entitlements.active["Ascend Pro"]) {
+      if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
+        const userId = FIREBASE_AUTH.currentUser?.uid;
+        if (userId) {
+          try {
+            await backend.generateInitialPlans(userId);
+          } catch (planError) {
+            console.error("Error generating plans on restore:", planError);
+          }
+        }
         router.replace("/(tabs)/(home)");
       } else {
         Alert.alert("No Purchases Found", "You don't have any active subscriptions.");
@@ -303,10 +363,14 @@ export default function PaywallScreen() {
               Unlock Ascend
             </Text>
             <Text className="text-text-primary text-2xl font-semibold text-center mb-3">
-              Start Your Journey
+              {goalName
+                ? `Your ${goalName} plan is ready`
+                : "Start Your Journey"}
             </Text>
             <Text className="text-text-secondary text-center text-lg px-4 leading-6">
-              Get unlimited access to all features and transform your body with calisthenics
+              {goalName
+                ? `Unlock your personalized ${trainingDays}-day ${goalType === "skill" ? "skill" : "strength"} program and start training today`
+                : "Get unlimited access to all features and transform your body with calisthenics"}
             </Text>
           </View>
 

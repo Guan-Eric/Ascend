@@ -124,6 +124,43 @@ export function logTrialStarted(params: { packageId: string }) {
   return logEvent('trial_started', { package_id: params.packageId });
 }
 
+/** Call when onboarding step is completed (steps 1–4). */
+export function logOnboardingStepCompleted(params: {
+  step: number;
+  level?: string;
+  trainingDays?: number;
+  goalType?: string;
+  primaryGoalId?: string;
+}) {
+  return logEvent('onboarding_step_completed', {
+    step: params.step,
+    ...(params.level ? { level: params.level } : {}),
+    ...(params.trainingDays !== undefined
+      ? { training_days: params.trainingDays }
+      : {}),
+    ...(params.goalType ? { goal_type: params.goalType } : {}),
+    ...(params.primaryGoalId ? { primary_goal_id: params.primaryGoalId } : {}),
+  });
+}
+
+/** Call after initial plans are auto-generated post-purchase. */
+export function logPlansGenerated(params: { planCount: number; goalType: string }) {
+  return logEvent('plans_generated', {
+    plan_count: params.planCount,
+    goal_type: params.goalType,
+  });
+}
+
+/** Call when user taps Start on their first workout. */
+export function logFirstWorkoutStarted(params: { planId: string }) {
+  return logEvent('first_workout_started', { plan_id: params.planId });
+}
+
+/** Call when paywall purchase CTA is tapped. */
+export function logPaywallPurchaseTapped(params: { packageId: string }) {
+  return logEvent('paywall_purchase_tapped', { package_id: params.packageId });
+}
+
 /** Call on a successful purchase that is not a trial (rare path, e.g. restored). */
 export function logSubscriptionStarted(params: { packageId: string }) {
   return logEvent('subscription_started', { package_id: params.packageId });

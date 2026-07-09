@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { logOnboardingStepCompleted } from "../../utils/analytics";
 
 export default function Step2Screen() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function Step2Screen() {
   ];
 
   const handleContinue = () => {
+    logOnboardingStepCompleted({ step: 2, level });
     router.push({
       pathname: "/(onboarding)/step3",
       params: { level },
