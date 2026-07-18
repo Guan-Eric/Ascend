@@ -6,7 +6,7 @@ import { FIREBASE_AUTH } from "../config/firebase";
 import Purchases from "react-native-purchases";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { getUser } from "../backend";
-import { PRO_ENTITLEMENT_ID } from "../constants/revenuecat";
+import { paywallHref, resolveAppAccess } from "../utils/access";
 
 export default function Index() {
   const router = useRouter();
@@ -18,28 +18,35 @@ export default function Index() {
   const checkAuthState = async () => {
     const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(async (user) => {
       if (user) {
-        // User is signed in
         await Purchases.logIn(user.uid);
 
-        // Check if user has completed onboarding
         const userData = await getUser(user.uid);
 
         if (!userData) {
-          // User exists in auth but not in database - needs onboarding
           router.replace("/(onboarding)/step1");
           return;
         }
 
-        // User has completed onboarding, check subscription
-        const customerInfo = await Purchases.getCustomerInfo();
+        const access = await resolveAppAccess(userData);
 
-        if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
+        if (access.kind === "pro" || access.kind === "sample") {
           router.replace("/(tabs)/(home)");
-        } else {
-          router.replace("/(onboarding)/paywall");
+          return;
         }
+
+        router.replace(
+          paywallHref({
+            source:
+              access.reason === "sample_completed"
+                ? "sample_workout"
+                : "returning",
+            level: userData.level,
+            trainingDays: userData.trainingDaysPerWeek,
+            goalType: userData.goalType,
+            primaryGoalId: userData.primaryGoalId,
+          })
+        );
       } else {
-        // No user signed in
         router.replace("/(onboarding)/signin");
       }
     });

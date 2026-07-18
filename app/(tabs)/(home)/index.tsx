@@ -1,10 +1,12 @@
-import { View, Text, Alert } from "react-native";
+import { View, Text } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useState } from "react";
+import Purchases from "react-native-purchases";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
+import { User } from "../../../types/User";
 import { router, useFocusEffect } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useThemeColor } from "../../../utils/theme";
@@ -12,7 +14,12 @@ import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { FadeSlideIn } from "../../../components/FadeSlideIn";
 import { AnimatedCounter } from "../../../components/AnimatedCounter";
-import { logFirstWorkoutStarted } from "../../../utils/analytics";
+import {
+  logFirstWorkoutStarted,
+  logSampleWorkoutStarted,
+} from "../../../utils/analytics";
+import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
+import { paywallHref } from "../../../utils/access";
 
 const DAY_NAMES = [
   "",
@@ -28,12 +35,18 @@ const DAY_NAMES = [
 export default function HomeScreen() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [todaysPlan, setTodaysPlan] = useState<Plan | null>(null);
-  const [planExercises, setPlanExercises] = useState<Record<string, Exercise[]>>({});
+  const [planExercises, setPlanExercises] = useState<Record<string, Exercise[]>>(
+    {}
+  );
   const [weeklyStreak, setWeeklyStreak] = useState(0);
   const [totalWorkouts, setTotalWorkouts] = useState(0);
+  const [user, setUser] = useState<User | null>(null);
+  const [hasProAccess, setHasProAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const primaryColor = useThemeColor("primary");
   const coralColor = useThemeColor("coral");
+
+  const isSampleMode = Boolean(user && !hasProAccess && user.samplePlanId);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,16 +59,31 @@ export default function HomeScreen() {
       const userId = FIREBASE_AUTH.currentUser?.uid;
       if (!userId) return;
 
-      const [userPlans, todayPlan, historyStats] = await Promise.all([
-        backend.getUserPlans(userId),
-        backend.getTodaysPlan(userId),
-        backend.getWorkoutHistoryStats(userId),
-      ]);
+      const [userPlans, todayPlan, historyStats, userData, customerInfo] =
+        await Promise.all([
+          backend.getUserPlans(userId),
+          backend.getTodaysPlan(userId),
+          backend.getWorkoutHistoryStats(userId),
+          backend.getUser(userId),
+          Purchases.getCustomerInfo(),
+        ]);
 
+      setUser(userData);
+      setHasProAccess(
+        customerInfo.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined
+      );
       setPlans(userPlans);
-      setTodaysPlan(todayPlan);
       setWeeklyStreak(historyStats.weeklyStreak);
       setTotalWorkouts(historyStats.totalWorkouts);
+
+      let heroPlan = todayPlan;
+      if (!heroPlan && userData?.samplePlanId) {
+        heroPlan =
+          userPlans.find((p) => p.id === userData.samplePlanId) ??
+          userPlans[0] ??
+          null;
+      }
+      setTodaysPlan(heroPlan);
 
       const exercisesMap: Record<string, Exercise[]> = {};
       for (const plan of userPlans) {
@@ -78,8 +106,23 @@ export default function HomeScreen() {
   const getDayName = (dayIndex: number) =>
     DAY_NAMES[dayIndex] || `Day ${dayIndex}`;
 
+  const openPaywall = (source: string) => {
+    if (!user) return;
+    router.push(
+      paywallHref({
+        source,
+        level: user.level,
+        trainingDays: user.trainingDaysPerWeek,
+        goalType: user.goalType,
+        primaryGoalId: user.primaryGoalId,
+      })
+    );
+  };
+
   const startWorkout = (planId: string) => {
-    if (totalWorkouts === 0) {
+    if (isSampleMode) {
+      logSampleWorkoutStarted({ planId });
+    } else if (totalWorkouts === 0) {
       logFirstWorkoutStarted({ planId });
     }
     router.push({
@@ -105,7 +148,9 @@ export default function HomeScreen() {
                 </Text>
                 {isToday && (
                   <View className="bg-primary/20 px-2 py-0.5 rounded-full">
-                    <Text className="text-primary text-xs font-bold">TODAY</Text>
+                    <Text className="text-primary text-xs font-bold">
+                      {isSampleMode ? "FREE TRIAL" : "TODAY"}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -114,21 +159,23 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            <AnimatedPressable
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/(home)/edit-plan",
-                  params: { planId: plan.id },
-                })
-              }
-              className="bg-surface-elevated p-3 rounded-xl"
-            >
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={20}
-                color={primaryColor}
-              />
-            </AnimatedPressable>
+            {hasProAccess && (
+              <AnimatedPressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/(home)/edit-plan",
+                    params: { planId: plan.id },
+                  })
+                }
+                className="bg-surface-elevated p-3 rounded-xl"
+              >
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={20}
+                  color={primaryColor}
+                />
+              </AnimatedPressable>
+            )}
           </View>
 
           <View className="glass p-5 rounded-2xl mb-4">
@@ -192,7 +239,27 @@ export default function HomeScreen() {
 
     return (
       <View className="mb-4">
-        {weeklyStreak > 0 && (
+        {isSampleMode && (
+          <View className="card-frosted p-5 rounded-3xl mb-4 border border-secondary/40">
+            <Text className="text-secondary text-lg font-bold mb-2">
+              Free sample workout
+            </Text>
+            <Text className="text-text-secondary mb-4 leading-5">
+              Complete this session to feel the Ascend flow. Unlock your full{" "}
+              {user?.trainingDaysPerWeek ?? 3}-day program anytime.
+            </Text>
+            <AnimatedPressable
+              onPress={() => openPaywall("home_unlock")}
+              className="bg-secondary py-3 rounded-2xl"
+            >
+              <Text className="text-background text-center font-bold">
+                Unlock Full Plan
+              </Text>
+            </AnimatedPressable>
+          </View>
+        )}
+
+        {hasProAccess && weeklyStreak > 0 && (
           <View className="flex-row items-center bg-surface border border-border rounded-2xl px-4 py-3 mb-4">
             <MaterialCommunityIcons name="fire" size={22} color={coralColor} />
             <AnimatedCounter
@@ -217,7 +284,9 @@ export default function HomeScreen() {
               2. Log your sets during the session
             </Text>
             <Text className="text-text-secondary">
-              3. Browse presets to add more workouts
+              {isSampleMode
+                ? "3. Unlock your full weekly plan"
+                : "3. Browse presets to add more workouts"}
             </Text>
           </View>
         )}
@@ -225,7 +294,7 @@ export default function HomeScreen() {
         {todaysPlan && todayExercises.length > 0 && (
           <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated-lg border border-primary/40">
             <Text className="text-text-muted text-sm font-semibold uppercase mb-1">
-              Today's workout
+              {isSampleMode ? "Your free workout" : "Today's workout"}
             </Text>
             <Text className="text-text-primary text-2xl font-bold mb-2">
               {getDayName(todaysPlan.dayIndex)}
@@ -254,29 +323,31 @@ export default function HomeScreen() {
           {plans.length} active {plans.length === 1 ? "plan" : "plans"}
         </Text>
 
-        <AnimatedPressable
-          onPress={() => router.push("/(tabs)/(home)/workout-presets")}
-          className="card-frosted p-4 rounded-2xl mb-4 flex-row items-center shadow-elevated"
-        >
-          <MaterialCommunityIcons
-            name="book-open-variant"
-            size={24}
-            color={primaryColor}
-          />
-          <View className="ml-3 flex-1">
-            <Text className="text-text-primary font-bold text-base">
-              Browse Workout Presets
-            </Text>
-            <Text className="text-text-secondary text-sm">
-              Routines from r/bodyweightfitness, FitnessFAQs & more
-            </Text>
-          </View>
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={24}
-            color="#7a86a8"
-          />
-        </AnimatedPressable>
+        {hasProAccess && (
+          <AnimatedPressable
+            onPress={() => router.push("/(tabs)/(home)/workout-presets")}
+            className="card-frosted p-4 rounded-2xl mb-4 flex-row items-center shadow-elevated"
+          >
+            <MaterialCommunityIcons
+              name="book-open-variant"
+              size={24}
+              color={primaryColor}
+            />
+            <View className="ml-3 flex-1">
+              <Text className="text-text-primary font-bold text-base">
+                Browse Workout Presets
+              </Text>
+              <Text className="text-text-secondary text-sm">
+                Routines from r/bodyweightfitness, FitnessFAQs & more
+              </Text>
+            </View>
+            <MaterialCommunityIcons
+              name="chevron-right"
+              size={24}
+              color="#7a86a8"
+            />
+          </AnimatedPressable>
+        )}
       </View>
     );
   };
@@ -302,7 +373,9 @@ export default function HomeScreen() {
                 My Workouts
               </Text>
               <Text className="text-text-secondary mb-8 text-lg">
-                Create your personalized training schedule
+                {isSampleMode
+                  ? "Your sample workout is being prepared"
+                  : "Create your personalized training schedule"}
               </Text>
 
               <View className="card-frosted p-8 rounded-3xl items-center justify-center mb-4">
@@ -310,37 +383,56 @@ export default function HomeScreen() {
                   Start Your Journey
                 </Text>
                 <Text className="text-text-secondary text-center mb-8 leading-6">
-                  Browse curated presets from popular programs or build your own
-                  custom plan
+                  {isSampleMode
+                    ? "Unlock Ascend Pro to generate your full weekly plan"
+                    : "Browse curated presets from popular programs or build your own custom plan"}
                 </Text>
-                <AnimatedPressable
-                  onPress={() =>
-                    router.push("/(tabs)/(home)/workout-presets")
-                  }
-                  className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg mb-3 w-full justify-center"
-                >
-                  <MaterialCommunityIcons
-                    name="book-open-variant"
-                    size={24}
-                    color="#000000"
-                  />
-                  <Text className="text-background font-bold text-lg ml-2">
-                    Browse Workout Presets
-                  </Text>
-                </AnimatedPressable>
-                <AnimatedPressable
-                  onPress={() => router.push("/(tabs)/(home)/create-plan")}
-                  className="bg-surface-elevated px-8 py-5 rounded-2xl flex-row items-center border border-border/40 w-full justify-center"
-                >
-                  <MaterialCommunityIcons
-                    name="plus-circle-outline"
-                    size={24}
-                    color={primaryColor}
-                  />
-                  <Text className="text-text-primary font-bold text-lg ml-2">
-                    Create Custom Plan
-                  </Text>
-                </AnimatedPressable>
+                {isSampleMode ? (
+                  <AnimatedPressable
+                    onPress={() => openPaywall("home_empty")}
+                    className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg w-full justify-center"
+                  >
+                    <MaterialCommunityIcons
+                      name="lock-open-outline"
+                      size={24}
+                      color="#000000"
+                    />
+                    <Text className="text-background font-bold text-lg ml-2">
+                      Unlock Full Plan
+                    </Text>
+                  </AnimatedPressable>
+                ) : (
+                  <>
+                    <AnimatedPressable
+                      onPress={() =>
+                        router.push("/(tabs)/(home)/workout-presets")
+                      }
+                      className="bg-primary px-8 py-5 rounded-2xl flex-row items-center shadow-elevated-lg mb-3 w-full justify-center"
+                    >
+                      <MaterialCommunityIcons
+                        name="book-open-variant"
+                        size={24}
+                        color="#000000"
+                      />
+                      <Text className="text-background font-bold text-lg ml-2">
+                        Browse Workout Presets
+                      </Text>
+                    </AnimatedPressable>
+                    <AnimatedPressable
+                      onPress={() => router.push("/(tabs)/(home)/create-plan")}
+                      className="bg-surface-elevated px-8 py-5 rounded-2xl flex-row items-center border border-border/40 w-full justify-center"
+                    >
+                      <MaterialCommunityIcons
+                        name="plus-circle-outline"
+                        size={24}
+                        color={primaryColor}
+                      />
+                      <Text className="text-text-primary font-bold text-lg ml-2">
+                        Create Custom Plan
+                      </Text>
+                    </AnimatedPressable>
+                  </>
+                )}
               </View>
             </>
           )}
@@ -360,27 +452,29 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 112 }}
       />
 
-      <View
-        className="absolute bottom-6 right-6 flex-row gap-3 z-50"
-        style={{ elevation: 12 }}
-      >
-        <AnimatedPressable
-          onPress={() => router.push("/(tabs)/(home)/workout-presets")}
-          className="bg-surface-elevated p-4 rounded-2xl border border-border/40 shadow-elevated"
+      {hasProAccess && (
+        <View
+          className="absolute bottom-6 right-6 flex-row gap-3 z-50"
+          style={{ elevation: 12 }}
         >
-          <MaterialCommunityIcons
-            name="book-open-variant"
-            size={28}
-            color={primaryColor}
-          />
-        </AnimatedPressable>
-        <AnimatedPressable
-          onPress={() => router.push("/(tabs)/(home)/create-plan")}
-          className="bg-primary p-4 rounded-2xl shadow-elevated-lg"
-        >
-          <MaterialCommunityIcons name="plus" size={28} color="#000000" />
-        </AnimatedPressable>
-      </View>
+          <AnimatedPressable
+            onPress={() => router.push("/(tabs)/(home)/workout-presets")}
+            className="bg-surface-elevated p-4 rounded-2xl border border-border/40 shadow-elevated"
+          >
+            <MaterialCommunityIcons
+              name="book-open-variant"
+              size={28}
+              color={primaryColor}
+            />
+          </AnimatedPressable>
+          <AnimatedPressable
+            onPress={() => router.push("/(tabs)/(home)/create-plan")}
+            className="bg-primary p-4 rounded-2xl shadow-elevated-lg"
+          >
+            <MaterialCommunityIcons name="plus" size={28} color="#000000" />
+          </AnimatedPressable>
+        </View>
+      )}
     </View>
   );
 }

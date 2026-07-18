@@ -1,312 +1,177 @@
 # Ascend Retention & Conversion Specification
 
-**Version:** 1.0  
-**Date:** July 8, 2026  
-**Status:** Week 1 implementation in progress
+**Version:** 1.1  
+**Date:** July 18, 2026  
+**Status:** Week 2 conversion — **active focus**
 
 ---
 
 ## 1. Executive summary
 
-Ascend uses a **hard paywall** after onboarding. Users pay before experiencing a workout, then land on an empty Home screen and must manually build plans. This spec defines the 30-day roadmap to fix activation, conversion, and retention — with RevenueCat subscription gaps and implementation status.
+Week 1 production data (RevenueCat, Jul 11–18 2026) shows **healthy acquisition** (~76 new customers, ~9.5/day, DACH-heavy organic iOS) but **broken monetization** (~1.5% initial conversion, 2 trials, 0% trial→paid, $0 revenue).
+
+**Diagnosis:** Paywall conversion problem, not retention. Users open the app but almost never start a trial.
+
+**Active strategy:** Value before paywall — one free sample workout from onboarding answers, then personalized paywall. Defer push/retention work until trial volume is meaningful (≥10 trials/week).
 
 ### North-star metrics
 
-| Metric | Definition | Target (90 days) |
-|--------|------------|------------------|
-| **Trial → Paid** | Users who convert after 3-day trial | > 40% |
-| **D1 activation** | Subscribers who complete Workout 1 within 24h | > 60% |
-| **W1 retention** | Subscribers with ≥1 workout in week 1 | > 50% |
-| **Paywall → Trial** | Paywall viewers who start trial | > 15% |
+| Metric | Definition | Target (90 days) | Week 1 actual |
+|--------|------------|------------------|---------------|
+| **Trial → Paid** | Users who convert after 3-day trial | > 40% | 0% (n=2) |
+| **D1 activation** | Subscribers who complete Workout 1 within 24h | > 60% | N/A (almost no trials) |
+| **W1 retention** | Subscribers with ≥1 workout in week 1 | > 50% | N/A |
+| **Paywall → Trial / Initial conversion** | New customers who start trial/purchase in 7d | > 15% | **~1.5%** |
 
 ---
 
-## 2. RevenueCat gap analysis
+## 2. Week 1 RevenueCat findings (Jul 11–18 2026)
 
-> **Note:** RevenueCat MCP requires authentication in Cursor (`plugin-revenuecat-RevenueCat` → run `mcp_auth`). Analysis below is from codebase audit + terminal purchase logs until MCP is connected.
+**Project:** Ascend (`proja743f987`)
 
-### 2.1 Current RevenueCat setup
+| Metric | Result | Verdict |
+|--------|--------|---------|
+| New customers | **76** (~9.5/day) | Acquisition OK |
+| Active customers trend | Rising (weekly 18 → 119 → 151) | Reopens happening |
+| Initial conversion (7d) | **~1.5%** (2 conversions / 137 over ~2 weeks) | Broken |
+| New trials | **2** (Jul 11, Jul 13) | Too few |
+| Trial → paid | **0%** (2 expired, 0 converted) | Fix trial starts first |
+| Revenue | **$0** | No monetization |
+| Active paid subs | **3** (flat) | Stale / pre-release |
+| Platform | **100% iOS** | Android unused |
+| Top countries | DE 52, AT 12, CH 5, US 2 | DACH organic |
+| Attribution | No ASA / all unattributed | Organic / ASO |
+| Webhooks | **None** | No server events |
+
+**Charts:** [New customers](https://app.revenuecat.com/projects/a743f987/charts/customers_new) · [New trials](https://app.revenuecat.com/projects/a743f987/charts/trials_new) · [Initial conversion](https://app.revenuecat.com/projects/a743f987/charts/initial_conversion)
+
+### Firebase / Apple limitations
+
+- Firebase MCP has no GA4 event charts. Client events require `MEASUREMENT_API_SECRET` — see [`docs/ga4-measurement-protocol.md`](ga4-measurement-protocol.md).
+- Apple App Store Connect is not wired to Cursor; check Product Page Views → Downloads manually.
+
+### Product setup
 
 | Item | App value | Status |
 |------|-----------|--------|
-| Entitlement ID | `Ascend Pro` | ✅ Used in routing (`constants/revenuecat.ts`) |
-| Weekly package | `$rc_weekly` | ✅ 3-day free trial badge in UI |
-| Annual package | `$rc_annual` | ✅ Best-value badge with savings calc |
-| Products | `ascend_weekly` (from logs) | ✅ Purchases completing in Sandbox |
-| iOS API key | From `REVENUECAT_API_KEY` env | ✅ Configured |
-| Android API key | `YOUR_ANDROID_API_KEY` placeholder | ❌ **Broken** |
-
-### 2.2 RevenueCat gaps (product + dashboard)
-
-| Gap | Impact | Priority | Action |
-|-----|--------|----------|--------|
-| **No value before paywall** | Low trial start rate | P0 | Week 2: A/B freemium or sample workout |
-| **Generic paywall copy** | Weak conversion | P1 | ✅ **Done:** goal-personalized headline |
-| **No trial-end reminders** | Silent churn at day 3 | P1 | Week 3: in-app banner + push |
-| **No win-back offers** | Lapsed subs never return | P2 | RevenueCat Offerings for expired users |
-| **No server-side webhooks** | Can't trigger emails/push on events | P1 | Set up RevenueCat → Firebase Function |
-| **Entitlement mismatch** (`"pro"` vs `"Ascend Pro"`) | Profile sub status wrong | P0 | ✅ **Fixed** |
-| **No subscription status in Profile UI** | Users can't see renewal date | P2 | Show `hasProAccess` + expiration |
-| **Android not configured** | 0 Android revenue | P0 | Add Android API key in `_layout.tsx` |
-| **No cohort analytics in RC** | Can't see trial conversion by goal | P1 | Tag customers with `goalType` attribute on purchase |
-
-### 2.3 Recommended RevenueCat dashboard actions
-
-1. **Customer attributes** — Set on purchase:
-   - `goal_type`: `skill` | `strength`
-   - `primary_goal_id`: e.g. `muscle_up`
-   - `level`: `beginner` | `intermediate` | `advanced`
-   - `training_days`: `1`–`7`
-
-2. **Experiments** — Test paywall variants:
-   - Control: current hard paywall
-   - Variant A: 1 free workout before paywall
-   - Variant B: Annual default vs weekly default
-
-3. **Webhooks** — Subscribe to:
-   - `INITIAL_PURCHASE` → mark user pro, trigger welcome email
-   - `RENEWAL` → log retention event
-   - `CANCELLATION` → trigger win-back flow
-   - `EXPIRATION` → route to paywall with offer
-
-4. **Offerings** — Create `winback` offering for lapsed subscribers (e.g. 50% off annual).
-
-### 2.4 Sandbox validation (from terminal logs)
-
-```
-✅ POST /v1/receipts → 200
-✅ Product: ascend_weekly
-✅ Transaction finishing successfully
-✅ Environment: Sandbox
-```
-
-Purchases work in iOS Sandbox. Focus shifts to **post-purchase activation**, not payment plumbing.
+| Entitlement ID | `Ascend Pro` | ✅ `constants/revenuecat.ts` |
+| Weekly / annual | `$rc_weekly` / `$rc_annual` | ✅ |
+| iOS API key | `REVENUECAT_API_KEY` | ✅ |
+| Android API key | Placeholder | ❌ Deferred (0 Android users) |
+| RC customer attributes | Set on purchase | ✅ Week 2 |
+| Webhooks | None | Deferred until trials exist |
 
 ---
 
-## 3. Funnel analysis
-
-### 3.1 Current funnel
+## 3. Funnel (Week 2)
 
 ```
 Sign in / Guest
-  → Step 1 (Welcome)
-  → Step 2 (Level)
-  → Step 3 (Training days)
-  → Step 4 (Goal)
-  → Paywall (hard block)
-  → Home (was empty → now auto-plans)
-  → Manual plan creation (fallback)
-  → Workout
+  → Steps 1–4 (level, days, goal)
+  → Initialize user + generateSamplePlan (1 day)
+  → Home (sample mode — Home only)
+  → Sample workout
+  → Paywall (source=sample_workout)
+  → Purchase → expand to full weekly plans
+  → Full app
 ```
 
-### 3.2 Drop-off hypotheses
+```mermaid
+flowchart LR
+  Onboard[Onboarding] --> Sample[Free sample plan]
+  Sample --> Home[Home sample mode]
+  Home --> Workout[Sample workout]
+  Workout --> Paywall[Paywall]
+  Paywall --> Pro[Ascend Pro]
+  Pro --> FullPlans[Full weekly plans]
+```
 
-| Stage | Hypothesis | Fix |
-|-------|------------|-----|
-| Sign-in | No sign-up, only guest/email | Add email registration |
-| Paywall | No product value shown | Personalized copy + auto-plan promise |
-| Post-paywall | Empty Home | ✅ Auto-generate plans from onboarding |
-| Day 1 | No guided first workout | ✅ Today's workout hero + checklist |
-| Week 1 | No reminders | Week 3: push notifications |
-| Trial end | No warning | Week 3: trial countdown banner |
+Non-Pro users can access **Home + sample workout only**. Skills, Strength, AI Coach, and Profile tabs route to the paywall.
 
 ---
 
 ## 4. Implementation roadmap
 
-### Week 1 — Activation ✅ (in progress)
+### Week 1 — Activation ✅ Done
 
-| Task | Status | Files |
-|------|--------|-------|
-| Auto-generate plans from onboarding | ✅ Done | `backend/planGeneration.ts` |
-| Call plan gen after purchase | ✅ Done | `app/(onboarding)/paywall.tsx` |
-| Today's workout hero on Home | ✅ Done | `app/(tabs)/(home)/index.tsx` |
-| Weekly streak on Home | ✅ Done | `app/(tabs)/(home)/index.tsx` |
-| Day 1 checklist | ✅ Done | `app/(tabs)/(home)/index.tsx` |
-| Fix entitlement ID mismatch | ✅ Done | `constants/revenuecat.ts` |
-| Paywall: don't overwrite returning users | ✅ Done | `backend/users.ts` (merge) |
-| Paywall: skip duplicate anonymous auth | ✅ Done | `paywall.tsx` |
-| Paywall: personalized copy by goal | ✅ Done | `paywall.tsx` |
-| Funnel analytics events | ✅ Done | `utils/analytics.ts` |
-| Onboarding step analytics | ✅ Done | `step1–4.tsx` |
+Auto-plans after purchase, Home hero/streak/checklist, entitlement fix, paywall personalization, funnel events.
 
-### Week 2 — Conversion
+### Week 2 — Conversion ✅ Active (shipped in code)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| A/B: 1 free workout before paywall | 🔲 | Requires routing change in `app/index.tsx` |
-| RevenueCat customer attributes on purchase | 🔲 | `Purchases.setAttributes()` |
-| Onboarding step analytics | 🔲 | `onboarding_step_completed` events |
-| Subscription status in Profile | 🔲 | Use `hasProAccess` + expiration |
-| Android RevenueCat key | 🔲 | `app/_layout.tsx` |
+| 1 free sample workout before paywall | ✅ Done | `generateSamplePlan`, step4 → Home |
+| Gate Skills/Strength/AI/Profile without Pro | ✅ Done | `app/(tabs)/_layout.tsx` |
+| Paywall after sample with `source=sample_workout` | ✅ Done | workout finish + access routing |
+| Sample analytics events | ✅ Done | `sample_workout_started/completed` |
+| RevenueCat customer attributes on purchase | ✅ Done | `Purchases.setAttributes` |
+| Wire `MEASUREMENT_API_SECRET` for EAS | ✅ Done | `eas.json` + setup doc — **set secret value in EAS/GA4** |
+| Subscription status in Profile | 🔲 Deferred | |
+| Android RevenueCat key | 🔲 Deferred | 0 Android users week 1 |
 
-### Week 3 — Retention
+### Week 3 — Retention (deferred until trials ≥10/week)
 
-| Task | Status | Notes |
-|------|--------|-------|
-| `expo-notifications` workout reminders | 🔲 | Schedule on training days |
-| Trial countdown banner (day 2–3) | 🔲 | Read RC `expirationDate` |
-| Daily streak (not just weekly) | 🔲 | `backend/workoutHistory.ts` |
-| Post-workout progression banner on Home | 🔲 | After `workout.tsx` completion |
+Push reminders, trial countdown, daily streak — do **not** prioritize while conversion is ~1.5%.
 
 ### Week 4 — Optimize
 
-| Task | Status | Notes |
-|------|--------|-------|
-| RevenueCat webhooks → Firebase | 🔲 | Cloud Function |
-| Win-back offering for lapsed users | 🔲 | RC dashboard |
-| Review GA4 funnel dashboards | 🔲 | Requires `MEASUREMENT_API_SECRET` |
-| Freemium tier (if A/B wins) | 🔲 | Feature-level gating |
+Webhooks, win-back offering, GA4 funnel review after secret is live.
 
 ---
 
-## 5. Auto-plan generation spec
+## 5. Sample + full plan generation
 
-### 5.1 Trigger
+### 5.1 Sample plan (pre-paywall)
 
-Run `generateInitialPlans(userId)` when:
+`generateSamplePlan(userId)` in [`backend/planGeneration.ts`](../backend/planGeneration.ts):
 
-1. User completes first purchase (`paywall.tsx` → `handlePurchase`)
-2. User restores purchase without existing plans (`handleRestore`)
+- Trigger: end of onboarding step 4
+- Creates **one** plan for today's day index (Mon=1 … Sun=7)
+- Sets `user.samplePlanId`
+- Idempotent if sample already exists
 
-**Idempotent:** Skips if `user.initialPlansGenerated === true` or plans already exist.
+### 5.2 Full plans (post-purchase)
 
-### 5.2 Inputs (from `User` document)
+`generateInitialPlans(userId)`:
 
-| Field | Example | Use |
-|-------|---------|-----|
-| `goalType` | `strength` | Skill vs path exercise resolver |
-| `primaryGoalId` | `push_strength` | Firestore document ID |
-| `level` | `beginner` | Starting index in progression |
-| `trainingDaysPerWeek` | `3` | Number of day plans to create |
+- Trigger: successful purchase / restore
+- Creates remaining training-day plans (skips days that already exist from sample)
+- Sets `user.initialPlansGenerated = true`
 
-### 5.3 Day assignment
+### 5.3 User fields
 
-Uses **Mon=1 … Sun=7** convention (matches `getTodaysPlan()`):
-
-| Training days | Assigned days |
-|---------------|---------------|
-| 1 | Mon |
-| 2 | Mon, Thu |
-| 3 | Mon, Wed, Fri |
-| 4 | Mon–Thu (no Wed) |
-| 5 | Mon–Fri |
-| 6 | Mon–Sat |
-| 7 | Mon–Sun |
-
-### 5.4 Exercise selection
-
-- **Skill goals:** Current progression exercise + next 3 in chain
-- **Strength goals:** Level-based slice of path (beginner: first 4, etc.)
-- **Per day:** 3 exercises, rotated across training days
-
-### 5.5 Output
-
-Creates N `Plan` documents in Firestore:
-
-```typescript
-{
-  userId: string;
-  goalId: primaryGoalId;
-  dayIndex: 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  exercises: [{ exerciseId, sets: 3, target }];
-  completed: false;
-  createdAt: number;
-}
-```
-
-Sets `user.initialPlansGenerated = true`.
+| Field | Meaning |
+|-------|---------|
+| `samplePlanId` | Free Day-1 plan id |
+| `sampleWorkoutCompleted` | Sample finished → paywall on next launch |
+| `initialPlansGenerated` | Full week expanded after purchase |
 
 ---
 
 ## 6. Analytics event spec
 
-### 6.1 Existing events
-
-| Event | Trigger |
-|-------|---------|
-| `app_open` | Cold start |
-| `paywall_viewed` | Paywall offerings loaded |
-| `trial_started` | Successful purchase |
-| `purchase_failed` | Failed purchase (not cancel) |
-| `workout_completed` | Workout saved to history |
-
-### 6.2 New events (Week 1)
-
 | Event | Trigger | Params |
 |-------|---------|--------|
-| `onboarding_step_completed` | Step 1–4 continue | `step`, `level`, `training_days`, `goal_type`, `primary_goal_id` |
-| `paywall_purchase_tapped` | CTA pressed | `package_id` |
-| `plans_generated` | Auto-plan success | `plan_count`, `goal_type` |
-| `first_workout_started` | First-ever Start tap | `plan_id` |
+| `onboarding_step_completed` | Steps 1–4 | `step`, … |
+| `sample_workout_started` | Start tap in sample mode | `plan_id` |
+| `sample_workout_completed` | Sample finish | `plan_id` |
+| `paywall_viewed` | Offerings loaded | `source`: `sample_workout` \| `home_unlock` \| `tab_gate` \| `returning` \| … |
+| `paywall_purchase_tapped` | CTA | `package_id` |
+| `trial_started` | Purchase success | `package_id` |
+| `plans_generated` | Full plan expand | `plan_count`, `goal_type` |
+| `workout_completed` | History saved | `exercise_count` |
 
-### 6.3 Planned events (Week 2+)
-
-| Event | Trigger |
-|-------|---------|
-| `subscription_started` | Non-trial purchase |
-| `trial_day_1` / `trial_day_3` | Scheduled local checks |
-| `plan_created` | Manual plan creation |
-| `paywall_dismissed` | If freemium skip added |
+Setup: [`docs/ga4-measurement-protocol.md`](ga4-measurement-protocol.md)
 
 ---
 
-## 7. Home screen spec (Week 1)
+## 7. Success criteria (re-check RC in 7 days)
 
-### 7.1 Layout priority
-
-1. **Weekly streak badge** (coral fire icon) — if `weeklyStreak > 0`
-2. **Day 1 checklist** — if `totalWorkouts === 0` and plans exist
-3. **Today's workout hero** — if `getTodaysPlan()` returns a plan
-4. **All plans list** — existing cards with TODAY badge on matching plan
-
-### 7.2 Primary CTA
-
-"Start Workout" on today's hero is the **single primary action** for returning users.
-
----
-
-## 8. Paywall spec (Week 1 updates)
-
-### 8.1 Copy personalization
-
-| User selection | Headline | Subhead |
-|----------------|----------|---------|
-| Push Strength, 3 days | "Your Push Strength plan is ready" | "Unlock your personalized 3-day strength program..." |
-| Muscle Up, 4 days | "Your Muscle Up plan is ready" | "Unlock your personalized 4-day skill program..." |
-
-### 8.2 Post-purchase alert
-
-```
-Welcome to Ascend Pro! Your {N}-day {Goal Name} plan is ready.
-[Start Day 1]
-```
-
-### 8.3 Auth rules
-
-- Use `FIREBASE_AUTH.currentUser` if already signed in (guest from signin)
-- Only call `initializeUser` for **new** users with onboarding params
-- Use `setDoc(..., { merge: true })` to avoid overwriting returning users
-
----
-
-## 9. Open questions
-
-1. **Freemium vs hard paywall** — Run A/B in Week 2; need product decision on which features stay free.
-2. **Daily vs weekly streak** — Design system uses coral for streaks; weekly is implemented; daily is Week 3.
-3. **RevenueCat MCP** — Authenticate in Cursor to pull live conversion charts and cohort data.
-4. **Email sign-up** — Should guest remain the only new-user path?
-
----
-
-## 10. Success criteria for Week 1
-
-- [ ] New subscriber sees ≥1 plan on Home without manual creation
-- [ ] Today's workout hero appears on correct day of week
-- [ ] `plans_generated` event fires in GA4 (when `MEASUREMENT_API_SECRET` set)
-- [ ] No entitlement mismatch between routing and Profile
-- [ ] Returning lapsed users are not reset to beginner defaults
+- [ ] Initial conversion moves from **~1.5% toward ≥8–15%**
+- [ ] New trials **≥10/week**
+- [ ] GA4 Realtime shows `sample_workout_*` and `paywall_viewed` (after secret set + rebuild)
+- [ ] Sample users land on Home with one workout without paying
+- [ ] Completing sample routes to paywall with personalized copy
 
 ---
 
@@ -314,10 +179,14 @@ Welcome to Ascend Pro! Your {N}-day {Goal Name} plan is ready.
 
 | Concern | Path |
 |---------|------|
-| Entitlement constant | `constants/revenuecat.ts` |
-| Plan generation | `backend/planGeneration.ts` |
+| Access routing | `utils/access.ts` |
+| Sample / full plans | `backend/planGeneration.ts` |
+| Entry | `app/index.tsx` |
+| Onboarding finish | `app/(onboarding)/step4.tsx` |
 | Paywall | `app/(onboarding)/paywall.tsx` |
-| Home | `app/(tabs)/(home)/index.tsx` |
+| Tab gate | `app/(tabs)/_layout.tsx` |
+| Home sample UX | `app/(tabs)/(home)/index.tsx` |
+| Workout → paywall | `app/(tabs)/(home)/workout.tsx` |
 | Analytics | `utils/analytics.ts` |
-| User init | `backend/users.ts` |
+| GA4 setup | `docs/ga4-measurement-protocol.md` |
 | Design system | `ascend.md` |

@@ -58,8 +58,12 @@ export default function PaywallScreen() {
   const trainingDays = parseInt(params.trainingDays as string) || 3;
   const goalType = (params.goalType as "skill" | "strength") || "strength";
   const primaryGoalId = (params.primaryGoalId as string) || "push_strength";
+  const paywallSource =
+    (params.source as string) ||
+    (params.level && params.trainingDays ? "onboarding" : "returning");
 
   const hasOnboardingParams = Boolean(params.level && params.trainingDays);
+  const fromSampleWorkout = paywallSource === "sample_workout";
 
   useEffect(() => {
     initializeUser();
@@ -99,16 +103,32 @@ export default function PaywallScreen() {
         });
       }
 
-      await loadGoalName();
+      // Prefer Firestore profile for personalized copy when returning from sample
+      const profileGoalType = existingUser?.goalType ?? goalType;
+      const profileGoalId = existingUser?.primaryGoalId ?? primaryGoalId;
+      if (existingUser) {
+        try {
+          if (profileGoalType === "skill") {
+            const skill = await backend.getSkill(profileGoalId);
+            if (skill) setGoalName(skill.name);
+          } else {
+            const path = await backend.getStrengthPath(profileGoalId);
+            if (path) setGoalName(path.name);
+          }
+        } catch {
+          await loadGoalName();
+        }
+      } else {
+        await loadGoalName();
+      }
+
       await Purchases.logIn(user.uid);
 
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
         setOfferings(offerings.current);
         setSelectedPackage("$rc_weekly");
-        logPaywallViewed({
-          source: hasOnboardingParams ? "onboarding" : "returning",
-        });
+        logPaywallViewed({ source: paywallSource });
       }
     } catch (error) {
       console.error("Error initializing user:", error);
@@ -142,12 +162,28 @@ export default function PaywallScreen() {
 
         const userId = FIREBASE_AUTH.currentUser?.uid;
         let planCount = 0;
+        const profile = userId ? await backend.getUser(userId) : null;
+        const attrsGoalType = profile?.goalType ?? goalType;
+        const attrsGoalId = profile?.primaryGoalId ?? primaryGoalId;
+        const attrsLevel = profile?.level ?? level;
+        const attrsDays = profile?.trainingDaysPerWeek ?? trainingDays;
+
+        try {
+          await Purchases.setAttributes({
+            goal_type: attrsGoalType,
+            primary_goal_id: attrsGoalId,
+            level: attrsLevel,
+            training_days: String(attrsDays),
+          });
+        } catch (attrError) {
+          console.error("Error setting RC attributes:", attrError);
+        }
 
         if (userId) {
           try {
             const planIds = await backend.generateInitialPlans(userId);
             planCount = planIds.length;
-            logPlansGenerated({ planCount, goalType });
+            logPlansGenerated({ planCount, goalType: attrsGoalType });
           } catch (planError) {
             console.error("Error generating initial plans:", planError);
           }
@@ -186,6 +222,15 @@ export default function PaywallScreen() {
         const userId = FIREBASE_AUTH.currentUser?.uid;
         if (userId) {
           try {
+            const profile = await backend.getUser(userId);
+            if (profile) {
+              await Purchases.setAttributes({
+                goal_type: profile.goalType,
+                primary_goal_id: profile.primaryGoalId,
+                level: profile.level,
+                training_days: String(profile.trainingDaysPerWeek),
+              });
+            }
             await backend.generateInitialPlans(userId);
           } catch (planError) {
             console.error("Error generating plans on restore:", planError);
@@ -363,14 +408,24 @@ export default function PaywallScreen() {
               Unlock Ascend
             </Text>
             <Text className="text-text-primary text-2xl font-semibold text-center mb-3">
-              {goalName
-                ? `Your ${goalName} plan is ready`
-                : "Start Your Journey"}
+              {fromSampleWorkout
+                ? goalName
+                  ? `Unlock your full ${goalName} plan`
+                  : "Unlock your full plan"
+                : goalName
+                  ? `Your ${goalName} plan is ready`
+                  : "Start Your Journey"}
             </Text>
             <Text className="text-text-secondary text-center text-lg px-4 leading-6">
-              {goalName
-                ? `Unlock your personalized ${trainingDays}-day ${goalType === "skill" ? "skill" : "strength"} program and start training today`
-                : "Get unlimited access to all features and transform your body with calisthenics"}
+              {fromSampleWorkout
+                ? `You finished your free workout. Unlock the full ${trainingDays}-day ${
+                    goalType === "skill" ? "skill" : "strength"
+                  } program, AI coach, and progressions.`
+                : goalName
+                  ? `Unlock your personalized ${trainingDays}-day ${
+                      goalType === "skill" ? "skill" : "strength"
+                    } program and start training today`
+                  : "Get unlimited access to all features and transform your body with calisthenics"}
             </Text>
           </View>
 

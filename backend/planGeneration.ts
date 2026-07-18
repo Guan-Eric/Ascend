@@ -32,6 +32,12 @@ function getTrainingDayIndices(trainingDaysPerWeek: number): number[] {
   return TRAINING_DAY_INDICES[days] ?? TRAINING_DAY_INDICES[3];
 }
 
+/** JS getDay() Sunday=0 → Mon=1 … Sun=7 */
+export function getTodayDayIndex(): number {
+  const today = new Date().getDay();
+  return today === 0 ? 7 : today;
+}
+
 function getLevelStartIndex(
   level: User["level"],
   totalExercises: number
@@ -56,10 +62,15 @@ async function resolveGoalExercises(user: User): Promise<Exercise[]> {
     if (!skillData) return [];
 
     const completedIds = await getCompletedExerciseIds(user.id);
-    const current = await getCurrentSkillExercise(user.primaryGoalId, completedIds);
+    const current = await getCurrentSkillExercise(
+      user.primaryGoalId,
+      completedIds
+    );
     if (!current) return [];
 
-    const currentIndex = skillData.exercises.findIndex((ex) => ex.id === current.id);
+    const currentIndex = skillData.exercises.findIndex(
+      (ex) => ex.id === current.id
+    );
     const start = Math.max(0, currentIndex);
     return skillData.exercises.slice(start, start + 4);
   }
@@ -86,8 +97,13 @@ function buildDayExercises(
     }
   }
 
-  while (result.length < EXERCISES_PER_DAY && result.length < starterExercises.length) {
-    const next = starterExercises.find((ex) => !result.some((r) => r.id === ex.id));
+  while (
+    result.length < EXERCISES_PER_DAY &&
+    result.length < starterExercises.length
+  ) {
+    const next = starterExercises.find(
+      (ex) => !result.some((r) => r.id === ex.id)
+    );
     if (!next) break;
     result.push(next);
   }
@@ -96,8 +112,50 @@ function buildDayExercises(
 }
 
 /**
- * Create weekly plans from the user's onboarding profile.
- * Idempotent — skips if plans already exist or initialPlansGenerated is set.
+ * Create a single free Day-1 sample plan after onboarding (before paywall).
+ * Idempotent — returns existing samplePlanId if already set.
+ */
+export async function generateSamplePlan(userId: string): Promise<string> {
+  const user = await getUser(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.samplePlanId) {
+    return user.samplePlanId;
+  }
+
+  const existingPlans = await getUserPlans(userId);
+  if (existingPlans.length > 0) {
+    const planId = existingPlans[0].id;
+    await updateUser(userId, { samplePlanId: planId });
+    return planId;
+  }
+
+  const starterExercises = await resolveGoalExercises(user);
+  if (starterExercises.length === 0) {
+    throw new Error("Could not resolve exercises for user goal");
+  }
+
+  const dayIndex = getTodayDayIndex();
+  const dayExercises = buildDayExercises(starterExercises, 0);
+  const planId = await createPlan({
+    userId,
+    goalId: user.primaryGoalId,
+    dayIndex,
+    exercises: dayExercises.map(toPlanExercise),
+    completed: false,
+    createdAt: Date.now(),
+  });
+
+  await updateUser(userId, { samplePlanId: planId });
+  return planId;
+}
+
+/**
+ * Create the remaining weekly plans after purchase.
+ * Idempotent — skips if initialPlansGenerated is set.
+ * If a sample plan already exists, creates plans for the other training days only.
  */
 export async function generateInitialPlans(userId: string): Promise<string[]> {
   const user = await getUser(userId);
@@ -110,10 +168,7 @@ export async function generateInitialPlans(userId: string): Promise<string[]> {
   }
 
   const existingPlans = await getUserPlans(userId);
-  if (existingPlans.length > 0) {
-    await updateUser(userId, { initialPlansGenerated: true });
-    return [];
-  }
+  const existingDayIndices = new Set(existingPlans.map((p) => p.dayIndex));
 
   const starterExercises = await resolveGoalExercises(user);
   if (starterExercises.length === 0) {
@@ -124,11 +179,16 @@ export async function generateInitialPlans(userId: string): Promise<string[]> {
   const planIds: string[] = [];
 
   for (let i = 0; i < dayIndices.length; i++) {
+    const dayIndex = dayIndices[i];
+    if (existingDayIndices.has(dayIndex)) {
+      continue;
+    }
+
     const dayExercises = buildDayExercises(starterExercises, i);
     const planId = await createPlan({
       userId,
       goalId: user.primaryGoalId,
-      dayIndex: dayIndices[i],
+      dayIndex,
       exercises: dayExercises.map(toPlanExercise),
       completed: false,
       createdAt: Date.now(),

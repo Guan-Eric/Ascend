@@ -12,6 +12,10 @@ import { useThemeColor } from "../../../utils/theme";
 import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { FadeSlideIn } from "../../../components/FadeSlideIn";
+import { logSampleWorkoutCompleted } from "../../../utils/analytics";
+import { paywallHref } from "../../../utils/access";
+import Purchases from "react-native-purchases";
+import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
 
 type ExerciseProgress = {
   exerciseId: string;
@@ -143,9 +147,12 @@ export default function WorkoutScreen() {
         duration,
       });
 
-      // Get user settings
       const user = await backend.getUser(userId);
-      const autoProgress = user?.autoProgressExercises ?? true;
+      const customerInfoEarly = await Purchases.getCustomerInfo();
+      const hasProEarly =
+        customerInfoEarly.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+      const autoProgress =
+        hasProEarly && (user?.autoProgressExercises ?? true);
 
       // Check for progressions and mark exercises complete
       const progressionMessages: string[] = [];
@@ -157,14 +164,11 @@ export default function WorkoutScreen() {
           const exercise = exercises.find(ex => ex.id === prog.exerciseId);
 
           if (exercise && bestValue >= exercise.target.value) {
-            // Check for previous best
             const previousBest = await backend.getPersonalBest(userId, prog.exerciseId);
 
-            // If this is first time reaching target or beating previous best
             if (!previousBest || bestValue > previousBest) {
               await backend.markExerciseCompleted(userId, prog.exerciseId, bestValue);
 
-              // Check if there's a next progression
               if (exercise.nextProgressionId) {
                 const nextExercise = await backend.getExercise(exercise.nextProgressionId);
                 if (nextExercise) {
@@ -172,10 +176,9 @@ export default function WorkoutScreen() {
                     `🎉 ${exercise.name} completed! Ready for: ${nextExercise.name}`
                   );
 
-                  // Auto-progress if enabled
                   if (autoProgress) {
                     const { autoProgressPlans } = await import("../../../backend/autoProgression");
-                    const { updatedPlans, planNames } = await autoProgressPlans(
+                    const { updatedPlans } = await autoProgressPlans(
                       userId,
                       exercise.id,
                       nextExercise.id
@@ -194,7 +197,6 @@ export default function WorkoutScreen() {
               }
             }
           } else {
-            // Still save progress even if target not reached
             await backend.markExerciseCompleted(userId, prog.exerciseId, bestValue);
           }
         }
@@ -213,6 +215,38 @@ export default function WorkoutScreen() {
           message += `• ${oldName} → ${newName}\n`;
         });
         message += "\nYour workout plans have been updated!";
+      }
+
+      const isSampleWorkout =
+        !hasProEarly &&
+        Boolean(user?.samplePlanId) &&
+        user?.samplePlanId === plan.id &&
+        !user?.sampleWorkoutCompleted;
+
+      if (isSampleWorkout && user) {
+        await backend.updateUser(userId, { sampleWorkoutCompleted: true });
+        logSampleWorkoutCompleted({ planId: plan.id });
+
+        Alert.alert(
+          "Workout Complete!",
+          "Nice work. Unlock your full weekly plan to keep progressing.",
+          [
+            {
+              text: "Unlock Full Plan",
+              onPress: () =>
+                router.replace(
+                  paywallHref({
+                    source: "sample_workout",
+                    level: user.level,
+                    trainingDays: user.trainingDaysPerWeek,
+                    goalType: user.goalType,
+                    primaryGoalId: user.primaryGoalId,
+                  })
+                ),
+            },
+          ]
+        );
+        return;
       }
 
       Alert.alert("Workout Complete!", message, [

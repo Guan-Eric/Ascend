@@ -6,7 +6,7 @@ import { FIREBASE_AUTH } from "../../config/firebase";
 import Purchases from "react-native-purchases";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { getUser } from "../../backend";
-import { PRO_ENTITLEMENT_ID } from "../../constants/revenuecat";
+import { paywallHref, resolveAppAccess } from "../../utils/access";
 
 export default function SignInScreen() {
     const router = useRouter();
@@ -39,13 +39,23 @@ export default function SignInScreen() {
                 return;
             }
 
-            // User has completed onboarding, check subscription
-            const customerInfo = await Purchases.getCustomerInfo();
+            const access = await resolveAppAccess(userData);
 
-            if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
+            if (access.kind === "pro" || access.kind === "sample") {
                 router.replace("/(tabs)/(home)");
             } else {
-                router.replace("/(onboarding)/paywall");
+                router.replace(
+                    paywallHref({
+                        source:
+                            access.reason === "sample_completed"
+                                ? "sample_workout"
+                                : "returning",
+                        level: userData.level,
+                        trainingDays: userData.trainingDaysPerWeek,
+                        goalType: userData.goalType,
+                        primaryGoalId: userData.primaryGoalId,
+                    })
+                );
             }
         } catch (error: any) {
             console.error("Sign in error:", error);

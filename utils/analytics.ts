@@ -161,6 +161,16 @@ export function logPaywallPurchaseTapped(params: { packageId: string }) {
   return logEvent('paywall_purchase_tapped', { package_id: params.packageId });
 }
 
+/** Call when a free sample workout is started (pre-paywall). */
+export function logSampleWorkoutStarted(params: { planId: string }) {
+  return logEvent('sample_workout_started', { plan_id: params.planId });
+}
+
+/** Call when a free sample workout is completed (pre-paywall). */
+export function logSampleWorkoutCompleted(params: { planId: string }) {
+  return logEvent('sample_workout_completed', { plan_id: params.planId });
+}
+
 /** Call on a successful purchase that is not a trial (rare path, e.g. restored). */
 export function logSubscriptionStarted(params: { packageId: string }) {
   return logEvent('subscription_started', { package_id: params.packageId });

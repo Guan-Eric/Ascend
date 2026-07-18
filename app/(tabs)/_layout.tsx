@@ -1,14 +1,23 @@
 // app/(tabs)/_layout.tsx
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useUniwind } from "uniwind";
+import { useCallback, useEffect, useState } from "react";
+import Purchases from "react-native-purchases";
+import { FIREBASE_AUTH } from "../../config/firebase";
+import { getUser } from "../../backend";
+import { PRO_ENTITLEMENT_ID } from "../../constants/revenuecat";
+import { paywallHref } from "../../utils/access";
 
-const tabThemeColors: Record<string, {
-  background: string;
-  border: string;
-  active: string;
-  inactive: string;
-}> = {
+const tabThemeColors: Record<
+  string,
+  {
+    background: string;
+    border: string;
+    active: string;
+    inactive: string;
+  }
+> = {
   dark: {
     background: "#0b1220",
     border: "#27272a",
@@ -18,7 +27,7 @@ const tabThemeColors: Record<string, {
   light: {
     background: "#ffffff",
     border: "#dbe2f3",
-    active: "#2563eb", // softer blue for light
+    active: "#2563eb",
     inactive: "#64748b",
   },
   zen: {
@@ -56,6 +65,53 @@ const tabThemeColors: Record<string, {
 export default function TabsLayout() {
   const { theme } = useUniwind();
   const tabColors = tabThemeColors[theme] ?? tabThemeColors.dark;
+  const router = useRouter();
+  const [hasProAccess, setHasProAccess] = useState(true);
+  const [userMeta, setUserMeta] = useState<{
+    level?: string;
+    trainingDays?: number;
+    goalType?: string;
+    primaryGoalId?: string;
+  }>({});
+
+  const refreshAccess = useCallback(async () => {
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      const isPro =
+        customerInfo.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+      setHasProAccess(isPro);
+
+      const uid = FIREBASE_AUTH.currentUser?.uid;
+      if (uid) {
+        const user = await getUser(uid);
+        if (user) {
+          setUserMeta({
+            level: user.level,
+            trainingDays: user.trainingDaysPerWeek,
+            goalType: user.goalType,
+            primaryGoalId: user.primaryGoalId,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error checking tab access:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshAccess();
+  }, [refreshAccess]);
+
+  const requirePro = () => {
+    if (hasProAccess) return true;
+    router.push(
+      paywallHref({
+        source: "tab_gate",
+        ...userMeta,
+      })
+    );
+    return false;
+  };
 
   return (
     <Tabs
@@ -85,6 +141,11 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="(skills)"
+        listeners={{
+          tabPress: (e) => {
+            if (!requirePro()) e.preventDefault();
+          },
+        }}
         options={{
           title: "Skills",
           tabBarIcon: ({ color, size }) => (
@@ -99,6 +160,11 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="(strength)"
+        listeners={{
+          tabPress: (e) => {
+            if (!requirePro()) e.preventDefault();
+          },
+        }}
         options={{
           title: "Strength",
           tabBarIcon: ({ color, size }) => (
@@ -113,6 +179,11 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="(profile)"
+        listeners={{
+          tabPress: (e) => {
+            if (!requirePro()) e.preventDefault();
+          },
+        }}
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
