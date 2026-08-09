@@ -176,6 +176,11 @@ export function logSubscriptionStarted(params: { packageId: string }) {
   return logEvent('subscription_started', { package_id: params.packageId });
 }
 
+/** Call when freemium user bypasses paywall after onboarding. */
+export function logPaywallDismissed(params: { source?: string } = {}) {
+  return logEvent('paywall_dismissed', { source: params.source ?? 'freemium' });
+}
+
 /** Call when a purchase attempt fails (not counting user cancellation). */
 export function logPurchaseFailed(params: { packageId: string; reason?: string }) {
   return logEvent('purchase_failed', {

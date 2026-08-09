@@ -15,10 +15,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import {
   logPaywallViewed,
   logTrialStarted,
+  logSubscriptionStarted,
   logPurchaseFailed,
   logPlansGenerated,
   logPaywallPurchaseTapped,
 } from "../../utils/analytics";
+import { setRevenueCatCustomerAttributes } from "../../utils/revenuecatAttributes";
 
 const premiumFeatures = [
   {
@@ -124,6 +126,15 @@ export default function PaywallScreen() {
 
       await Purchases.logIn(user.uid);
 
+      if (hasOnboardingParams || existingUser) {
+        await setRevenueCatCustomerAttributes({
+          goalType: existingUser?.goalType ?? goalType,
+          primaryGoalId: existingUser?.primaryGoalId ?? primaryGoalId,
+          level: existingUser?.level ?? level,
+          trainingDays: existingUser?.trainingDaysPerWeek ?? trainingDays,
+        });
+      }
+
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
         setOfferings(offerings.current);
@@ -158,7 +169,19 @@ export default function PaywallScreen() {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
 
       if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
-        logTrialStarted({ packageId: pkg.identifier });
+        const entitlement = customerInfo.entitlements.active[PRO_ENTITLEMENT_ID];
+        if (entitlement.periodType === "TRIAL") {
+          logTrialStarted({ packageId: pkg.identifier });
+        } else {
+          logSubscriptionStarted({ packageId: pkg.identifier });
+        }
+
+        await setRevenueCatCustomerAttributes({
+          goalType,
+          primaryGoalId,
+          level,
+          trainingDays,
+        });
 
         const userId = FIREBASE_AUTH.currentUser?.uid;
         let planCount = 0;

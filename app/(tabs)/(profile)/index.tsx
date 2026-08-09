@@ -223,7 +223,18 @@ export default function ProfileScreen() {
   };
 
   const hasProAccess = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
-  const expirationDate = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID]?.expirationDate;
+  const proEntitlement = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID];
+  const expirationDate = proEntitlement?.expirationDate;
+  const isTrial = proEntitlement?.periodType === "TRIAL";
+
+  const formatExpiration = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   if (loading) {
     return (
@@ -598,6 +609,60 @@ export default function ProfileScreen() {
                     View Full History →
                   </Text>
                 </AnimatedPressable>
+              </View>
+            </FadeSlideIn>
+
+            {/* Subscription Status */}
+            <FadeSlideIn delay={75}>
+              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
+                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
+                  Subscription
+                </Text>
+
+                {hasProAccess ? (
+                  <>
+                    <View className="flex-row items-center mb-2">
+                      <MaterialCommunityIcons
+                        name="crown"
+                        size={24}
+                        color={primaryColor}
+                      />
+                      <Text className="text-primary text-xl font-bold ml-2">
+                        Ascend Pro
+                      </Text>
+                      {isTrial && (
+                        <View className="bg-success/20 px-2 py-0.5 rounded-full ml-2">
+                          <Text className="text-success text-xs font-bold">
+                            TRIAL
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    {expirationDate && (
+                      <Text className="text-text-secondary text-sm">
+                        {isTrial ? "Trial ends" : "Renews"}{" "}
+                        {formatExpiration(expirationDate)}
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Text className="text-text-primary font-bold mb-1">
+                      No active subscription
+                    </Text>
+                    <Text className="text-text-secondary text-sm mb-4">
+                      Unlock unlimited workouts and progress tracking
+                    </Text>
+                    <AnimatedPressable
+                      onPress={() => router.push("/(onboarding)/paywall")}
+                      className="bg-primary/10 border border-primary py-3 rounded-xl"
+                    >
+                      <Text className="text-primary text-center font-bold">
+                        Upgrade to Pro
+                      </Text>
+                    </AnimatedPressable>
+                  </>
+                )}
               </View>
             </FadeSlideIn>
 

@@ -14,13 +14,12 @@ export default function RootLayout() {
   // Initialize RevenueCat
   const initializeRevenueCat = async () => {
     try {
-      if (Platform.OS === "ios") {
-        await Purchases.configure({
-          apiKey: Constants.expoConfig?.extra?.revenuecatApiKey,
-        });
-      } else if (Platform.OS === "android") {
-        await Purchases.configure({ apiKey: "YOUR_ANDROID_API_KEY" });
-      }
+      // iOS-only for now — skip RevenueCat on other platforms
+      if (Platform.OS !== "ios") return;
+
+      await Purchases.configure({
+        apiKey: Constants.expoConfig?.extra?.revenuecatApiKey,
+      });
     } catch (error) {
       console.error("RevenueCat initialization error:", error);
     }

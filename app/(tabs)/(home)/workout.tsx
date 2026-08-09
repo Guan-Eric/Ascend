@@ -3,7 +3,10 @@ import { View, Text, TextInput, Alert } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import Purchases from "react-native-purchases";
 import { FIREBASE_AUTH } from "../../../config/firebase";
+import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
+import { getPaywallVariant } from "../../../utils/paywallExperiment";
 import * as backend from "../../../backend";
 import { Plan } from "../../../types/Plan";
 import { Exercise } from "../../../types/Exercise";
@@ -252,7 +255,21 @@ export default function WorkoutScreen() {
       Alert.alert("Workout Complete!", message, [
         {
           text: "OK",
-          onPress: () => router.back(),
+          onPress: async () => {
+            const customerInfo = await Purchases.getCustomerInfo();
+            const hasPro =
+              customerInfo.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+
+            if (!hasPro) {
+              const variant = await getPaywallVariant();
+              if (variant === "freemium") {
+                router.replace("/(onboarding)/paywall");
+                return;
+              }
+            }
+
+            router.back();
+          },
         },
       ]);
     } catch (error) {

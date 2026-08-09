@@ -1,6 +1,6 @@
 {
   "name": "ascend",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -32,6 +32,7 @@
   "devDependencies": {
     "@types/react": "~19.2.10",
     "baseline-browser-mapping": "^2.9.13",
+    "eas-cli": "^16.0.0",
     "prettier": "^3.8.0",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "~6.0.3"
