@@ -1,20 +1,34 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import Purchases from "react-native-purchases";
-import { Platform } from "react-native";
+import { Platform, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import "../global.css";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Uniwind } from "uniwind";
+import { Uniwind, useUniwind } from "uniwind";
 import { logAppOpen } from "../utils/analytics";
+import {
+  useFonts,
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+} from "@expo-google-fonts/dm-sans";
 
-const THEME_STORAGE_KEY = '@ascend_theme';
+const THEME_STORAGE_KEY = "@ascend_theme";
 
 export default function RootLayout() {
-  // Initialize RevenueCat
+  const [fontsLoaded] = useFonts({
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    DMSans_700Bold,
+  });
+  const { theme } = useUniwind();
+
   const initializeRevenueCat = async () => {
     try {
-      // iOS-only for now — skip RevenueCat on other platforms
       if (Platform.OS !== "ios") return;
 
       await Purchases.configure({
@@ -28,14 +42,18 @@ export default function RootLayout() {
   const loadSavedTheme = async () => {
     try {
       const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (savedTheme) {
-        Uniwind.setTheme(savedTheme as any);
+      // Wave A: only light | dark. Migrate legacy theme names → light.
+      if (savedTheme === "dark") {
+        Uniwind.setTheme("dark");
       } else {
-        // New installs land on the Ascend brand theme by default
-        Uniwind.setTheme("ascend" as any);
+        Uniwind.setTheme("light");
+        if (savedTheme && savedTheme !== "light") {
+          await AsyncStorage.setItem(THEME_STORAGE_KEY, "light");
+        }
       }
     } catch (error) {
-      console.error('Error loading saved theme:', error);
+      console.error("Error loading saved theme:", error);
+      Uniwind.setTheme("light");
     }
   };
 
@@ -45,11 +63,18 @@ export default function RootLayout() {
     logAppOpen();
   }, []);
 
+  if (!fontsLoaded) {
+    return <View className="flex-1 bg-background" />;
+  }
+
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(onboarding)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="index" />
-    </Stack>
+    <>
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="index" />
+      </Stack>
+    </>
   );
 }

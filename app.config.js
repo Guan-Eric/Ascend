@@ -2,19 +2,19 @@ import "dotenv/config";
 export default {
   expo: {
     scheme: "ascend",
-    userInterfaceStyle: "automatic",
+    userInterfaceStyle: "light",
     orientation: "portrait",
     platforms: ["ios", "android"],
     name: "Ascend: Calisthenics",
     slug: "ascend",
-    icon: "./assets/ascend_icon.jpg",
+    icon: "./assets/ascend_icon.png",
     splash: {
-      image: "./assets/ascend_logo.png",
+      image: "./assets/ascend_splash.png",
       resizeMode: "contain",
-      backgroundColor: "#17181B",
+      backgroundColor: "#FAFAF8",
     },
     ios: {
-      bundleIdentifier: 'com.ascend.calisthenics',
+      bundleIdentifier: "com.ascend.calisthenics",
       supportsTablet: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -23,7 +23,7 @@ export default {
     plugins: [["expo-font"], "expo-router", "expo-status-bar"],
     extra: {
       eas: {
-        projectId: "fc4507c1-e06b-4acc-8537-55dfa89cc3cd"
+        projectId: "fc4507c1-e06b-4acc-8537-55dfa89cc3cd",
       },
       firebaseApiKey: process.env.FIREBASE_API_KEY,
       authDomain: process.env.AUTH_DOMAIN,
@@ -43,7 +43,7 @@ export default {
       policy: "appVersion",
     },
     updates: {
-      url: "https://u.expo.dev/fc4507c1-e06b-4acc-8537-55dfa89cc3cd"
-    }
+      url: "https://u.expo.dev/fc4507c1-e06b-4acc-8537-55dfa89cc3cd",
+    },
   },
 };

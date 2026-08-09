@@ -1,17 +1,24 @@
-// app/(onboarding)/paywall.tsx - Enhanced Premium Paywall
-import { View, Text, Alert, ScrollView, TouchableOpacity, Linking } from "react-native";
+// app/(onboarding)/paywall.tsx — Wave A: narrative + 3 bullets + packages
+import {
+  View,
+  Text,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
-import Purchases, { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
+import Purchases, {
+  PurchasesOffering,
+  PurchasesPackage,
+} from "react-native-purchases";
 import { signInAnonymously } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../config/firebase";
 import * as backend from "../../backend";
 import { PRO_ENTITLEMENT_ID } from "../../constants/revenuecat";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useThemeColor } from "../../utils/theme";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { LinearGradient } from "expo-linear-gradient";
 import {
   logPaywallViewed,
   logTrialStarted,
@@ -21,28 +28,13 @@ import {
   logPaywallPurchaseTapped,
 } from "../../utils/analytics";
 import { setRevenueCatCustomerAttributes } from "../../utils/revenuecatAttributes";
+import { Screen, Button } from "../../components/ui";
+import { FadeSlideIn } from "../../components/FadeSlideIn";
 
-const premiumFeatures = [
-  {
-    icon: "dumbbell",
-    title: "Unlimited Workouts",
-    description: "Access all training programs and routines",
-  },
-  {
-    icon: "medal-outline",
-    title: "Skill Progressions",
-    description: "Master advanced moves with step-by-step guidance",
-  },
-  {
-    icon: "book-open-variant",
-    title: "Workout Presets",
-    description: "Curated routines from top calisthenics programs",
-  },
-  {
-    icon: "chart-line",
-    title: "Progress Tracking",
-    description: "Monitor your improvements and achievements",
-  },
+const bullets = [
+  "AI plan built for your goal and days",
+  "Auto-adapt when life gets in the way",
+  "Check-ins, deloads, and injury pause",
 ];
 
 export default function PaywallScreen() {
@@ -53,13 +45,13 @@ export default function PaywallScreen() {
   const [purchasing, setPurchasing] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string>("$rc_weekly");
   const [goalName, setGoalName] = useState<string>("");
-  const primaryColor = useThemeColor('primary');
 
-  // Get user settings from params
-  const level = (params.level as "beginner" | "intermediate" | "advanced") || "beginner";
+  const level =
+    (params.level as "beginner" | "intermediate" | "advanced") || "beginner";
   const trainingDays = parseInt(params.trainingDays as string) || 3;
   const goalType = (params.goalType as "skill" | "strength") || "strength";
-  const primaryGoalId = (params.primaryGoalId as string) || "push_strength";
+  const primaryGoalId =
+    (params.primaryGoalId as string) || "push_strength";
   const paywallSource =
     (params.source as string) ||
     (params.level && params.trainingDays ? "onboarding" : "returning");
@@ -105,7 +97,6 @@ export default function PaywallScreen() {
         });
       }
 
-      // Prefer Firestore profile for personalized copy when returning from sample
       const profileGoalType = existingUser?.goalType ?? goalType;
       const profileGoalId = existingUser?.primaryGoalId ?? primaryGoalId;
       if (existingUser) {
@@ -135,9 +126,9 @@ export default function PaywallScreen() {
         });
       }
 
-      const offerings = await Purchases.getOfferings();
-      if (offerings.current) {
-        setOfferings(offerings.current);
+      const nextOfferings = await Purchases.getOfferings();
+      if (nextOfferings.current) {
+        setOfferings(nextOfferings.current);
         setSelectedPackage("$rc_weekly");
         logPaywallViewed({ source: paywallSource });
       }
@@ -169,7 +160,8 @@ export default function PaywallScreen() {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
 
       if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
-        const entitlement = customerInfo.entitlements.active[PRO_ENTITLEMENT_ID];
+        const entitlement =
+          customerInfo.entitlements.active[PRO_ENTITLEMENT_ID];
         if (entitlement.periodType === "TRIAL") {
           logTrialStarted({ packageId: pkg.identifier });
         } else {
@@ -214,13 +206,13 @@ export default function PaywallScreen() {
 
         const goalLabel = goalName || "program";
         Alert.alert(
-          "Success! 🎉",
+          "Welcome to Ascend Pro",
           planCount > 0
-            ? `Welcome to Ascend Pro! Your ${trainingDays}-day ${goalLabel} plan is ready.`
-            : "Welcome to Ascend Pro!",
+            ? `Your ${trainingDays}-day ${goalLabel} plan is ready.`
+            : "You're in.",
           [
             {
-              text: "Start Day 1",
+              text: "Start today",
               onPress: () => router.replace("/(tabs)/(home)"),
             },
           ]
@@ -229,7 +221,10 @@ export default function PaywallScreen() {
     } catch (error: any) {
       if (!error.userCancelled) {
         console.error("Purchase error:", error);
-        logPurchaseFailed({ packageId: selectedPackage, reason: error?.message });
+        logPurchaseFailed({
+          packageId: selectedPackage,
+          reason: error?.message,
+        });
         Alert.alert("Purchase Failed", "Please try again.");
       }
     } finally {
@@ -261,7 +256,10 @@ export default function PaywallScreen() {
         }
         router.replace("/(tabs)/(home)");
       } else {
-        Alert.alert("No Purchases Found", "You don't have any active subscriptions.");
+        Alert.alert(
+          "No purchases found",
+          "You don't have an active subscription."
+        );
       }
     } catch (error) {
       console.error("Restore error:", error);
@@ -276,10 +274,8 @@ export default function PaywallScreen() {
     if (isWeekly) {
       return {
         name: "Weekly",
-        badge: "3-DAY FREE TRIAL",
-        description: "Billed weekly • Cancel anytime",
-        savings: null,
-        perMonth: null,
+        badge: "3-day free trial",
+        period: "week",
       };
     }
 
@@ -289,312 +285,187 @@ export default function PaywallScreen() {
         (p) => p.identifier === "$rc_weekly"
       );
       const weeklyPrice = weeklyPkg?.product.price || 0;
-
       const annualizedWeekly = weeklyPrice * 52;
-      const savingsAmount = annualizedWeekly - annualPrice;
       const percentOff =
         annualizedWeekly > 0
-          ? Math.round((savingsAmount / annualizedWeekly) * 100)
+          ? Math.round(
+              ((annualizedWeekly - annualPrice) / annualizedWeekly) * 100
+            )
           : 0;
 
-      const perMonth = annualPrice / 12;
-
       return {
-        name: "Annual",
-        badge: percentOff > 0 ? `BEST VALUE - Save ${percentOff}%` : "BEST VALUE",
-        description: "Best value • Billed annually",
-        savings: weeklyPrice > 0 ? `Save vs weekly` : null,
-        perMonth: annualPrice > 0 ? `Just $${perMonth.toFixed(2)}/month` : null,
+        name: "Yearly",
+        badge: percentOff > 0 ? `Save ${percentOff}%` : "Best value",
+        period: "year",
       };
     }
 
     return {
       name: pkg.product.title,
       badge: null,
-      description: "Cancel anytime",
-      savings: null,
-      perMonth: null,
+      period: "",
     };
-  };
-
-  const renderPricingCards = () => {
-    if (!offerings) return null;
-
-    const sortedPackages = [...offerings.availablePackages].sort((a, b) => {
-      if (a.identifier === "$rc_annual") return -1;
-      if (b.identifier === "$rc_annual") return 1;
-      return 0;
-    });
-
-    return sortedPackages.map((pkg) => {
-      const isSelected = selectedPackage === pkg.identifier;
-      const details = getPackageDetails(pkg);
-
-      return (
-        <AnimatedPressable
-          key={pkg.identifier}
-          onPress={() => setSelectedPackage(pkg.identifier)}
-          className={`mb-4 rounded-3xl border-2 p-6 ${isSelected
-            ? "border-primary bg-primary/10"
-            : "border-border bg-surface"
-            }`}
-        >
-          {details.badge && (
-            <View className="absolute -top-2 right-4 bg-success rounded-full px-3 py-1">
-              <Text className="text-background text-xs font-bold">
-                {details.badge}
-              </Text>
-            </View>
-          )}
-
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="flex-1 mr-4">
-              <Text
-                className={`text-xl font-bold mb-1 ${isSelected ? "text-primary" : "text-text-primary"
-                  }`}
-              >
-                {details.name}
-              </Text>
-
-              <Text className="text-sm text-text-secondary mb-2">
-                {details.description}
-              </Text>
-
-              <View className="flex-row items-baseline mb-2">
-                <Text
-                  className={`text-3xl font-bold ${isSelected ? "text-primary" : "text-text-primary"
-                    }`}
-                >
-                  {pkg.product.priceString}
-                </Text>
-                <Text className="text-sm text-text-secondary ml-2">
-                  /{pkg.identifier === "$rc_annual" ? "year" : "week"}
-                </Text>
-              </View>
-
-              {details.perMonth && (
-                <View className="bg-surface-elevated rounded-lg px-3 py-1.5 mb-2">
-                  <Text className="text-xs text-text-secondary text-center">
-                    {details.perMonth}
-                  </Text>
-                </View>
-              )}
-
-              {details.savings && (
-                <Text className="text-success text-sm font-semibold">
-                  {details.savings}
-                </Text>
-              )}
-            </View>
-
-            <View
-              className={`w-7 h-7 rounded-full border-2 items-center justify-center ${isSelected ? "border-primary bg-primary" : "border-border"
-                }`}
-            >
-              {isSelected && (
-                <View className="w-3.5 h-3.5 rounded-full bg-background" />
-              )}
-            </View>
-          </View>
-        </AnimatedPressable>
-      );
-    });
   };
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background justify-center items-center">
-        <LoadingSpinner size={64} />
-        <Text className="text-primary text-2xl font-bold mt-4">Loading...</Text>
-      </View>
+      <Screen className="justify-center items-center" padded={false}>
+        <LoadingSpinner size={56} />
+      </Screen>
     );
   }
+
+  const sortedPackages = offerings
+    ? [...offerings.availablePackages].sort((a, b) => {
+        if (a.identifier === "$rc_annual") return -1;
+        if (b.identifier === "$rc_annual") return 1;
+        return 0;
+      })
+    : [];
 
   return (
     <View className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 200 }}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: 64 }}
       >
-        <View className="px-8 pt-16">
-          {/* Hero */}
-          <View className="items-center mb-8">
-            <View className="bg-primary/20 rounded-full p-6 mb-4">
-              <MaterialCommunityIcons
-                name="arm-flex"
-                size={64}
-                color={primaryColor}
-              />
-            </View>
-            <Text className="text-primary text-5xl font-bold text-center mb-3">
-              Unlock Ascend
+        <View className="px-6">
+          <FadeSlideIn>
+            <Text className="text-text-primary text-[32px] font-sans-semibold mb-3 leading-10">
+              Your coach that adapts
             </Text>
-            <Text className="text-text-primary text-2xl font-semibold text-center mb-3">
+            <Text className="text-text-muted text-[16px] font-sans leading-6 mb-8">
               {fromSampleWorkout
                 ? goalName
-                  ? `Unlock your full ${goalName} plan`
-                  : "Unlock your full plan"
+                  ? `Unlock your full ${goalName} plan and keep adapting.`
+                  : "Unlock your full plan and keep adapting."
                 : goalName
-                  ? `Your ${goalName} plan is ready`
-                  : "Start Your Journey"}
+                  ? `${goalName} · ${trainingDays} days a week — ready when you are.`
+                  : "Personalized training that reshuffles with your week."}
             </Text>
-            <Text className="text-text-secondary text-center text-lg px-4 leading-6">
-              {fromSampleWorkout
-                ? `You finished your free workout. Unlock the full ${trainingDays}-day ${
-                    goalType === "skill" ? "skill" : "strength"
-                  } program, AI coach, and progressions.`
-                : goalName
-                  ? `Unlock your personalized ${trainingDays}-day ${
-                      goalType === "skill" ? "skill" : "strength"
-                    } program and start training today`
-                  : "Get unlimited access to all features and transform your body with calisthenics"}
-            </Text>
-          </View>
+          </FadeSlideIn>
 
-          {/* Features */}
-          <View className="mb-8">
-            {premiumFeatures.map((feature, index) => (
-              <View key={index} className="mb-5 flex-row items-start">
-                <View className="mr-4 h-12 w-12 items-center justify-center rounded-2xl bg-primary/20">
-                  <MaterialCommunityIcons
-                    name={feature.icon as any}
-                    size={24}
-                    color={primaryColor}
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="mb-1 text-lg font-bold text-text-primary">
-                    {feature.title}
-                  </Text>
-                  <Text className="text-sm text-text-secondary leading-5">
-                    {feature.description}
+          <FadeSlideIn delay={60}>
+            <View className="mb-10">
+              {bullets.map((line) => (
+                <View key={line} className="flex-row items-start mb-4">
+                  <View className="w-1.5 h-1.5 rounded-full bg-primary mt-2 mr-3" />
+                  <Text className="text-text-primary text-[15px] font-sans flex-1 leading-6">
+                    {line}
                   </Text>
                 </View>
-              </View>
-            ))}
-          </View>
-
-          {/* Pricing */}
-          <Text className="text-text-primary text-2xl font-bold mb-4">
-            Choose Your Plan
-          </Text>
-
-          {renderPricingCards()}
-
-          {/* Social Proof */}
-          <View className="bg-success/10 border border-success/30 rounded-3xl p-5 mb-4">
-            <View className="flex-row items-center justify-center mb-3">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <MaterialCommunityIcons
-                  key={star}
-                  name="star"
-                  size={20}
-                  color={primaryColor}
-                />
               ))}
             </View>
-            <Text className="text-center text-sm font-bold text-success mb-2">
-              "Best investment in my fitness journey!"
-            </Text>
-            <Text className="text-center text-xs text-text-secondary">
-              Join thousands of members transforming their bodies
-            </Text>
-          </View>
+          </FadeSlideIn>
 
-          {/* Trust Badges */}
-          <View className="flex-row justify-center items-center mb-4 flex-wrap">
-            <View className="flex-row items-center mx-3 my-1">
-              <MaterialCommunityIcons
-                name="shield-check"
-                size={16}
-                color="#10b981"
-              />
-              <Text className="text-text-secondary text-xs ml-1">Secure</Text>
+          <FadeSlideIn delay={100}>
+            <View className="mb-6">
+              {sortedPackages.map((pkg) => {
+                const isSelected = selectedPackage === pkg.identifier;
+                const details = getPackageDetails(pkg);
+                return (
+                  <AnimatedPressable
+                    key={pkg.identifier}
+                    onPress={() => setSelectedPackage(pkg.identifier)}
+                    className={`mb-3 rounded-xl border px-5 py-4 ${
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-surface"
+                    }`}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1 pr-3">
+                        <View className="flex-row items-center gap-2 mb-1">
+                          <Text
+                            className={`text-[17px] font-sans-semibold ${
+                              isSelected
+                                ? "text-primary"
+                                : "text-text-primary"
+                            }`}
+                          >
+                            {details.name}
+                          </Text>
+                          {details.badge && (
+                            <Text className="text-primary text-[12px] font-sans-medium">
+                              {details.badge}
+                            </Text>
+                          )}
+                        </View>
+                        <Text className="text-text-muted text-[13px] font-sans">
+                          {pkg.product.priceString}
+                          {details.period ? ` / ${details.period}` : ""}
+                        </Text>
+                      </View>
+                      <View
+                        className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
+                          isSelected ? "border-primary" : "border-border"
+                        }`}
+                      >
+                        {isSelected && (
+                          <View className="w-2.5 h-2.5 rounded-full bg-primary" />
+                        )}
+                      </View>
+                    </View>
+                  </AnimatedPressable>
+                );
+              })}
             </View>
-            <View className="flex-row items-center mx-3 my-1">
-              <MaterialCommunityIcons
-                name="refresh"
-                size={16}
-                color="#10b981"
-              />
-              <Text className="text-text-secondary text-xs ml-1">
-                Cancel Anytime
+          </FadeSlideIn>
+
+          <Text className="text-text-muted text-[11px] font-sans leading-4 text-center mb-4">
+            Auto-renewable subscription. Charged to your Apple ID at purchase.
+            Renews unless cancelled at least 24 hours before the period ends.
+            Manage in App Store settings. Free trial converts unless cancelled
+            24 hours before it ends.
+          </Text>
+          <View className="flex-row items-center justify-center gap-4 mb-4">
+            <TouchableOpacity
+              onPress={() =>
+                Linking.openURL(
+                  "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+                )
+              }
+            >
+              <Text className="text-primary text-[13px] font-sans-medium">
+                Terms
               </Text>
-            </View>
-          </View>
-
-          {/* Legal Text */}
-          <View className="mt-6 px-2">
-            <Text className="text-text-muted text-[11px] leading-4 text-center">
-              Auto-renewable subscription. Payment will be charged to your
-              Apple ID account at confirmation of purchase. The subscription
-              automatically renews unless auto-renew is turned off at least 24
-              hours before the end of the current period. Your account will be
-              charged for renewal 24 hours prior to the end of the current
-              period.
-              {"\n\n"}You can manage or cancel your subscription at any time
-              in your App Store account settings after purchase. Free trial
-              will convert to a paid subscription unless cancelled at least 24
-              hours before the trial ends.
-            </Text>
-            <View className="flex-row items-center justify-center gap-4 mt-4">
-              <TouchableOpacity
-                onPress={() =>
-                  Linking.openURL(
-                    "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
-                  )
-                }
-              >
-                <Text className="text-primary text-sm">Terms of Use</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  Linking.openURL("https://www.gym-pulse.fit/ascend")
-                }
-              >
-                <Text className="text-primary text-sm">Privacy Policy</Text>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                Linking.openURL("https://www.gym-pulse.fit/ascend")
+              }
+            >
+              <Text className="text-primary text-[13px] font-sans-medium">
+                Privacy
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
 
-      {/* CTA Footer */}
-      <View className="absolute bottom-0 left-0 right-0 border-t border-border bg-background px-8 pb-8 pt-4">
-        <AnimatedPressable
+      <View className="absolute bottom-0 left-0 right-0 border-t border-border bg-background px-6 pb-8 pt-4">
+        <Button
+          label={
+            purchasing
+              ? "Processing…"
+              : `Continue — ${
+                  offerings?.availablePackages.find(
+                    (p) => p.identifier === selectedPackage
+                  )?.product.priceString ?? ""
+                }`
+          }
           onPress={handlePurchase}
           disabled={purchasing || !selectedPackage || loading}
-          className={`overflow-hidden rounded-2xl shadow-elevated-lg ${purchasing || !selectedPackage || loading ? "opacity-50" : ""
-            }`}
-        >
-          <LinearGradient
-            colors={[primaryColor, primaryColor]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ paddingVertical: 20 }}
-          >
-            {purchasing ? (
-              <View className="items-center">
-                <LoadingSpinner size={24} />
-              </View>
-            ) : (
-              <Text className="text-center text-lg font-bold text-background">
-                Continue — {offerings?.availablePackages.find(
-                  (p) => p.identifier === selectedPackage
-                )?.product.priceString}
-              </Text>
-            )}
-          </LinearGradient>
-        </AnimatedPressable>
-
+          className="mb-2"
+        />
         <AnimatedPressable
           onPress={handleRestore}
           disabled={purchasing}
-          className="items-center py-3 mt-2"
+          className="items-center py-2"
         >
-          <Text className="text-text-secondary font-semibold underline">
-            Restore Purchases
+          <Text className="text-text-muted font-sans-medium text-[14px]">
+            Restore purchases
           </Text>
         </AnimatedPressable>
       </View>
