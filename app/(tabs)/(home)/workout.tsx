@@ -17,8 +17,6 @@ import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { FadeSlideIn } from "../../../components/FadeSlideIn";
 import { logSampleWorkoutCompleted } from "../../../utils/analytics";
 import { paywallHref } from "../../../utils/access";
-import Purchases from "react-native-purchases";
-import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
 
 type ExerciseProgress = {
   exerciseId: string;
