@@ -4,6 +4,8 @@
 **Date:** July 18, 2026  
 **Status:** Week 2 conversion — **active focus**
 
+Product UI / navigation / coach / AI plan revamp: see [REVAMP.md](./REVAMP.md).
+
 ---
 
 ## 1. Executive summary
