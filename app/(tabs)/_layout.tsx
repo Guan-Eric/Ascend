@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx
+// app/(tabs)/_layout.tsx — Wave A: Today · Plan · Progress · You
 import { Tabs, useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useUniwind } from "uniwind";
@@ -8,63 +8,16 @@ import { FIREBASE_AUTH } from "../../config/firebase";
 import { getUser } from "../../backend";
 import { PRO_ENTITLEMENT_ID } from "../../constants/revenuecat";
 import { paywallHref } from "../../utils/access";
-
-const tabThemeColors: Record<
-  string,
-  {
-    background: string;
-    border: string;
-    active: string;
-    inactive: string;
-  }
-> = {
-  dark: {
-    background: "#0b1220",
-    border: "#27272a",
-    active: "#38e8ff",
-    inactive: "#71717a",
-  },
-  light: {
-    background: "#ffffff",
-    border: "#dbe2f3",
-    active: "#2563eb",
-    inactive: "#64748b",
-  },
-  zen: {
-    background: "#ffffff",
-    border: "#e5e7eb",
-    active: "#2563eb",
-    inactive: "#64748b",
-  },
-  matcha: {
-    background: "#f3f7f2",
-    border: "#c7d3c0",
-    active: "#3f7d4f",
-    inactive: "#6b7280",
-  },
-  ube: {
-    background: "#2a1938",
-    border: "#3a2550",
-    active: "#c084fc",
-    inactive: "#a1a1aa",
-  },
-  coffee: {
-    background: "#1e1a16",
-    border: "#3b2f24",
-    active: "#d6a26a",
-    inactive: "#9ca3af",
-  },
-  ascend: {
-    background: "#17181B",
-    border: "#2A2B2E",
-    active: "#A8D93F",
-    inactive: "#8A8B8D",
-  },
-};
+import { colors, getThemeColor } from "../../utils/theme";
 
 export default function TabsLayout() {
   const { theme } = useUniwind();
-  const tabColors = tabThemeColors[theme] ?? tabThemeColors.dark;
+  const isDark = theme === "dark";
+  const active = getThemeColor(theme, "primary");
+  const inactive = getThemeColor(theme, "muted");
+  const background = isDark ? colors.dark : colors.canvas;
+  const border = getThemeColor(theme, "border");
+
   const router = useRouter();
   const [hasProAccess, setHasProAccess] = useState(true);
   const [userMeta, setUserMeta] = useState<{
@@ -118,20 +71,27 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: tabColors.background,
-          borderTopColor: tabColors.border,
+          backgroundColor: background,
+          borderTopColor: border,
+          borderTopWidth: 1,
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        tabBarActiveTintColor: tabColors.active,
-        tabBarInactiveTintColor: tabColors.inactive,
+        tabBarActiveTintColor: active,
+        tabBarInactiveTintColor: inactive,
+        tabBarLabelStyle: {
+          fontFamily: "DMSans_500Medium",
+          fontSize: 11,
+        },
       }}
     >
       <Tabs.Screen
         name="(home)"
         options={{
-          title: "Home",
+          title: "Today",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="home-variant-outline"
+              name="calendar-today"
               size={size}
               color={color}
             />
@@ -140,17 +100,17 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="(skills)"
+        name="(plan)"
         listeners={{
           tabPress: (e) => {
             if (!requirePro()) e.preventDefault();
           },
         }}
         options={{
-          title: "Skills",
+          title: "Plan",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="human-handsup"
+              name="calendar-month-outline"
               size={size}
               color={color}
             />
@@ -159,17 +119,17 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="(strength)"
+        name="(progress)"
         listeners={{
           tabPress: (e) => {
             if (!requirePro()) e.preventDefault();
           },
         }}
         options={{
-          title: "Strength",
+          title: "Progress",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="arm-flex-outline"
+              name="chart-timeline-variant"
               size={size}
               color={color}
             />
@@ -185,14 +145,28 @@ export default function TabsLayout() {
           },
         }}
         options={{
-          title: "Profile",
+          title: "You",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="account-circle-outline"
+              name="account-outline"
               size={size}
               color={color}
             />
           ),
+        }}
+      />
+
+      {/* Hidden — detail routes still reachable from Progress */}
+      <Tabs.Screen
+        name="(skills)"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(strength)"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

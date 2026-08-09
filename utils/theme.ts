@@ -1,75 +1,85 @@
-// utils/theme.ts - Theme utility for getting primary color
-import { useUniwind } from 'uniwind';
+// utils/theme.ts — Ascend Wave A tokens + native color helpers
+import { useUniwind } from "uniwind";
+
+export const colors = {
+  canvas: "#FAFAF8",
+  text: "#111111",
+  muted: "#6B6B6B",
+  accent: "#0F766E",
+  accentPressed: "#0B5F59",
+  dark: "#0C0C0C",
+  surface: "#FFFFFF",
+  border: "#E5E5E1",
+  success: "#0F766E",
+  warning: "#B45309",
+  error: "#B91C1C",
+  coral: "#C2410C",
+} as const;
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+} as const;
+
+export const radius = {
+  sm: 8,
+  md: 12,
+  lg: 20,
+  pill: 999,
+} as const;
+
+type ColorKey =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "error"
+  | "coral"
+  | "background"
+  | "text"
+  | "muted"
+  | "border";
+
+const themeColors: Record<"light" | "dark", Record<ColorKey, string>> = {
+  light: {
+    primary: colors.accent,
+    secondary: colors.text,
+    success: colors.success,
+    warning: colors.warning,
+    error: colors.error,
+    coral: colors.coral,
+    background: colors.canvas,
+    text: colors.text,
+    muted: colors.muted,
+    border: colors.border,
+  },
+  dark: {
+    primary: "#2DD4BF",
+    secondary: colors.canvas,
+    success: "#2DD4BF",
+    warning: "#F59E0B",
+    error: "#F87171",
+    coral: "#FB923C",
+    background: colors.dark,
+    text: colors.canvas,
+    muted: "#A3A3A3",
+    border: "#2A2A2A",
+  },
+};
 
 export const getThemeColor = (
   theme: string,
-  colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'coral'
+  colorKey: ColorKey = "primary"
 ) => {
-  const themeColors: Record<string, Record<string, string>> = {
-    dark: {
-      primary: '#00d9ff',
-      secondary: '#7c3aed',
-      success: '#10b981',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#ff7849',
-    },
-    light: {
-      primary: '#3b82f6',
-      secondary: '#7c3aed',
-      success: '#16a34a',
-      warning: '#eab308',
-      error: '#dc2626',
-      coral: '#f2653d',
-    },
-    matcha: {
-      primary: '#6fa76f',
-      secondary: '#a3c9a8',
-      success: '#4ade80',
-      warning: '#facc15',
-      error: '#ef4444',
-      coral: '#e2703a',
-    },
-    ube: {
-      primary: '#a78bfa',
-      secondary: '#f472b6',
-      success: '#34d399',
-      warning: '#fbbf24',
-      error: '#fb7185',
-      coral: '#ff8a5c',
-    },
-    zen: {
-      primary: '#64748b',
-      secondary: '#94a3b8',
-      success: '#22c55e',
-      warning: '#eab308',
-      error: '#ef4444',
-      coral: '#d97a4d',
-    },
-    coffee: {
-      primary: '#c08457',
-      secondary: '#7a4a2e',
-      success: '#22c55e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#e0733f',
-    },
-    ascend: {
-      primary: '#a8d93f',
-      secondary: '#7c6cff',
-      success: '#3a9e7e',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      coral: '#ff6b4a',
-    },
-  };
-
-  return themeColors[theme]?.[colorKey] || themeColors.dark[colorKey];
+  const palette =
+    theme === "dark" ? themeColors.dark : themeColors.light;
+  return palette[colorKey] ?? themeColors.light[colorKey];
 };
 
-export const useThemeColor = (
-  colorKey: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'coral' = 'primary'
-) => {
+export const useThemeColor = (colorKey: ColorKey = "primary") => {
   const { theme } = useUniwind();
   return getThemeColor(theme, colorKey);
 };

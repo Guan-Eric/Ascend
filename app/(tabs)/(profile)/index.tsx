@@ -1,14 +1,18 @@
-// app/(tabs)/(profile)/index.tsx - Updated with scrollable settings
+// app/(tabs)/(profile)/index.tsx — You tab (Wave A)
 import { View, Text, Alert, TextInput } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect, useRouter } from "expo-router";
-import { signOut, linkWithCredential, EmailAuthProvider, deleteUser } from "firebase/auth";
+import {
+  signOut,
+  linkWithCredential,
+  EmailAuthProvider,
+  deleteUser,
+} from "firebase/auth";
 import { FIREBASE_AUTH } from "../../../config/firebase";
 import { useCallback, useEffect, useState } from "react";
 import Purchases, { CustomerInfo } from "react-native-purchases";
 import * as backend from "../../../backend";
 import { User } from "../../../types/User";
-import { WorkoutHistory } from "../../../types/WorkoutHistory";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeSwitcher } from "../../../components/ThemeSwitcher";
 import { useThemeColor } from "../../../utils/theme";
@@ -16,38 +20,32 @@ import { AnimatedPressable } from "../../../components/AnimatedPressable";
 import { LoadingSpinner } from "../../../components/LoadingSpinner";
 import { FadeSlideIn } from "../../../components/FadeSlideIn";
 import { PRO_ENTITLEMENT_ID } from "../../../constants/revenuecat";
-import { AnimatedCounter } from "../../../components/AnimatedCounter";
+import { Screen, Button } from "../../../components/ui";
 
-export default function ProfileScreen() {
+export default function YouScreen() {
   const router = useRouter();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState({
-    totalCompleted: 0,
-    recentActivityCount: 0,
-  });
-  const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistory[]>([]);
-  const [historyStats, setHistoryStats] = useState({
-    totalWorkouts: 0,
-    totalExercises: 0,
-    weeklyStreak: 0,
-    longestWeeklyStreak: 0,
-  });
   const [loading, setLoading] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEmailLink, setShowEmailLink] = useState(false);
-  const primaryColor = useThemeColor('primary');
-  const errorColor = useThemeColor('error');
+  const [checkInCadence, setCheckInCadence] = useState<"weekly" | "monthly">(
+    "weekly"
+  );
+  const primaryColor = useThemeColor("primary");
+  const errorColor = useThemeColor("error");
+  const mutedColor = useThemeColor("muted");
 
-  // Settings state
-  const [editLevel, setEditLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [editLevel, setEditLevel] = useState<
+    "beginner" | "intermediate" | "advanced"
+  >("beginner");
   const [editDays, setEditDays] = useState(3);
-  const [editGoalType, setEditGoalType] = useState<"skill" | "strength">("strength");
+  const [editGoalType, setEditGoalType] = useState<"skill" | "strength">(
+    "strength"
+  );
   const [editPrimaryGoalId, setEditPrimaryGoalId] = useState("");
   const [editAutoProgress, setEditAutoProgress] = useState(true);
 
-  // Email linking
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -79,18 +77,6 @@ export default function ProfileScreen() {
         setEditPrimaryGoalId(userData.primaryGoalId);
         setEditAutoProgress(userData.autoProgressExercises);
       }
-
-      const progressStats = await backend.getUserProgressStats(userId);
-      setStats({
-        totalCompleted: progressStats.totalExercisesCompleted,
-        recentActivityCount: progressStats.recentActivity.length,
-      });
-
-      const history = await backend.getRecentWorkoutHistory(userId, 10);
-      setWorkoutHistory(history);
-
-      const workoutStats = await backend.getWorkoutHistoryStats(userId);
-      setHistoryStats(workoutStats);
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -111,7 +97,7 @@ export default function ProfileScreen() {
         autoProgressExercises: editAutoProgress,
       });
 
-      Alert.alert("Success", "Settings updated!");
+      Alert.alert("Saved", "Profile updated");
       setShowSettings(false);
       loadUserData();
     } catch (error) {
@@ -131,7 +117,7 @@ export default function ProfileScreen() {
       const credential = EmailAuthProvider.credential(email, password);
       await linkWithCredential(currentUser, credential);
 
-      Alert.alert("Success", "Email linked to your account!");
+      Alert.alert("Success", "Email linked to your account");
       setShowEmailLink(false);
       setEmail("");
       setPassword("");
@@ -141,15 +127,23 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await Purchases.logOut().catch(() => undefined);
+      await signOut(FIREBASE_AUTH);
+      router.replace("/(onboarding)/signin");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      Alert.alert("Error", "Failed to sign out");
+    }
+  };
+
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to delete your account? This action cannot be undone. All your data, workouts, and progress will be permanently deleted.",
+      "Are you sure? This permanently deletes your account and training data.",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
@@ -158,37 +152,25 @@ export default function ProfileScreen() {
               const currentUser = FIREBASE_AUTH.currentUser;
               if (!currentUser) return;
 
-              const userId = currentUser.uid;
-
-              // Delete all user data from Firestore
-              await backend.deleteUserAccount(userId);
-
-              // Log out from RevenueCat
+              await backend.deleteUserAccount(currentUser.uid);
               try {
                 await Purchases.logOut();
-              } catch (error) {
-                console.error("Error logging out from RevenueCat:", error);
+              } catch {
+                /* ignore */
               }
-
-              // Delete Firebase Auth account
               await deleteUser(currentUser);
-
-              // Sign out and redirect
               await signOut(FIREBASE_AUTH);
               router.replace("/(onboarding)/signin");
             } catch (error: any) {
-              console.error("Error deleting account:", error);
-
-              // Handle re-authentication required error
               if (error.code === "auth/requires-recent-login") {
                 Alert.alert(
-                  "Re-authentication Required",
-                  "For security reasons, please sign out and sign back in, then try deleting your account again."
+                  "Re-authentication required",
+                  "Sign out, sign back in, then try deleting again."
                 );
               } else {
                 Alert.alert(
                   "Error",
-                  error.message || "Failed to delete account. Please try again."
+                  error.message || "Failed to delete account"
                 );
               }
             }
@@ -198,38 +180,15 @@ export default function ProfileScreen() {
     );
   };
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return "Today";
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
-    } else {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
-      });
-    }
-  };
-
-  const getDayName = (dayIndex: number) => {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return days[dayIndex] || `Day ${dayIndex}`;
-  };
-
-  const hasProAccess = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
-  const proEntitlement = customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID];
+  const hasProAccess =
+    customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+  const proEntitlement =
+    customerInfo?.entitlements.active[PRO_ENTITLEMENT_ID];
   const expirationDate = proEntitlement?.expirationDate;
   const isTrial = proEntitlement?.periodType === "TRIAL";
 
   const formatExpiration = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
+    return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -238,408 +197,346 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background justify-center items-center">
-        <LoadingSpinner size={64} />
-        <Text className="text-text-secondary mt-4">Loading workouts...</Text>
-      </View>
+      <Screen className="justify-center items-center" padded={false}>
+        <LoadingSpinner size={56} />
+      </Screen>
     );
   }
 
-  // Email Link View
   if (showEmailLink && FIREBASE_AUTH.currentUser?.isAnonymous) {
     return (
-      <View className="flex-1 bg-background px-6 pt-16">
-        <AnimatedPressable onPress={() => setShowEmailLink(false)} className="mb-4 ">
-          <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-        </AnimatedPressable>
-
-        <Text className="text-primary text-3xl font-bold mb-2">Link Email</Text>
-        <Text className="text-text-secondary mb-6">
-          Convert your anonymous account to a permanent account
-        </Text>
-
-        <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-          <Text className="text-text-secondary text-sm mb-2">Email</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            placeholder="your@email.com"
-            placeholderTextColor="#7a86a8"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="bg-surface-elevated text-text-primary px-4 py-3 rounded-xl mb-4"
-          />
-
-          <Text className="text-text-secondary text-sm mb-2">Password</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Min 6 characters"
-            placeholderTextColor="#7a86a8"
-            secureTextEntry
-            className="bg-surface-elevated text-text-primary px-4 py-3 rounded-xl"
-          />
-        </View>
-
+      <Screen edges={["top"]}>
         <AnimatedPressable
-          onPress={handleLinkEmail}
-          className="bg-primary py-4 rounded-2xl  shadow-elevated"
+          onPress={() => setShowEmailLink(false)}
+          className="mb-6"
         >
-          <Text className="text-background text-center font-bold text-lg">
-            Link Email
-          </Text>
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={primaryColor}
+          />
         </AnimatedPressable>
-      </View>
+        <Text className="text-text-primary text-[28px] font-sans-semibold mb-2">
+          Link email
+        </Text>
+        <Text className="text-text-muted font-sans text-[15px] mb-6">
+          Convert your guest account to a permanent login
+        </Text>
+        <Text className="text-text-muted text-[13px] font-sans-medium mb-2">
+          Email
+        </Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="your@email.com"
+          placeholderTextColor={mutedColor}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          className="bg-surface border border-border text-text-primary px-4 py-3.5 rounded-lg mb-4 font-sans"
+        />
+        <Text className="text-text-muted text-[13px] font-sans-medium mb-2">
+          Password
+        </Text>
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Min 6 characters"
+          placeholderTextColor={mutedColor}
+          secureTextEntry
+          className="bg-surface border border-border text-text-primary px-4 py-3.5 rounded-lg font-sans mb-6"
+        />
+        <Button label="Link email" onPress={handleLinkEmail} />
+      </Screen>
     );
   }
 
-  // Settings Edit View - NOW SCROLLABLE
   if (showSettings) {
-    const settingsData = [
-      { id: 'header', type: 'header' },
-      { id: 'experience', type: 'experience' },
-      { id: 'days', type: 'days' },
-      { id: 'goal', type: 'goal' },
-      { id: 'autoprogress', type: 'autoprogress' },
-      { id: 'save', type: 'save' },
-    ];
-
-    const renderSettingsItem = ({ item }: { item: typeof settingsData[0] }) => {
-      switch (item.type) {
-        case 'header':
-          return (
-            <View className="flex-row items-center mb-4 gap-2">
-              <AnimatedPressable onPress={() => setShowSettings(false)} className="">
-                <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-              </AnimatedPressable>
-              <Text className="text-primary text-3xl font-bold">Settings</Text>
-            </View>
-          );
-
-        case 'experience':
-          return (
-            <View className="mb-6">
-              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-                Experience Level
-              </Text>
-              <View className="flex-row gap-2">
-                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-                  <AnimatedPressable
-                    key={level}
-                    onPress={() => setEditLevel(level)}
-                    className={`flex-1 card-frosted py-4 rounded-2xl  shadow-elevated border-2${editLevel === level ? " border-primary" : ""
-                      }`}
-                  >
-                    <Text
-                      className={`text-center font-bold capitalize ${editLevel === level ? "text-primary" : "text-text-secondary"
-                        }`}
-                    >
-                      {level}
-                    </Text>
-                  </AnimatedPressable>
-                ))}
-              </View>
-            </View>
-          );
-
-        case 'days':
-          return (
-            <View className="mb-6">
-              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-                Training Days Per Week
-              </Text>
-              <View className="card-frosted p-6 rounded-3xl shadow-elevated">
-                <Text className="text-text-primary text-4xl font-bold text-center mb-4">
-                  {editDays}
-                </Text>
-                <View className="flex-row items-center justify-center gap-4">
-                  <AnimatedPressable
-                    onPress={() => setEditDays(Math.max(1, editDays - 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated "
-                  >
-                    <MaterialCommunityIcons name="minus" size={24} color={primaryColor} />
-                  </AnimatedPressable>
-                  <AnimatedPressable
-                    onPress={() => setEditDays(Math.min(7, editDays + 1))}
-                    className="bg-surface-elevated w-12 h-12 rounded-2xl items-center justify-center shadow-elevated "
-                  >
-                    <MaterialCommunityIcons name="plus" size={24} color={primaryColor} />
-                  </AnimatedPressable>
-                </View>
-              </View>
-            </View>
-          );
-
-        case 'goal':
-          return (
-            <View className="mb-6">
-              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-                Goal Type
-              </Text>
-              <View className="flex-row bg-surface-elevated p-1 rounded-2xl">
-                <AnimatedPressable
-                  onPress={() => setEditGoalType("strength")}
-                  className={`flex-1 py-3 rounded-xl ${editGoalType === "strength" ? "bg-primary" : ""
-                    }`}
-                >
-                  <Text
-                    className={`text-center font-bold ${editGoalType === "strength" ? "text-background" : "text-text-secondary"
-                      }`}
-                  >
-                    Strength
-                  </Text>
-                </AnimatedPressable>
-                <AnimatedPressable
-                  onPress={() => setEditGoalType("skill")}
-                  className={`flex-1 py-3 rounded-xl ${editGoalType === "skill" ? "bg-primary" : ""
-                    }`}
-                >
-                  <Text
-                    className={`text-center font-bold ${editGoalType === "skill" ? "text-background" : "text-text-secondary"
-                      }`}
-                  >
-                    Skills
-                  </Text>
-                </AnimatedPressable>
-              </View>
-            </View>
-          );
-
-        case 'autoprogress':
-          return (
-            <View className="mb-6">
-              <Text className="text-text-secondary text-sm font-semibold mb-3 uppercase">
-                Automatic Progression
-              </Text>
-              <AnimatedPressable
-                onPress={() => setEditAutoProgress(!editAutoProgress)}
-                className="card-frosted p-5 rounded-3xl shadow-elevated "
-              >
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text className="text-text-primary text-lg font-bold mb-1">
-                      Auto-Progress Exercises
-                    </Text>
-                    <Text className="text-text-secondary text-sm leading-5">
-                      Automatically replace completed exercises with the next progression in your workout plans
-                    </Text>
-                  </View>
-                  <View
-                    className={`w-14 h-8 rounded-full p-1 ${editAutoProgress ? "bg-primary" : "bg-surface-elevated"
-                      }`}
-                  >
-                    <View
-                      className={`w-6 h-6 rounded-full bg-background shadow-elevated ${editAutoProgress ? "ml-auto" : ""
-                        }`}
+    return (
+      <Screen padded={false} edges={["top"]}>
+        <FlashList
+          data={[
+            "header",
+            "experience",
+            "days",
+            "goal",
+            "autoprogress",
+            "save",
+          ]}
+          keyExtractor={(item) => item}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingBottom: 48,
+          }}
+          renderItem={({ item }) => {
+            if (item === "header") {
+              return (
+                <View className="flex-row items-center mb-8 gap-3">
+                  <AnimatedPressable onPress={() => setShowSettings(false)}>
+                    <MaterialCommunityIcons
+                      name="arrow-left"
+                      size={24}
+                      color={primaryColor}
                     />
+                  </AnimatedPressable>
+                  <Text className="text-text-primary text-[28px] font-sans-semibold">
+                    Profile
+                  </Text>
+                </View>
+              );
+            }
+            if (item === "experience") {
+              return (
+                <View className="mb-6">
+                  <Text className="text-text-muted text-[13px] font-sans-medium mb-3 uppercase tracking-wide">
+                    Experience
+                  </Text>
+                  <View className="flex-row gap-2">
+                    {(
+                      ["beginner", "intermediate", "advanced"] as const
+                    ).map((level) => (
+                      <AnimatedPressable
+                        key={level}
+                        onPress={() => setEditLevel(level)}
+                        className={`flex-1 py-3.5 rounded-lg border ${
+                          editLevel === level
+                            ? "border-primary bg-primary/10"
+                            : "border-border"
+                        }`}
+                      >
+                        <Text
+                          className={`text-center font-sans-semibold capitalize text-[13px] ${
+                            editLevel === level
+                              ? "text-primary"
+                              : "text-text-secondary"
+                          }`}
+                        >
+                          {level}
+                        </Text>
+                      </AnimatedPressable>
+                    ))}
                   </View>
                 </View>
-              </AnimatedPressable>
-            </View>
-          );
-
-        case 'save':
-          return (
-            <AnimatedPressable
-              onPress={handleSaveSettings}
-              className="bg-primary py-4 rounded-2xl  shadow-elevated mb-6"
-            >
-              <Text className="text-background text-center font-bold text-lg">
-                Save Changes
-              </Text>
-            </AnimatedPressable>
-          );
-
-        default:
-          return null;
-      }
-    };
-
-    return (
-      <View className="flex-1 bg-background">
-        <FlashList
-          data={settingsData}
-          renderItem={renderSettingsItem}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64 }}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-    );
-  }
-
-  // Workout History Detail View
-  if (showHistory) {
-    return (
-      <View className="flex-1 bg-background">
-        <View className="px-6 pt-16 pb-4">
-          <AnimatedPressable onPress={() => setShowHistory(false)} className="mb-4 ">
-            <MaterialCommunityIcons name="arrow-left" size={24} color={primaryColor} />
-          </AnimatedPressable>
-          <Text className="text-primary text-3xl font-bold mb-2">
-            Workout History
-          </Text>
-          <Text className="text-text-secondary mb-4">
-            {historyStats.totalWorkouts} workouts completed
-          </Text>
-        </View>
-
-        <FlashList
-          className="flex-1 px-6"
-          data={workoutHistory}
-          renderItem={({ item: workout }) => (
-            <View className="card-frosted p-5 rounded-3xl mb-3 shadow-elevated">
-              <View className="flex-row justify-between items-start mb-3">
-                <View className="flex-1">
-                  <Text className="text-text-primary text-lg font-bold mb-1">
-                    {getDayName(workout.dayIndex)} Workout
+              );
+            }
+            if (item === "days") {
+              return (
+                <View className="mb-6">
+                  <Text className="text-text-muted text-[13px] font-sans-medium mb-3 uppercase tracking-wide">
+                    Training days / week
                   </Text>
-                  <Text className="text-text-secondary text-sm">
-                    {formatDate(workout.completedAt)}
-                  </Text>
-                </View>
-                <View className="bg-success/20 px-3 py-1 rounded-full">
-                  <Text className="text-success text-xs font-bold">COMPLETED</Text>
-                </View>
-              </View>
-
-              <View className="bg-surface-elevated p-3 rounded-lg">
-                <Text className="text-text-secondary text-xs mb-2 uppercase font-semibold">
-                  Exercises ({workout.exercises.length})
-                </Text>
-                {workout.exercises.map((ex, idx) => (
-                  <View key={idx} className="mb-2">
-                    <Text className="text-text-primary font-semibold text-sm">
-                      {ex.completedSets}/{ex.sets} sets completed
+                  <View className="flex-row items-center justify-center gap-6 py-4">
+                    <AnimatedPressable
+                      onPress={() => setEditDays(Math.max(1, editDays - 1))}
+                      className="w-11 h-11 rounded-lg border border-border items-center justify-center"
+                    >
+                      <MaterialCommunityIcons
+                        name="minus"
+                        size={22}
+                        color={primaryColor}
+                      />
+                    </AnimatedPressable>
+                    <Text className="text-text-primary text-[32px] font-sans-semibold w-12 text-center">
+                      {editDays}
                     </Text>
-                    {ex.actualValues.length > 0 && (
-                      <Text className="text-text-secondary text-xs">
-                        Best: {Math.max(...ex.actualValues)} {ex.target.type === "reps" ? "reps" : "sec"}
-                      </Text>
-                    )}
+                    <AnimatedPressable
+                      onPress={() => setEditDays(Math.min(7, editDays + 1))}
+                      className="w-11 h-11 rounded-lg border border-border items-center justify-center"
+                    >
+                      <MaterialCommunityIcons
+                        name="plus"
+                        size={22}
+                        color={primaryColor}
+                      />
+                    </AnimatedPressable>
                   </View>
-                ))}
-              </View>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <View className="card-frosted p-8 rounded-3xl items-center shadow-elevated">
-              <Text className="text-text-secondary text-center">
-                No workout history yet. Complete your first workout to see it here!
-              </Text>
-            </View>
-          }
+                </View>
+              );
+            }
+            if (item === "goal") {
+              return (
+                <View className="mb-6">
+                  <Text className="text-text-muted text-[13px] font-sans-medium mb-3 uppercase tracking-wide">
+                    Goal type
+                  </Text>
+                  <View className="flex-row bg-surface-elevated p-1 rounded-lg">
+                    {(
+                      [
+                        ["strength", "Strength"],
+                        ["skill", "Skills"],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <AnimatedPressable
+                        key={value}
+                        onPress={() => setEditGoalType(value)}
+                        className={`flex-1 py-3 rounded-md ${
+                          editGoalType === value ? "bg-surface" : ""
+                        }`}
+                      >
+                        <Text
+                          className={`text-center font-sans-semibold text-[14px] ${
+                            editGoalType === value
+                              ? "text-text-primary"
+                              : "text-text-muted"
+                          }`}
+                        >
+                          {label}
+                        </Text>
+                      </AnimatedPressable>
+                    ))}
+                  </View>
+                </View>
+              );
+            }
+            if (item === "autoprogress") {
+              return (
+                <View className="mb-8">
+                  <AnimatedPressable
+                    onPress={() => setEditAutoProgress(!editAutoProgress)}
+                    className="flex-row items-center py-2"
+                  >
+                    <View className="flex-1 pr-4">
+                      <Text className="text-text-primary font-sans-semibold text-[15px] mb-1">
+                        Auto-progress exercises
+                      </Text>
+                      <Text className="text-text-muted font-sans text-[13px] leading-5">
+                        Move to the next progression when you complete one
+                      </Text>
+                    </View>
+                    <View
+                      className={`w-12 h-7 rounded-full p-0.5 ${
+                        editAutoProgress ? "bg-primary" : "bg-surface-elevated"
+                      }`}
+                    >
+                      <View
+                        className={`w-6 h-6 rounded-full bg-background ${
+                          editAutoProgress ? "ml-auto" : ""
+                        }`}
+                      />
+                    </View>
+                  </AnimatedPressable>
+                </View>
+              );
+            }
+            return <Button label="Save changes" onPress={handleSaveSettings} />;
+          }}
         />
-      </View>
+      </Screen>
     );
   }
 
-  // Main Profile View
   return (
-    <FlashList
-      className="flex-1 bg-background"
-      data={[0]}
-      renderItem={() => (
-        <>
-          <View className="px-6 pt-16">
-            <View className="flex-row items-center justify-between mb-8">
-              <Text className="text-primary text-4xl font-bold">Profile</Text>
+    <Screen padded={false} edges={["top"]}>
+      <FlashList
+        className="flex-1"
+        data={[0]}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 112 }}
+        renderItem={() => (
+          <>
+            <FadeSlideIn>
+              <Text className="text-text-primary text-[28px] font-sans-semibold mb-1">
+                You
+              </Text>
+              <Text className="text-text-muted text-[15px] font-sans mb-8">
+                Account & preferences
+              </Text>
+            </FadeSlideIn>
+
+            <FadeSlideIn delay={40}>
+              <Text className="text-text-muted text-[13px] font-sans-medium uppercase tracking-wide mb-3">
+                Profile
+              </Text>
               <AnimatedPressable
                 onPress={() => setShowSettings(true)}
-                className="bg-primary/10 p-3 rounded-2xl "
+                className="flex-row items-center py-4 border-b border-border"
               >
-                <MaterialCommunityIcons name="cog" size={24} color={primaryColor} />
-              </AnimatedPressable>
-            </View>
-
-            {/* Workout Stats */}
-            <FadeSlideIn delay={50}>
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-                  Workout Stats
-                </Text>
-
-                <View className="flex-row justify-between mb-4">
-                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
-                    <AnimatedCounter
-                      value={historyStats.totalWorkouts}
-                      className="text-primary text-3xl font-bold mb-1"
-                    />
-                    <Text className="text-text-secondary text-xs text-center">
-                      Total Workouts
-                    </Text>
-                  </View>
-                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                    <AnimatedCounter
-                      value={historyStats.weeklyStreak}
-                      className="text-coral text-3xl font-bold mb-1"
-                    />
-                    <Text className="text-text-secondary text-xs text-center">
-                      Week Streak
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="flex-row justify-between">
-                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg mr-2">
-                    <AnimatedCounter
-                      value={stats.totalCompleted}
-                      className="text-primary text-3xl font-bold mb-1"
-                    />
-                    <Text className="text-text-secondary text-xs text-center">
-                      Exercises Done
-                    </Text>
-                  </View>
-                  <View className="flex-1 items-center bg-surface-elevated p-4 rounded-lg ml-2">
-                    <AnimatedCounter
-                      value={historyStats.longestWeeklyStreak}
-                      className="text-coral text-3xl font-bold mb-1"
-                    />
-                    <Text className="text-text-secondary text-xs text-center">
-                      Best Streak
-                    </Text>
-                  </View>
-                </View>
-
-                <AnimatedPressable
-                  onPress={() => setShowHistory(true)}
-                  className="mt-4 bg-primary/10 border border-primary py-3 rounded-xl  "
-                >
-                  <Text className="text-primary text-center font-bold">
-                    View Full History →
+                <View className="flex-1">
+                  <Text className="text-text-primary font-sans-semibold text-[15px]">
+                    Training profile
                   </Text>
+                  <Text className="text-text-muted font-sans text-[13px] mt-1 capitalize">
+                    {user?.level ?? "—"} · {user?.trainingDaysPerWeek ?? "—"}{" "}
+                    days · {user?.goalType ?? "—"}
+                  </Text>
+                </View>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={20}
+                  color={mutedColor}
+                />
+              </AnimatedPressable>
+
+              {FIREBASE_AUTH.currentUser?.isAnonymous && (
+                <AnimatedPressable
+                  onPress={() => setShowEmailLink(true)}
+                  className="flex-row items-center py-4 border-b border-border"
+                >
+                  <View className="flex-1">
+                    <Text className="text-text-primary font-sans-semibold text-[15px]">
+                      Link email
+                    </Text>
+                    <Text className="text-text-muted font-sans text-[13px] mt-1">
+                      Secure your guest account
+                    </Text>
+                  </View>
+                  <MaterialCommunityIcons
+                    name="chevron-right"
+                    size={20}
+                    color={mutedColor}
+                  />
                 </AnimatedPressable>
+              )}
+            </FadeSlideIn>
+
+            <FadeSlideIn delay={80}>
+              <View className="mt-8">
+                <ThemeSwitcher />
               </View>
             </FadeSlideIn>
 
-            {/* Subscription Status */}
-            <FadeSlideIn delay={75}>
-              <View className="card-frosted p-6 rounded-3xl mb-4 shadow-elevated">
-                <Text className="text-text-secondary mb-4 font-medium text-sm uppercase">
-                  Subscription
-                </Text>
+            <FadeSlideIn delay={100}>
+              <Text className="text-text-muted text-[13px] font-sans-medium uppercase tracking-wide mb-3">
+                Check-in cadence
+              </Text>
+              <View className="flex-row bg-surface-elevated p-1 rounded-lg mb-8">
+                {(
+                  [
+                    ["weekly", "Weekly"],
+                    ["monthly", "Monthly"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <AnimatedPressable
+                    key={value}
+                    onPress={() => setCheckInCadence(value)}
+                    className={`flex-1 py-3 rounded-md ${
+                      checkInCadence === value ? "bg-surface" : ""
+                    }`}
+                  >
+                    <Text
+                      className={`text-center font-sans-semibold text-[14px] ${
+                        checkInCadence === value
+                          ? "text-text-primary"
+                          : "text-text-muted"
+                      }`}
+                    >
+                      {label}
+                    </Text>
+                  </AnimatedPressable>
+                ))}
+              </View>
+            </FadeSlideIn>
 
+            <FadeSlideIn delay={120}>
+              <Text className="text-text-muted text-[13px] font-sans-medium uppercase tracking-wide mb-3">
+                Pro
+              </Text>
+              <View className="py-4 border-b border-border mb-2">
                 {hasProAccess ? (
                   <>
-                    <View className="flex-row items-center mb-2">
-                      <MaterialCommunityIcons
-                        name="crown"
-                        size={24}
-                        color={primaryColor}
-                      />
-                      <Text className="text-primary text-xl font-bold ml-2">
-                        Ascend Pro
-                      </Text>
-                      {isTrial && (
-                        <View className="bg-success/20 px-2 py-0.5 rounded-full ml-2">
-                          <Text className="text-success text-xs font-bold">
-                            TRIAL
-                          </Text>
-                        </View>
-                      )}
-                    </View>
+                    <Text className="text-text-primary font-sans-semibold text-[15px] mb-1">
+                      Ascend Pro{isTrial ? " · Trial" : ""}
+                    </Text>
                     {expirationDate && (
-                      <Text className="text-text-secondary text-sm">
+                      <Text className="text-text-muted font-sans text-[13px]">
                         {isTrial ? "Trial ends" : "Renews"}{" "}
                         {formatExpiration(expirationDate)}
                       </Text>
@@ -647,82 +544,62 @@ export default function ProfileScreen() {
                   </>
                 ) : (
                   <>
-                    <Text className="text-text-primary font-bold mb-1">
-                      No active subscription
+                    <Text className="text-text-primary font-sans-semibold text-[15px] mb-1">
+                      Free
                     </Text>
-                    <Text className="text-text-secondary text-sm mb-4">
-                      Unlock unlimited workouts and progress tracking
+                    <Text className="text-text-muted font-sans text-[13px] mb-4">
+                      Unlock the coach that adapts
                     </Text>
-                    <AnimatedPressable
+                    <Button
+                      label="Upgrade to Pro"
+                      variant="ghost"
                       onPress={() => router.push("/(onboarding)/paywall")}
-                      className="bg-primary/10 border border-primary py-3 rounded-xl"
-                    >
-                      <Text className="text-primary text-center font-bold">
-                        Upgrade to Pro
-                      </Text>
-                    </AnimatedPressable>
+                    />
                   </>
                 )}
               </View>
+              <AnimatedPressable
+                onPress={async () => {
+                  try {
+                    const info = await Purchases.restorePurchases();
+                    setCustomerInfo(info);
+                    Alert.alert("Restored", "Purchases restored");
+                  } catch {
+                    Alert.alert("Error", "Failed to restore purchases");
+                  }
+                }}
+                className="py-4 border-b border-border mb-8"
+              >
+                <Text className="text-primary font-sans-medium text-[15px]">
+                  Restore purchases
+                </Text>
+              </AnimatedPressable>
             </FadeSlideIn>
 
-            {/* Link Email (if anonymous) */}
-            {FIREBASE_AUTH.currentUser?.isAnonymous && (
+            <FadeSlideIn delay={140}>
+              <Button
+                label="Sign out"
+                variant="ghost"
+                onPress={handleSignOut}
+                className="mb-3"
+              />
               <AnimatedPressable
-                onPress={() => setShowEmailLink(true)}
-                className="card-frosted p-5 rounded-3xl mb-4 shadow-elevated "
+                onPress={handleDeleteAccount}
+                className="py-4 flex-row items-center justify-center"
               >
-                <View className="flex-row items-center">
-                  <MaterialCommunityIcons name="email-plus" size={24} color={primaryColor} />
-                  <View className="ml-3 flex-1">
-                    <Text className="text-text-primary font-bold text-base mb-1">
-                      Link Email Account
-                    </Text>
-                    <Text className="text-text-secondary text-sm">
-                      Secure your account with email login
-                    </Text>
-                  </View>
-                  <MaterialCommunityIcons name="chevron-right" size={24} color="#7a86a8" />
-                </View>
-              </AnimatedPressable>
-            )}
-
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
-
-            {/* Actions */}
-            <AnimatedPressable
-              onPress={async () => {
-                try {
-                  const info = await Purchases.restorePurchases();
-                  setCustomerInfo(info);
-                  Alert.alert("Success", "Purchases restored successfully");
-                } catch (error) {
-                  Alert.alert("Error", "Failed to restore purchases");
-                }
-              }}
-              className="bg-primary py-4 rounded-2xl mb-4  shadow-elevated"
-            >
-              <Text className="text-background text-center font-bold text-base">
-                Restore Purchases
-              </Text>
-            </AnimatedPressable>
-
-            {/* Delete Account */}
-            <AnimatedPressable
-              onPress={handleDeleteAccount}
-              className="bg-error/10 border-2 border-error/30 py-4 rounded-2xl mb-4 shadow-elevated"
-            >
-              <View className="flex-row items-center justify-center">
-                <MaterialCommunityIcons name="delete-outline" size={20} color={errorColor} />
-                <Text className="text-error text-center font-bold text-base ml-2">
-                  Delete Account
+                <MaterialCommunityIcons
+                  name="delete-outline"
+                  size={18}
+                  color={errorColor}
+                />
+                <Text className="text-error font-sans-medium text-[15px] ml-2">
+                  Delete account
                 </Text>
-              </View>
-            </AnimatedPressable>
-          </View>
-        </>
-      )}
-    />
+              </AnimatedPressable>
+            </FadeSlideIn>
+          </>
+        )}
+      />
+    </Screen>
   );
 }

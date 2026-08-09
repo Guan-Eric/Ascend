@@ -344,7 +344,7 @@ Sample-before-paywall and conversion funnel details remain in [retention-convers
 | **C** | Adapt banner, check-in screen, deload modes, injury pause + Resume |
 | **D** | AI onboarding generate; Log RPE + niggle path; adaptation copy |
 
-Docs: this file (`docs/REVAMP.md`) is the source of truth when Wave A starts.
+Docs: this file (`docs/REVAMP.md`) is the source of truth. Wave A landed the light-canvas tokens, DM Sans, logo/splash, 4-tab shell, and restyled Sign-in / Today / Plan / Progress / You / Paywall — see `ascend.md`.
 
 ---
 
